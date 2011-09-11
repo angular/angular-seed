@@ -4,14 +4,13 @@
  */
 (function(window) {
   var rootDescribes = new Describes(window);
-  var describePath = [];
   rootDescribes.collectMode();
   
   var jasmineTest = TestCase('Jasmine Adapter Tests', null, 'jasmine test case');
   
   var jasminePlugin = {
       name:'jasmine',
-      runTestConfiguration: function(testRunConfiguration, onTestDone, onTestRunConfigurationComplete){
+      runTestConfiguration: function(testRunConfiguration, onTestDone, onTestRunConfigurationComplete) {
         if (testRunConfiguration.testCaseInfo_.template_ !== jasmineTest) return;
         
         var jasmineEnv = jasmine.currentEnv_ = new jasmine.Env();
@@ -70,7 +69,7 @@
         jasmineEnv.execute();
         return true;
       },
-      onTestsFinish: function(){
+      onTestsFinish: function() {
         jasmine.currentEnv_ = null;
         rootDescribes.collectMode();
       }
@@ -80,7 +79,7 @@
   function formatStack(stack) {
     var lines = (stack||'').split(/\r?\n/);
     var frames = [];
-    for (i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i++) {
       if (!lines[i].match(/\/jasmine[\.-]/)) {
         frames.push(lines[i].replace(/https?:\/\/\w+(:\d+)?\/test\//, '').replace(/^\s*/, '      '));
       }
@@ -89,7 +88,7 @@
   }
 
   function noop(){}
-  function Describes(window){
+  function Describes(window) {
     var describes = {};
     var beforeEachs = {};
     var afterEachs = {};
@@ -100,10 +99,10 @@
     intercept('beforeEach', beforeEachs);
     intercept('afterEach', afterEachs);
     
-    function intercept(functionName, collection){
-      window[functionName] = function(desc, fn){
+    function intercept(functionName, collection) {
+      window[functionName] = function(desc, fn) {
         if (collectMode) {
-          collection[desc] = function(){
+          collection[desc] = function() {
             jasmine.getEnv()[functionName](desc, fn);
           };
         } else {
@@ -111,20 +110,20 @@
         }
       };
     }
-    window.ddescribe = function(name, fn){
+    window.ddescribe = function(name, fn) {
       exclusive = true;
       console.log('ddescribe', name);
-      window.describe(name, function(){
+      window.describe(name, function() {
         var oldIt = window.it;
         window.it = window.iit;
         try {
           fn.call(this);
         } finally {
           window.it = oldIt;
-        };
+        }
       });
     };
-    window.iit = function(name, fn){
+    window.iit = function(name, fn) {
       exclusive = fn.exclusive = true;
       console.log(fn);
       jasmine.getEnv().it(name, fn);
@@ -135,14 +134,14 @@
       collectMode = true;
       exclusive = false;
     };
-    this.playback = function(){
+    this.playback = function() {
       collectMode = false;
       playback(beforeEachs);
       playback(afterEachs);
       playback(describes);
       
       function playback(set) {
-        for ( var name in set) {
+        for (var name in set) {
           set[name]();
         }
       }
@@ -151,7 +150,7 @@
     this.isExclusive = function(spec) {
       if (exclusive) {
         var blocks = spec.queue.blocks;
-        for ( var i = 0; i < blocks.length; i++) {
+        for (var i = 0; i < blocks.length; i++) {
           if (blocks[i].func.exclusive) {
             return true;
           }
@@ -176,4 +175,3 @@ jasmine.Spec.prototype.fail = function (e) {
   }
   this.results_.addResult(expectationResult);
 };
-
