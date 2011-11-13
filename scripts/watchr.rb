@@ -14,6 +14,12 @@ puts "String watchr... log file: #{log_file}"
 
 watch( '(app/js|test/unit)' )  do
   `echo "\n\ntest run started @ \`date\`" >> #{log_file}`
-  `scripts/test.sh >> #{log_file}`
+  testResults = `scripts/test.sh`
+  `echo "#{testResults}" >> #{log_file}`
+
+  if !(`which notify-send` == "") and testResults.index("Tests failed.")
+    `notify-send --urgency critical --icon dialog-warning "Test Failure!" "#{testResults}"`
+    abort(testResults)
+  end
 end
 
