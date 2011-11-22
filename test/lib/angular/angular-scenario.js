@@ -1,24 +1,30 @@
 /*!
- * jQuery JavaScript Library v1.4.2
+ * jQuery JavaScript Library v1.6.4
  * http://jquery.com/
  *
- * Copyright 2010, John Resig
+ * Copyright 2011, John Resig
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
  * Includes Sizzle.js
  * http://sizzlejs.com/
- * Copyright 2010, The Dojo Foundation
+ * Copyright 2011, The Dojo Foundation
  * Released under the MIT, BSD, and GPL Licenses.
  *
- * Date: Sat Feb 13 22:33:48 2010 -0500
+ * Date: Mon Sep 12 18:54:48 2011 -0400
  */
 (function( window, undefined ) {
+
+// Use the correct document accordingly with window argument (sandbox)
+var document = window.document,
+	navigator = window.navigator,
+	location = window.location;
+var jQuery = (function() {
 
 // Define a local copy of jQuery
 var jQuery = function( selector, context ) {
 		// The jQuery object is actually just the init constructor 'enhanced'
-		return new jQuery.fn.init( selector, context );
+		return new jQuery.fn.init( selector, context, rootjQuery );
 	},
 
 	// Map over jQuery in case of overwrite
@@ -27,52 +33,73 @@ var jQuery = function( selector, context ) {
 	// Map over the $ in case of overwrite
 	_$ = window.$,
 
-	// Use the correct document accordingly with window argument (sandbox)
-	document = window.document,
-
 	// A central reference to the root jQuery(document)
 	rootjQuery,
 
 	// A simple way to check for HTML strings or ID strings
-	// (both of which we optimize for)
-	quickExpr = /^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
-
-	// Is it a simple selector
-	isSimple = /^.[^:#\[\.,]*$/,
+	// Prioritize #id over <tag> to avoid XSS via location.hash (#9521)
+	quickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/,
 
 	// Check if a string has a non-whitespace character in it
 	rnotwhite = /\S/,
 
 	// Used for trimming whitespace
-	rtrim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g,
+	trimLeft = /^\s+/,
+	trimRight = /\s+$/,
+
+	// Check for digits
+	rdigit = /\d/,
 
 	// Match a standalone tag
 	rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>)?$/,
+
+	// JSON RegExp
+	rvalidchars = /^[\],:{}\s]*$/,
+	rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
+	rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+	rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g,
+
+	// Useragent RegExp
+	rwebkit = /(webkit)[ \/]([\w.]+)/,
+	ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+	rmsie = /(msie) ([\w.]+)/,
+	rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/,
+
+	// Matches dashed string for camelizing
+	rdashAlpha = /-([a-z]|[0-9])/ig,
+	rmsPrefix = /^-ms-/,
+
+	// Used by jQuery.camelCase as callback to replace()
+	fcamelCase = function( all, letter ) {
+		return ( letter + "" ).toUpperCase();
+	},
 
 	// Keep a UserAgent string for use with jQuery.browser
 	userAgent = navigator.userAgent,
 
 	// For matching the engine and version of the browser
 	browserMatch,
-	
-	// Has the ready events already been bound?
-	readyBound = false,
-	
-	// The functions to execute on DOM ready
-	readyList = [],
+
+	// The deferred used on DOM ready
+	readyList,
 
 	// The ready event handler
 	DOMContentLoaded,
 
 	// Save a reference to some core methods
 	toString = Object.prototype.toString,
-	hasOwnProperty = Object.prototype.hasOwnProperty,
+	hasOwn = Object.prototype.hasOwnProperty,
 	push = Array.prototype.push,
 	slice = Array.prototype.slice,
-	indexOf = Array.prototype.indexOf;
+	trim = String.prototype.trim,
+	indexOf = Array.prototype.indexOf,
+
+	// [[Class]] -> type pairs
+	class2type = {};
 
 jQuery.fn = jQuery.prototype = {
-	init: function( selector, context ) {
+	constructor: jQuery,
+	init: function( selector, context, rootjQuery ) {
 		var match, elem, ret, doc;
 
 		// Handle $(""), $(null), or $(undefined)
@@ -86,12 +113,12 @@ jQuery.fn = jQuery.prototype = {
 			this.length = 1;
 			return this;
 		}
-		
+
 		// The body element only exists once, optimize finding it
-		if ( selector === "body" && !context ) {
+		if ( selector === "body" && !context && document.body ) {
 			this.context = document;
 			this[0] = document.body;
-			this.selector = "body";
+			this.selector = selector;
 			this.length = 1;
 			return this;
 		}
@@ -99,13 +126,20 @@ jQuery.fn = jQuery.prototype = {
 		// Handle HTML strings
 		if ( typeof selector === "string" ) {
 			// Are we dealing with HTML string or an ID?
-			match = quickExpr.exec( selector );
+			if ( selector.charAt(0) === "<" && selector.charAt( selector.length - 1 ) === ">" && selector.length >= 3 ) {
+				// Assume that strings that start and end with <> are HTML and skip the regex check
+				match = [ null, selector, null ];
+
+			} else {
+				match = quickExpr.exec( selector );
+			}
 
 			// Verify a match, and that no context was specified for #id
 			if ( match && (match[1] || !context) ) {
 
 				// HANDLE: $(html) -> $(array)
 				if ( match[1] ) {
+					context = context instanceof jQuery ? context[0] : context;
 					doc = (context ? context.ownerDocument || context : document);
 
 					// If a single string is passed in and it's a single tag
@@ -122,17 +156,19 @@ jQuery.fn = jQuery.prototype = {
 						}
 
 					} else {
-						ret = buildFragment( [ match[1] ], [ doc ] );
-						selector = (ret.cacheable ? ret.fragment.cloneNode(true) : ret.fragment).childNodes;
+						ret = jQuery.buildFragment( [ match[1] ], [ doc ] );
+						selector = (ret.cacheable ? jQuery.clone(ret.fragment) : ret.fragment).childNodes;
 					}
-					
+
 					return jQuery.merge( this, selector );
-					
+
 				// HANDLE: $("#id")
 				} else {
 					elem = document.getElementById( match[2] );
 
-					if ( elem ) {
+					// Check parentNode to catch when Blackberry 4.6 returns
+					// nodes that are no longer in the document #6963
+					if ( elem && elem.parentNode ) {
 						// Handle the case where IE and Opera return items
 						// by name instead of ID
 						if ( elem.id !== match[2] ) {
@@ -149,13 +185,6 @@ jQuery.fn = jQuery.prototype = {
 					return this;
 				}
 
-			// HANDLE: $("TAG")
-			} else if ( !context && /^\w+$/.test( selector ) ) {
-				this.selector = selector;
-				this.context = document;
-				selector = document.getElementsByTagName( selector );
-				return jQuery.merge( this, selector );
-
 			// HANDLE: $(expr, $(...))
 			} else if ( !context || context.jquery ) {
 				return (context || rootjQuery).find( selector );
@@ -163,7 +192,7 @@ jQuery.fn = jQuery.prototype = {
 			// HANDLE: $(expr, context)
 			// (which is just equivalent to: $(context).find(expr)
 			} else {
-				return jQuery( context ).find( selector );
+				return this.constructor( context ).find( selector );
 			}
 
 		// HANDLE: $(function)
@@ -184,7 +213,7 @@ jQuery.fn = jQuery.prototype = {
 	selector: "",
 
 	// The current version of jQuery being used
-	jquery: "1.4.2",
+	jquery: "1.6.4",
 
 	// The default length of a jQuery object is 0
 	length: 0,
@@ -207,18 +236,18 @@ jQuery.fn = jQuery.prototype = {
 			this.toArray() :
 
 			// Return just the object
-			( num < 0 ? this.slice(num)[ 0 ] : this[ num ] );
+			( num < 0 ? this[ this.length + num ] : this[ num ] );
 	},
 
 	// Take an array of elements and push it onto the stack
 	// (returning the new matched element set)
 	pushStack: function( elems, name, selector ) {
 		// Build a new jQuery matched element set
-		var ret = jQuery();
+		var ret = this.constructor();
 
 		if ( jQuery.isArray( elems ) ) {
 			push.apply( ret, elems );
-		
+
 		} else {
 			jQuery.merge( ret, elems );
 		}
@@ -244,25 +273,17 @@ jQuery.fn = jQuery.prototype = {
 	each: function( callback, args ) {
 		return jQuery.each( this, callback, args );
 	},
-	
+
 	ready: function( fn ) {
 		// Attach the listeners
 		jQuery.bindReady();
 
-		// If the DOM is already ready
-		if ( jQuery.isReady ) {
-			// Execute the function immediately
-			fn.call( document, jQuery );
-
-		// Otherwise, remember the function for later
-		} else if ( readyList ) {
-			// Add the function to the wait list
-			readyList.push( fn );
-		}
+		// Add the callback
+		readyList.done( fn );
 
 		return this;
 	},
-	
+
 	eq: function( i ) {
 		return i === -1 ?
 			this.slice( i ) :
@@ -287,9 +308,9 @@ jQuery.fn = jQuery.prototype = {
 			return callback.call( elem, i, elem );
 		}));
 	},
-	
+
 	end: function() {
-		return this.prevObject || jQuery(null);
+		return this.prevObject || this.constructor(null);
 	},
 
 	// For internal use only.
@@ -303,8 +324,11 @@ jQuery.fn = jQuery.prototype = {
 jQuery.fn.init.prototype = jQuery.fn;
 
 jQuery.extend = jQuery.fn.extend = function() {
-	// copy reference to target object
-	var target = arguments[0] || {}, i = 1, length = arguments.length, deep = false, options, name, src, copy;
+	var options, name, src, copy, copyIsArray, clone,
+		target = arguments[0] || {},
+		i = 1,
+		length = arguments.length,
+		deep = false;
 
 	// Handle a deep copy situation
 	if ( typeof target === "boolean" ) {
@@ -338,10 +362,15 @@ jQuery.extend = jQuery.fn.extend = function() {
 					continue;
 				}
 
-				// Recurse if we're merging object literal values or arrays
-				if ( deep && copy && ( jQuery.isPlainObject(copy) || jQuery.isArray(copy) ) ) {
-					var clone = src && ( jQuery.isPlainObject(src) || jQuery.isArray(src) ) ? src
-						: jQuery.isArray(copy) ? [] : {};
+				// Recurse if we're merging plain objects or arrays
+				if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
+					if ( copyIsArray ) {
+						copyIsArray = false;
+						clone = src && jQuery.isArray(src) ? src : [];
+
+					} else {
+						clone = src && jQuery.isPlainObject(src) ? src : {};
+					}
 
 					// Never move original objects, clone them
 					target[ name ] = jQuery.extend( deep, clone, copy );
@@ -360,67 +389,79 @@ jQuery.extend = jQuery.fn.extend = function() {
 
 jQuery.extend({
 	noConflict: function( deep ) {
-		window.$ = _$;
+		if ( window.$ === jQuery ) {
+			window.$ = _$;
+		}
 
-		if ( deep ) {
+		if ( deep && window.jQuery === jQuery ) {
 			window.jQuery = _jQuery;
 		}
 
 		return jQuery;
 	},
-	
+
 	// Is the DOM ready to be used? Set to true once it occurs.
 	isReady: false,
-	
+
+	// A counter to track how many items to wait for before
+	// the ready event fires. See #6781
+	readyWait: 1,
+
+	// Hold (or release) the ready event
+	holdReady: function( hold ) {
+		if ( hold ) {
+			jQuery.readyWait++;
+		} else {
+			jQuery.ready( true );
+		}
+	},
+
 	// Handle when the DOM is ready
-	ready: function() {
-		// Make sure that the DOM is not already loaded
-		if ( !jQuery.isReady ) {
+	ready: function( wait ) {
+		// Either a released hold or an DOMready/load event and not yet ready
+		if ( (wait === true && !--jQuery.readyWait) || (wait !== true && !jQuery.isReady) ) {
 			// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
 			if ( !document.body ) {
-				return setTimeout( jQuery.ready, 13 );
+				return setTimeout( jQuery.ready, 1 );
 			}
 
 			// Remember that the DOM is ready
 			jQuery.isReady = true;
 
-			// If there are functions bound, to execute
-			if ( readyList ) {
-				// Execute all of them
-				var fn, i = 0;
-				while ( (fn = readyList[ i++ ]) ) {
-					fn.call( document, jQuery );
-				}
-
-				// Reset the list of functions
-				readyList = null;
+			// If a normal DOM Ready event fired, decrement, and wait if need be
+			if ( wait !== true && --jQuery.readyWait > 0 ) {
+				return;
 			}
 
+			// If there are functions bound, to execute
+			readyList.resolveWith( document, [ jQuery ] );
+
 			// Trigger any bound ready events
-			if ( jQuery.fn.triggerHandler ) {
-				jQuery( document ).triggerHandler( "ready" );
+			if ( jQuery.fn.trigger ) {
+				jQuery( document ).trigger( "ready" ).unbind( "ready" );
 			}
 		}
 	},
-	
+
 	bindReady: function() {
-		if ( readyBound ) {
+		if ( readyList ) {
 			return;
 		}
 
-		readyBound = true;
+		readyList = jQuery._Deferred();
 
 		// Catch cases where $(document).ready() is called after the
 		// browser event has already occurred.
 		if ( document.readyState === "complete" ) {
-			return jQuery.ready();
+			// Handle it asynchronously to allow scripts the opportunity to delay ready
+			return setTimeout( jQuery.ready, 1 );
 		}
 
 		// Mozilla, Opera and webkit nightlies currently support this event
 		if ( document.addEventListener ) {
 			// Use the handy event callback
 			document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
-			
+
 			// A fallback to window.onload, that will always work
 			window.addEventListener( "load", jQuery.ready, false );
 
@@ -428,8 +469,8 @@ jQuery.extend({
 		} else if ( document.attachEvent ) {
 			// ensure firing before onload,
 			// maybe late but safe also for iframes
-			document.attachEvent("onreadystatechange", DOMContentLoaded);
-			
+			document.attachEvent( "onreadystatechange", DOMContentLoaded );
+
 			// A fallback to window.onload, that will always work
 			window.attachEvent( "onload", jQuery.ready );
 
@@ -451,35 +492,55 @@ jQuery.extend({
 	// Since version 1.3, DOM methods and functions like alert
 	// aren't supported. They return false on IE (#2968).
 	isFunction: function( obj ) {
-		return toString.call(obj) === "[object Function]";
+		return jQuery.type(obj) === "function";
 	},
 
-	isArray: function( obj ) {
-		return toString.call(obj) === "[object Array]";
+	isArray: Array.isArray || function( obj ) {
+		return jQuery.type(obj) === "array";
+	},
+
+	// A crude way of determining if an object is a window
+	isWindow: function( obj ) {
+		return obj && typeof obj === "object" && "setInterval" in obj;
+	},
+
+	isNaN: function( obj ) {
+		return obj == null || !rdigit.test( obj ) || isNaN( obj );
+	},
+
+	type: function( obj ) {
+		return obj == null ?
+			String( obj ) :
+			class2type[ toString.call(obj) ] || "object";
 	},
 
 	isPlainObject: function( obj ) {
 		// Must be an Object.
 		// Because of IE, we also have to check the presence of the constructor property.
 		// Make sure that DOM nodes and window objects don't pass through, as well
-		if ( !obj || toString.call(obj) !== "[object Object]" || obj.nodeType || obj.setInterval ) {
+		if ( !obj || jQuery.type(obj) !== "object" || obj.nodeType || jQuery.isWindow( obj ) ) {
 			return false;
 		}
-		
-		// Not own constructor property must be Object
-		if ( obj.constructor
-			&& !hasOwnProperty.call(obj, "constructor")
-			&& !hasOwnProperty.call(obj.constructor.prototype, "isPrototypeOf") ) {
+
+		try {
+			// Not own constructor property must be Object
+			if ( obj.constructor &&
+				!hasOwn.call(obj, "constructor") &&
+				!hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
+				return false;
+			}
+		} catch ( e ) {
+			// IE8,9 Will throw exceptions on certain host objects #9897
 			return false;
 		}
-		
+
 		// Own properties are enumerated firstly, so to speed up,
 		// if last one is own, then all properties are own.
-	
+
 		var key;
 		for ( key in obj ) {}
-		
-		return key === undefined || hasOwnProperty.call( obj, key );
+
+		return key === undefined || hasOwn.call( obj, key );
 	},
 
 	isEmptyObject: function( obj ) {
@@ -488,11 +549,11 @@ jQuery.extend({
 		}
 		return true;
 	},
-	
+
 	error: function( msg ) {
 		throw msg;
 	},
-	
+
 	parseJSON: function( data ) {
 		if ( typeof data !== "string" || !data ) {
 			return null;
@@ -500,46 +561,65 @@ jQuery.extend({
 
 		// Make sure leading/trailing whitespace is removed (IE can't handle it)
 		data = jQuery.trim( data );
-		
+
+		// Attempt to parse using the native JSON parser first
+		if ( window.JSON && window.JSON.parse ) {
+			return window.JSON.parse( data );
+		}
+
 		// Make sure the incoming data is actual JSON
 		// Logic borrowed from http://json.org/json2.js
-		if ( /^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@")
-			.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, "]")
-			.replace(/(?:^|:|,)(?:\s*\[)+/g, "")) ) {
+		if ( rvalidchars.test( data.replace( rvalidescape, "@" )
+			.replace( rvalidtokens, "]" )
+			.replace( rvalidbraces, "")) ) {
 
-			// Try to use the native JSON parser first
-			return window.JSON && window.JSON.parse ?
-				window.JSON.parse( data ) :
-				(new Function("return " + data))();
+			return (new Function( "return " + data ))();
 
-		} else {
-			jQuery.error( "Invalid JSON: " + data );
 		}
+		jQuery.error( "Invalid JSON: " + data );
+	},
+
+	// Cross-browser xml parsing
+	parseXML: function( data ) {
+		var xml, tmp;
+		try {
+			if ( window.DOMParser ) { // Standard
+				tmp = new DOMParser();
+				xml = tmp.parseFromString( data , "text/xml" );
+			} else { // IE
+				xml = new ActiveXObject( "Microsoft.XMLDOM" );
+				xml.async = "false";
+				xml.loadXML( data );
+			}
+		} catch( e ) {
+			xml = undefined;
+		}
+		if ( !xml || !xml.documentElement || xml.getElementsByTagName( "parsererror" ).length ) {
+			jQuery.error( "Invalid XML: " + data );
+		}
+		return xml;
 	},
 
 	noop: function() {},
 
-	// Evalulates a script in a global context
+	// Evaluates a script in a global context
+	// Workarounds based on findings by Jim Driscoll
+	// http://weblogs.java.net/blog/driscoll/archive/2009/09/08/eval-javascript-global-context
 	globalEval: function( data ) {
-		if ( data && rnotwhite.test(data) ) {
-			// Inspired by code by Andrea Giammarchi
-			// http://webreflection.blogspot.com/2007/08/global-scope-evaluation-and-dom.html
-			var head = document.getElementsByTagName("head")[0] || document.documentElement,
-				script = document.createElement("script");
-
-			script.type = "text/javascript";
-
-			if ( jQuery.support.scriptEval ) {
-				script.appendChild( document.createTextNode( data ) );
-			} else {
-				script.text = data;
-			}
-
-			// Use insertBefore instead of appendChild to circumvent an IE6 bug.
-			// This arises when a base node is used (#2709).
-			head.insertBefore( script, head.firstChild );
-			head.removeChild( script );
+		if ( data && rnotwhite.test( data ) ) {
+			// We use execScript on Internet Explorer
+			// We use an anonymous function so that context is window
+			// rather than jQuery in Firefox
+			( window.execScript || function( data ) {
+				window[ "eval" ].call( window, data );
+			} )( data );
 		}
+	},
+
+	// Convert dashed to camelCase; used by the css and data modules
+	// Microsoft forgot to hump their vendor prefix (#9572)
+	camelCase: function( string ) {
+		return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 	},
 
 	nodeName: function( elem, name ) {
@@ -550,7 +630,7 @@ jQuery.extend({
 	each: function( object, callback, args ) {
 		var name, i = 0,
 			length = object.length,
-			isObj = length === undefined || jQuery.isFunction(object);
+			isObj = length === undefined || jQuery.isFunction( object );
 
 		if ( args ) {
 			if ( isObj ) {
@@ -576,17 +656,31 @@ jQuery.extend({
 					}
 				}
 			} else {
-				for ( var value = object[0];
-					i < length && callback.call( value, i, value ) !== false; value = object[++i] ) {}
+				for ( ; i < length; ) {
+					if ( callback.call( object[ i ], i, object[ i++ ] ) === false ) {
+						break;
+					}
+				}
 			}
 		}
 
 		return object;
 	},
 
-	trim: function( text ) {
-		return (text || "").replace( rtrim, "" );
-	},
+	// Use native String.trim function wherever possible
+	trim: trim ?
+		function( text ) {
+			return text == null ?
+				"" :
+				trim.call( text );
+		} :
+
+		// Otherwise use our own trimming functionality
+		function( text ) {
+			return text == null ?
+				"" :
+				text.toString().replace( trimLeft, "" ).replace( trimRight, "" );
+		},
 
 	// results is for internal usage only
 	makeArray: function( array, results ) {
@@ -596,7 +690,10 @@ jQuery.extend({
 			// The window, strings (and functions) also have 'length'
 			// The extra typeof function check is to prevent crashes
 			// in Safari 2 (See: #3039)
-			if ( array.length == null || typeof array === "string" || jQuery.isFunction(array) || (typeof array !== "function" && array.setInterval) ) {
+			// Tweaked logic slightly to handle Blackberry 4.7 RegExp issues #6930
+			var type = jQuery.type( array );
+
+			if ( array.length == null || type === "string" || type === "function" || type === "regexp" || jQuery.isWindow( array ) ) {
 				push.call( ret, array );
 			} else {
 				jQuery.merge( ret, array );
@@ -607,8 +704,12 @@ jQuery.extend({
 	},
 
 	inArray: function( elem, array ) {
-		if ( array.indexOf ) {
-			return array.indexOf( elem );
+		if ( !array ) {
+			return -1;
+		}
+
+		if ( indexOf ) {
+			return indexOf.call( array, elem );
 		}
 
 		for ( var i = 0, length = array.length; i < length; i++ ) {
@@ -621,13 +722,14 @@ jQuery.extend({
 	},
 
 	merge: function( first, second ) {
-		var i = first.length, j = 0;
+		var i = first.length,
+			j = 0;
 
 		if ( typeof second.length === "number" ) {
 			for ( var l = second.length; j < l; j++ ) {
 				first[ i++ ] = second[ j ];
 			}
-		
+
 		} else {
 			while ( second[j] !== undefined ) {
 				first[ i++ ] = second[ j++ ];
@@ -640,12 +742,14 @@ jQuery.extend({
 	},
 
 	grep: function( elems, callback, inv ) {
-		var ret = [];
+		var ret = [], retVal;
+		inv = !!inv;
 
 		// Go through the array, only saving the items
 		// that pass the validator function
 		for ( var i = 0, length = elems.length; i < length; i++ ) {
-			if ( !inv !== !callback( elems[ i ], i ) ) {
+			retVal = !!callback( elems[ i ], i );
+			if ( inv !== retVal ) {
 				ret.push( elems[ i ] );
 			}
 		}
@@ -655,50 +759,98 @@ jQuery.extend({
 
 	// arg is for internal usage only
 	map: function( elems, callback, arg ) {
-		var ret = [], value;
+		var value, key, ret = [],
+			i = 0,
+			length = elems.length,
+			// jquery objects are treated as arrays
+			isArray = elems instanceof jQuery || length !== undefined && typeof length === "number" && ( ( length > 0 && elems[ 0 ] && elems[ length -1 ] ) || length === 0 || jQuery.isArray( elems ) ) ;
 
 		// Go through the array, translating each of the items to their
-		// new value (or values).
-		for ( var i = 0, length = elems.length; i < length; i++ ) {
-			value = callback( elems[ i ], i, arg );
+		if ( isArray ) {
+			for ( ; i < length; i++ ) {
+				value = callback( elems[ i ], i, arg );
 
-			if ( value != null ) {
-				ret[ ret.length ] = value;
+				if ( value != null ) {
+					ret[ ret.length ] = value;
+				}
+			}
+
+		// Go through every key on the object,
+		} else {
+			for ( key in elems ) {
+				value = callback( elems[ key ], key, arg );
+
+				if ( value != null ) {
+					ret[ ret.length ] = value;
+				}
 			}
 		}
 
+		// Flatten any nested arrays
 		return ret.concat.apply( [], ret );
 	},
 
 	// A global GUID counter for objects
 	guid: 1,
 
-	proxy: function( fn, proxy, thisObject ) {
-		if ( arguments.length === 2 ) {
-			if ( typeof proxy === "string" ) {
-				thisObject = fn;
-				fn = thisObject[ proxy ];
-				proxy = undefined;
-
-			} else if ( proxy && !jQuery.isFunction( proxy ) ) {
-				thisObject = proxy;
-				proxy = undefined;
-			}
+	// Bind a function to a context, optionally partially applying any
+	// arguments.
+	proxy: function( fn, context ) {
+		if ( typeof context === "string" ) {
+			var tmp = fn[ context ];
+			context = fn;
+			fn = tmp;
 		}
 
-		if ( !proxy && fn ) {
+		// Quick check to determine if target is callable, in the spec
+		// this throws a TypeError, but we will just return undefined.
+		if ( !jQuery.isFunction( fn ) ) {
+			return undefined;
+		}
+
+		// Simulated bind
+		var args = slice.call( arguments, 2 ),
 			proxy = function() {
-				return fn.apply( thisObject || this, arguments );
+				return fn.apply( context, args.concat( slice.call( arguments ) ) );
 			};
-		}
 
 		// Set the guid of unique handler to the same of original handler, so it can be removed
-		if ( fn ) {
-			proxy.guid = fn.guid = fn.guid || proxy.guid || jQuery.guid++;
+		proxy.guid = fn.guid = fn.guid || proxy.guid || jQuery.guid++;
+
+		return proxy;
+	},
+
+	// Mutifunctional method to get and set values to a collection
+	// The value/s can optionally be executed if it's a function
+	access: function( elems, key, value, exec, fn, pass ) {
+		var length = elems.length;
+
+		// Setting many attributes
+		if ( typeof key === "object" ) {
+			for ( var k in key ) {
+				jQuery.access( elems, k, key[k], exec, fn, value );
+			}
+			return elems;
 		}
 
-		// So proxy can be declared as an argument
-		return proxy;
+		// Setting one attribute
+		if ( value !== undefined ) {
+			// Optionally, function values get executed if exec is true
+			exec = !pass && exec && jQuery.isFunction(value);
+
+			for ( var i = 0; i < length; i++ ) {
+				fn( elems[i], key, exec ? value.call( elems[i], i, fn( elems[i], key ) ) : value, pass );
+			}
+
+			return elems;
+		}
+
+		// Getting an attribute
+		return length ? fn( elems[0], key ) : undefined;
+	},
+
+	now: function() {
+		return (new Date()).getTime();
 	},
 
 	// Use of jQuery.browser is frowned upon.
@@ -706,16 +858,42 @@ jQuery.extend({
 	uaMatch: function( ua ) {
 		ua = ua.toLowerCase();
 
-		var match = /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
-			/(opera)(?:.*version)?[ \/]([\w.]+)/.exec( ua ) ||
-			/(msie) ([\w.]+)/.exec( ua ) ||
-			!/compatible/.test( ua ) && /(mozilla)(?:.*? rv:([\w.]+))?/.exec( ua ) ||
-		  	[];
+		var match = rwebkit.exec( ua ) ||
+			ropera.exec( ua ) ||
+			rmsie.exec( ua ) ||
+			ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
+			[];
 
 		return { browser: match[1] || "", version: match[2] || "0" };
 	},
 
+	sub: function() {
+		function jQuerySub( selector, context ) {
+			return new jQuerySub.fn.init( selector, context );
+		}
+		jQuery.extend( true, jQuerySub, this );
+		jQuerySub.superclass = this;
+		jQuerySub.fn = jQuerySub.prototype = this();
+		jQuerySub.fn.constructor = jQuerySub;
+		jQuerySub.sub = this.sub;
+		jQuerySub.fn.init = function init( selector, context ) {
+			if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
+				context = jQuerySub( context );
+			}
+
+			return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
+		};
+		jQuerySub.fn.init.prototype = jQuerySub.fn;
+		var rootjQuerySub = jQuerySub(document);
+		return jQuerySub;
+	},
+
 	browser: {}
+});
+
+// Populate the class2type map
+jQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+	class2type[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
 browserMatch = jQuery.uaMatch( userAgent );
@@ -729,10 +907,10 @@ if ( jQuery.browser.webkit ) {
 	jQuery.browser.safari = true;
 }
 
-if ( indexOf ) {
-	jQuery.inArray = function( elem, array ) {
-		return indexOf.call( array, elem );
-	};
+// IE doesn't match non-breaking spaces with \s
+if ( rnotwhite.test( "\xA0" ) ) {
+	trimLeft = /^[\s\xA0]+/;
+	trimRight = /[\s\xA0]+$/;
 }
 
 // All jQuery objects should point back to these
@@ -765,7 +943,7 @@ function doScrollCheck() {
 		// If IE is used, use the trick by Diego Perini
 		// http://javascript.nwbox.com/IEContentLoaded/
 		document.documentElement.doScroll("left");
-	} catch( error ) {
+	} catch(e) {
 		setTimeout( doScrollCheck, 1 );
 		return;
 	}
@@ -774,93 +952,268 @@ function doScrollCheck() {
 	jQuery.ready();
 }
 
-function evalScript( i, elem ) {
-	if ( elem.src ) {
-		jQuery.ajax({
-			url: elem.src,
-			async: false,
-			dataType: "script"
+return jQuery;
+
+})();
+
+
+var // Promise methods
+	promiseMethods = "done fail isResolved isRejected promise then always pipe".split( " " ),
+	// Static reference to slice
+	sliceDeferred = [].slice;
+
+jQuery.extend({
+	// Create a simple deferred (one callbacks list)
+	_Deferred: function() {
+		var // callbacks list
+			callbacks = [],
+			// stored [ context , args ]
+			fired,
+			// to avoid firing when already doing so
+			firing,
+			// flag to know if the deferred has been cancelled
+			cancelled,
+			// the deferred itself
+			deferred  = {
+
+				// done( f1, f2, ...)
+				done: function() {
+					if ( !cancelled ) {
+						var args = arguments,
+							i,
+							length,
+							elem,
+							type,
+							_fired;
+						if ( fired ) {
+							_fired = fired;
+							fired = 0;
+						}
+						for ( i = 0, length = args.length; i < length; i++ ) {
+							elem = args[ i ];
+							type = jQuery.type( elem );
+							if ( type === "array" ) {
+								deferred.done.apply( deferred, elem );
+							} else if ( type === "function" ) {
+								callbacks.push( elem );
+							}
+						}
+						if ( _fired ) {
+							deferred.resolveWith( _fired[ 0 ], _fired[ 1 ] );
+						}
+					}
+					return this;
+				},
+
+				// resolve with given context and args
+				resolveWith: function( context, args ) {
+					if ( !cancelled && !fired && !firing ) {
+						// make sure args are available (#8421)
+						args = args || [];
+						firing = 1;
+						try {
+							while( callbacks[ 0 ] ) {
+								callbacks.shift().apply( context, args );
+							}
+						}
+						finally {
+							fired = [ context, args ];
+							firing = 0;
+						}
+					}
+					return this;
+				},
+
+				// resolve with this as context and given arguments
+				resolve: function() {
+					deferred.resolveWith( this, arguments );
+					return this;
+				},
+
+				// Has this deferred been resolved?
+				isResolved: function() {
+					return !!( firing || fired );
+				},
+
+				// Cancel
+				cancel: function() {
+					cancelled = 1;
+					callbacks = [];
+					return this;
+				}
+			};
+
+		return deferred;
+	},
+
+	// Full fledged deferred (two callbacks list)
+	Deferred: function( func ) {
+		var deferred = jQuery._Deferred(),
+			failDeferred = jQuery._Deferred(),
+			promise;
+		// Add errorDeferred methods, then and promise
+		jQuery.extend( deferred, {
+			then: function( doneCallbacks, failCallbacks ) {
+				deferred.done( doneCallbacks ).fail( failCallbacks );
+				return this;
+			},
+			always: function() {
+				return deferred.done.apply( deferred, arguments ).fail.apply( this, arguments );
+			},
+			fail: failDeferred.done,
+			rejectWith: failDeferred.resolveWith,
+			reject: failDeferred.resolve,
+			isRejected: failDeferred.isResolved,
+			pipe: function( fnDone, fnFail ) {
+				return jQuery.Deferred(function( newDefer ) {
+					jQuery.each( {
+						done: [ fnDone, "resolve" ],
+						fail: [ fnFail, "reject" ]
+					}, function( handler, data ) {
+						var fn = data[ 0 ],
+							action = data[ 1 ],
+							returned;
+						if ( jQuery.isFunction( fn ) ) {
+							deferred[ handler ](function() {
+								returned = fn.apply( this, arguments );
+								if ( returned && jQuery.isFunction( returned.promise ) ) {
+									returned.promise().then( newDefer.resolve, newDefer.reject );
+								} else {
+									newDefer[ action + "With" ]( this === deferred ? newDefer : this, [ returned ] );
+								}
+							});
+						} else {
+							deferred[ handler ]( newDefer[ action ] );
+						}
+					});
+				}).promise();
+			},
+			// Get a promise for this deferred
+			// If obj is provided, the promise aspect is added to the object
+			promise: function( obj ) {
+				if ( obj == null ) {
+					if ( promise ) {
+						return promise;
+					}
+					promise = obj = {};
+				}
+				var i = promiseMethods.length;
+				while( i-- ) {
+					obj[ promiseMethods[i] ] = deferred[ promiseMethods[i] ];
+				}
+				return obj;
+			}
 		});
-	} else {
-		jQuery.globalEval( elem.text || elem.textContent || elem.innerHTML || "" );
-	}
-
-	if ( elem.parentNode ) {
-		elem.parentNode.removeChild( elem );
-	}
-}
-
-// Mutifunctional method to get and set values to a collection
-// The value/s can be optionally by executed if its a function
-function access( elems, key, value, exec, fn, pass ) {
-	var length = elems.length;
-	
-	// Setting many attributes
-	if ( typeof key === "object" ) {
-		for ( var k in key ) {
-			access( elems, k, key[k], exec, fn, value );
+		// Make sure only one callback list will be used
+		deferred.done( failDeferred.cancel ).fail( deferred.cancel );
+		// Unexpose cancel
+		delete deferred.cancel;
+		// Call given func if any
+		if ( func ) {
+			func.call( deferred, deferred );
 		}
-		return elems;
-	}
-	
-	// Setting one attribute
-	if ( value !== undefined ) {
-		// Optionally, function values get executed if exec is true
-		exec = !pass && exec && jQuery.isFunction(value);
-		
-		for ( var i = 0; i < length; i++ ) {
-			fn( elems[i], key, exec ? value.call( elems[i], i, fn( elems[i], key ) ) : value, pass );
+		return deferred;
+	},
+
+	// Deferred helper
+	when: function( firstParam ) {
+		var args = arguments,
+			i = 0,
+			length = args.length,
+			count = length,
+			deferred = length <= 1 && firstParam && jQuery.isFunction( firstParam.promise ) ?
+				firstParam :
+				jQuery.Deferred();
+		function resolveFunc( i ) {
+			return function( value ) {
+				args[ i ] = arguments.length > 1 ? sliceDeferred.call( arguments, 0 ) : value;
+				if ( !( --count ) ) {
+					// Strange bug in FF4:
+					// Values changed onto the arguments object sometimes end up as undefined values
+					// outside the $.when method. Cloning the object into a fresh array solves the issue
+					deferred.resolveWith( deferred, sliceDeferred.call( args, 0 ) );
+				}
+			};
 		}
-		
-		return elems;
+		if ( length > 1 ) {
+			for( ; i < length; i++ ) {
+				if ( args[ i ] && jQuery.isFunction( args[ i ].promise ) ) {
+					args[ i ].promise().then( resolveFunc(i), deferred.reject );
+				} else {
+					--count;
+				}
+			}
+			if ( !count ) {
+				deferred.resolveWith( deferred, args );
+			}
+		} else if ( deferred !== firstParam ) {
+			deferred.resolveWith( deferred, length ? [ firstParam ] : [] );
+		}
+		return deferred.promise();
 	}
-	
-	// Getting an attribute
-	return length ? fn( elems[0], key ) : undefined;
-}
+});
 
-function now() {
-	return (new Date).getTime();
-}
-(function() {
 
-	jQuery.support = {};
 
-	var root = document.documentElement,
-		script = document.createElement("script"),
-		div = document.createElement("div"),
-		id = "script" + now();
+jQuery.support = (function() {
 
-	div.style.display = "none";
-	div.innerHTML = "   <link/><table></table><a href='/a' style='color:red;float:left;opacity:.55;'>a</a><input type='checkbox'/>";
+	var div = document.createElement( "div" ),
+		documentElement = document.documentElement,
+		all,
+		a,
+		select,
+		opt,
+		input,
+		marginDiv,
+		support,
+		fragment,
+		body,
+		testElementParent,
+		testElement,
+		testElementStyle,
+		tds,
+		events,
+		eventName,
+		i,
+		isSupported;
 
-	var all = div.getElementsByTagName("*"),
-		a = div.getElementsByTagName("a")[0];
+	// Preliminary tests
+	div.setAttribute("className", "t");
+	div.innerHTML = "   <link/><table></table><a href='/a' style='top:1px;float:left;opacity:.55;'>a</a><input type='checkbox'/>";
+
+
+	all = div.getElementsByTagName( "*" );
+	a = div.getElementsByTagName( "a" )[ 0 ];
 
 	// Can't get basic test support
 	if ( !all || !all.length || !a ) {
-		return;
+		return {};
 	}
 
-	jQuery.support = {
+	// First batch of supports tests
+	select = document.createElement( "select" );
+	opt = select.appendChild( document.createElement("option") );
+	input = div.getElementsByTagName( "input" )[ 0 ];
+
+	support = {
 		// IE strips leading whitespace when .innerHTML is used
-		leadingWhitespace: div.firstChild.nodeType === 3,
+		leadingWhitespace: ( div.firstChild.nodeType === 3 ),
 
 		// Make sure that tbody elements aren't automatically inserted
 		// IE will insert them into empty tables
-		tbody: !div.getElementsByTagName("tbody").length,
+		tbody: !div.getElementsByTagName( "tbody" ).length,
 
 		// Make sure that link elements get serialized correctly by innerHTML
 		// This requires a wrapper element in IE
-		htmlSerialize: !!div.getElementsByTagName("link").length,
+		htmlSerialize: !!div.getElementsByTagName( "link" ).length,
 
 		// Get the style information from getAttribute
-		// (IE uses .cssText insted)
-		style: /red/.test( a.getAttribute("style") ),
+		// (IE uses .cssText instead)
+		style: /top/.test( a.getAttribute("style") ),
 
 		// Make sure that URLs aren't manipulated
 		// (IE normalizes it by default)
-		hrefNormalized: a.getAttribute("href") === "/a",
+		hrefNormalized: ( a.getAttribute( "href" ) === "/a" ),
 
 		// Make sure that element opacity exists
 		// (IE uses filter instead)
@@ -874,213 +1227,462 @@ function now() {
 		// Make sure that if no value is specified for a checkbox
 		// that it defaults to "on".
 		// (WebKit defaults to "" instead)
-		checkOn: div.getElementsByTagName("input")[0].value === "on",
+		checkOn: ( input.value === "on" ),
 
 		// Make sure that a selected-by-default option has a working selected property.
 		// (WebKit defaults to false instead of true, IE too, if it's in an optgroup)
-		optSelected: document.createElement("select").appendChild( document.createElement("option") ).selected,
+		optSelected: opt.selected,
 
-		parentNode: div.removeChild( div.appendChild( document.createElement("div") ) ).parentNode === null,
+		// Test setAttribute on camelCase class. If it works, we need attrFixes when doing get/setAttribute (ie6/7)
+		getSetAttribute: div.className !== "t",
 
 		// Will be defined later
+		submitBubbles: true,
+		changeBubbles: true,
+		focusinBubbles: false,
 		deleteExpando: true,
-		checkClone: false,
-		scriptEval: false,
 		noCloneEvent: true,
-		boxModel: null
+		inlineBlockNeedsLayout: false,
+		shrinkWrapBlocks: false,
+		reliableMarginRight: true
 	};
 
-	script.type = "text/javascript";
-	try {
-		script.appendChild( document.createTextNode( "window." + id + "=1;" ) );
-	} catch(e) {}
+	// Make sure checked status is properly cloned
+	input.checked = true;
+	support.noCloneChecked = input.cloneNode( true ).checked;
 
-	root.insertBefore( script, root.firstChild );
-
-	// Make sure that the execution of code works by injecting a script
-	// tag with appendChild/createTextNode
-	// (IE doesn't support this, fails, and uses .text instead)
-	if ( window[ id ] ) {
-		jQuery.support.scriptEval = true;
-		delete window[ id ];
-	}
+	// Make sure that the options inside disabled selects aren't marked as disabled
+	// (WebKit marks them as disabled)
+	select.disabled = true;
+	support.optDisabled = !opt.disabled;
 
 	// Test to see if it's possible to delete an expando from an element
 	// Fails in Internet Explorer
 	try {
-		delete script.test;
-	
-	} catch(e) {
-		jQuery.support.deleteExpando = false;
+		delete div.test;
+	} catch( e ) {
+		support.deleteExpando = false;
 	}
 
-	root.removeChild( script );
-
-	if ( div.attachEvent && div.fireEvent ) {
-		div.attachEvent("onclick", function click() {
+	if ( !div.addEventListener && div.attachEvent && div.fireEvent ) {
+		div.attachEvent( "onclick", function() {
 			// Cloning a node shouldn't copy over any
 			// bound event handlers (IE does this)
-			jQuery.support.noCloneEvent = false;
-			div.detachEvent("onclick", click);
+			support.noCloneEvent = false;
 		});
-		div.cloneNode(true).fireEvent("onclick");
+		div.cloneNode( true ).fireEvent( "onclick" );
 	}
 
-	div = document.createElement("div");
-	div.innerHTML = "<input type='radio' name='radiotest' checked='checked'/>";
+	// Check if a radio maintains it's value
+	// after being appended to the DOM
+	input = document.createElement("input");
+	input.value = "t";
+	input.setAttribute("type", "radio");
+	support.radioValue = input.value === "t";
 
-	var fragment = document.createDocumentFragment();
+	input.setAttribute("checked", "checked");
+	div.appendChild( input );
+	fragment = document.createDocumentFragment();
 	fragment.appendChild( div.firstChild );
 
 	// WebKit doesn't clone checked state correctly in fragments
-	jQuery.support.checkClone = fragment.cloneNode(true).cloneNode(true).lastChild.checked;
+	support.checkClone = fragment.cloneNode( true ).cloneNode( true ).lastChild.checked;
+
+	div.innerHTML = "";
 
 	// Figure out if the W3C box model works as expected
-	// document.body must exist before we can do this
-	jQuery(function() {
-		var div = document.createElement("div");
-		div.style.width = div.style.paddingLeft = "1px";
+	div.style.width = div.style.paddingLeft = "1px";
 
-		document.body.appendChild( div );
-		jQuery.boxModel = jQuery.support.boxModel = div.offsetWidth === 2;
-		document.body.removeChild( div ).style.display = 'none';
+	body = document.getElementsByTagName( "body" )[ 0 ];
+	// We use our own, invisible, body unless the body is already present
+	// in which case we use a div (#9239)
+	testElement = document.createElement( body ? "div" : "body" );
+	testElementStyle = {
+		visibility: "hidden",
+		width: 0,
+		height: 0,
+		border: 0,
+		margin: 0,
+		background: "none"
+	};
+	if ( body ) {
+		jQuery.extend( testElementStyle, {
+			position: "absolute",
+			left: "-1000px",
+			top: "-1000px"
+		});
+	}
+	for ( i in testElementStyle ) {
+		testElement.style[ i ] = testElementStyle[ i ];
+	}
+	testElement.appendChild( div );
+	testElementParent = body || documentElement;
+	testElementParent.insertBefore( testElement, testElementParent.firstChild );
 
-		div = null;
-	});
+	// Check if a disconnected checkbox will retain its checked
+	// value of true after appended to the DOM (IE6/7)
+	support.appendChecked = input.checked;
+
+	support.boxModel = div.offsetWidth === 2;
+
+	if ( "zoom" in div.style ) {
+		// Check if natively block-level elements act like inline-block
+		// elements when setting their display to 'inline' and giving
+		// them layout
+		// (IE < 8 does this)
+		div.style.display = "inline";
+		div.style.zoom = 1;
+		support.inlineBlockNeedsLayout = ( div.offsetWidth === 2 );
+
+		// Check if elements with layout shrink-wrap their children
+		// (IE 6 does this)
+		div.style.display = "";
+		div.innerHTML = "<div style='width:4px;'></div>";
+		support.shrinkWrapBlocks = ( div.offsetWidth !== 2 );
+	}
+
+	div.innerHTML = "<table><tr><td style='padding:0;border:0;display:none'></td><td>t</td></tr></table>";
+	tds = div.getElementsByTagName( "td" );
+
+	// Check if table cells still have offsetWidth/Height when they are set
+	// to display:none and there are still other visible table cells in a
+	// table row; if so, offsetWidth/Height are not reliable for use when
+	// determining if an element has been hidden directly using
+	// display:none (it is still safe to use offsets if a parent element is
+	// hidden; don safety goggles and see bug #4512 for more information).
+	// (only IE 8 fails this test)
+	isSupported = ( tds[ 0 ].offsetHeight === 0 );
+
+	tds[ 0 ].style.display = "";
+	tds[ 1 ].style.display = "none";
+
+	// Check if empty table cells still have offsetWidth/Height
+	// (IE < 8 fail this test)
+	support.reliableHiddenOffsets = isSupported && ( tds[ 0 ].offsetHeight === 0 );
+	div.innerHTML = "";
+
+	// Check if div with explicit width and no margin-right incorrectly
+	// gets computed margin-right based on width of container. For more
+	// info see bug #3333
+	// Fails in WebKit before Feb 2011 nightlies
+	// WebKit Bug 13343 - getComputedStyle returns wrong value for margin-right
+	if ( document.defaultView && document.defaultView.getComputedStyle ) {
+		marginDiv = document.createElement( "div" );
+		marginDiv.style.width = "0";
+		marginDiv.style.marginRight = "0";
+		div.appendChild( marginDiv );
+		support.reliableMarginRight =
+			( parseInt( ( document.defaultView.getComputedStyle( marginDiv, null ) || { marginRight: 0 } ).marginRight, 10 ) || 0 ) === 0;
+	}
+
+	// Remove the body element we added
+	testElement.innerHTML = "";
+	testElementParent.removeChild( testElement );
 
 	// Technique from Juriy Zaytsev
 	// http://thinkweb2.com/projects/prototype/detecting-event-support-without-browser-sniffing/
-	var eventSupported = function( eventName ) { 
-		var el = document.createElement("div"); 
-		eventName = "on" + eventName; 
+	// We only care about the case where non-standard event systems
+	// are used, namely in IE. Short-circuiting here helps us to
+	// avoid an eval call (in setAttribute) which can cause CSP
+	// to go haywire. See: https://developer.mozilla.org/en/Security/CSP
+	if ( div.attachEvent ) {
+		for( i in {
+			submit: 1,
+			change: 1,
+			focusin: 1
+		} ) {
+			eventName = "on" + i;
+			isSupported = ( eventName in div );
+			if ( !isSupported ) {
+				div.setAttribute( eventName, "return;" );
+				isSupported = ( typeof div[ eventName ] === "function" );
+			}
+			support[ i + "Bubbles" ] = isSupported;
+		}
+	}
 
-		var isSupported = (eventName in el); 
-		if ( !isSupported ) { 
-			el.setAttribute(eventName, "return;"); 
-			isSupported = typeof el[eventName] === "function"; 
-		} 
-		el = null; 
+	// Null connected elements to avoid leaks in IE
+	testElement = fragment = select = opt = body = marginDiv = div = input = null;
 
-		return isSupported; 
-	};
-	
-	jQuery.support.submitBubbles = eventSupported("submit");
-	jQuery.support.changeBubbles = eventSupported("change");
-
-	// release memory in IE
-	root = script = div = all = a = null;
+	return support;
 })();
 
-jQuery.props = {
-	"for": "htmlFor",
-	"class": "className",
-	readonly: "readOnly",
-	maxlength: "maxLength",
-	cellspacing: "cellSpacing",
-	rowspan: "rowSpan",
-	colspan: "colSpan",
-	tabindex: "tabIndex",
-	usemap: "useMap",
-	frameborder: "frameBorder"
-};
-var expando = "jQuery" + now(), uuid = 0, windowData = {};
+// Keep track of boxModel
+jQuery.boxModel = jQuery.support.boxModel;
+
+
+
+
+var rbrace = /^(?:\{.*\}|\[.*\])$/,
+	rmultiDash = /([A-Z])/g;
 
 jQuery.extend({
 	cache: {},
-	
-	expando:expando,
+
+	// Please use with caution
+	uuid: 0,
+
+	// Unique for each copy of jQuery on the page
+	// Non-digits removed to match rinlinejQuery
+	expando: "jQuery" + ( jQuery.fn.jquery + Math.random() ).replace( /\D/g, "" ),
 
 	// The following elements throw uncatchable exceptions if you
 	// attempt to add expando properties to them.
 	noData: {
 		"embed": true,
-		"object": true,
+		// Ban all objects except for Flash (which handle expandos)
+		"object": "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000",
 		"applet": true
 	},
 
-	data: function( elem, name, data ) {
-		if ( elem.nodeName && jQuery.noData[elem.nodeName.toLowerCase()] ) {
+	hasData: function( elem ) {
+		elem = elem.nodeType ? jQuery.cache[ elem[jQuery.expando] ] : elem[ jQuery.expando ];
+
+		return !!elem && !isEmptyDataObject( elem );
+	},
+
+	data: function( elem, name, data, pvt /* Internal Use Only */ ) {
+		if ( !jQuery.acceptData( elem ) ) {
 			return;
 		}
 
-		elem = elem == window ?
-			windowData :
-			elem;
+		var thisCache, ret,
+			internalKey = jQuery.expando,
+			getByName = typeof name === "string",
 
-		var id = elem[ expando ], cache = jQuery.cache, thisCache;
+			// We have to handle DOM nodes and JS objects differently because IE6-7
+			// can't GC object references properly across the DOM-JS boundary
+			isNode = elem.nodeType,
 
-		if ( !id && typeof name === "string" && data === undefined ) {
-			return null;
+			// Only DOM nodes need the global jQuery cache; JS object data is
+			// attached directly to the object so GC can occur automatically
+			cache = isNode ? jQuery.cache : elem,
+
+			// Only defining an ID for JS objects if its cache already exists allows
+			// the code to shortcut on the same path as a DOM node with no cache
+			id = isNode ? elem[ jQuery.expando ] : elem[ jQuery.expando ] && jQuery.expando;
+
+		// Avoid doing any more work than we need to when trying to get data on an
+		// object that has no data at all
+		if ( (!id || (pvt && id && (cache[ id ] && !cache[ id ][ internalKey ]))) && getByName && data === undefined ) {
+			return;
 		}
 
-		// Compute a unique ID for the element
-		if ( !id ) { 
-			id = ++uuid;
+		if ( !id ) {
+			// Only DOM nodes need a new unique ID for each element since their data
+			// ends up in the global cache
+			if ( isNode ) {
+				elem[ jQuery.expando ] = id = ++jQuery.uuid;
+			} else {
+				id = jQuery.expando;
+			}
 		}
 
-		// Avoid generating a new cache unless none exists and we
-		// want to manipulate it.
-		if ( typeof name === "object" ) {
-			elem[ expando ] = id;
-			thisCache = cache[ id ] = jQuery.extend(true, {}, name);
-
-		} else if ( !cache[ id ] ) {
-			elem[ expando ] = id;
+		if ( !cache[ id ] ) {
 			cache[ id ] = {};
+
+			// TODO: This is a hack for 1.5 ONLY. Avoids exposing jQuery
+			// metadata on plain JS objects when the object is serialized using
+			// JSON.stringify
+			if ( !isNode ) {
+				cache[ id ].toJSON = jQuery.noop;
+			}
+		}
+
+		// An object can be passed to jQuery.data instead of a key/value pair; this gets
+		// shallow copied over onto the existing cache
+		if ( typeof name === "object" || typeof name === "function" ) {
+			if ( pvt ) {
+				cache[ id ][ internalKey ] = jQuery.extend(cache[ id ][ internalKey ], name);
+			} else {
+				cache[ id ] = jQuery.extend(cache[ id ], name);
+			}
 		}
 
 		thisCache = cache[ id ];
 
-		// Prevent overriding the named cache with undefined values
-		if ( data !== undefined ) {
-			thisCache[ name ] = data;
+		// Internal jQuery data is stored in a separate object inside the object's data
+		// cache in order to avoid key collisions between internal data and user-defined
+		// data
+		if ( pvt ) {
+			if ( !thisCache[ internalKey ] ) {
+				thisCache[ internalKey ] = {};
+			}
+
+			thisCache = thisCache[ internalKey ];
 		}
 
-		return typeof name === "string" ? thisCache[ name ] : thisCache;
+		if ( data !== undefined ) {
+			thisCache[ jQuery.camelCase( name ) ] = data;
+		}
+
+		// TODO: This is a hack for 1.5 ONLY. It will be removed in 1.6. Users should
+		// not attempt to inspect the internal events object using jQuery.data, as this
+		// internal data object is undocumented and subject to change.
+		if ( name === "events" && !thisCache[name] ) {
+			return thisCache[ internalKey ] && thisCache[ internalKey ].events;
+		}
+
+		// Check for both converted-to-camel and non-converted data property names
+		// If a data property was specified
+		if ( getByName ) {
+
+			// First Try to find as-is property data
+			ret = thisCache[ name ];
+
+			// Test for null|undefined property data
+			if ( ret == null ) {
+
+				// Try to find the camelCased property
+				ret = thisCache[ jQuery.camelCase( name ) ];
+			}
+		} else {
+			ret = thisCache;
+		}
+
+		return ret;
 	},
 
-	removeData: function( elem, name ) {
-		if ( elem.nodeName && jQuery.noData[elem.nodeName.toLowerCase()] ) {
+	removeData: function( elem, name, pvt /* Internal Use Only */ ) {
+		if ( !jQuery.acceptData( elem ) ) {
 			return;
 		}
 
-		elem = elem == window ?
-			windowData :
-			elem;
+		var thisCache,
 
-		var id = elem[ expando ], cache = jQuery.cache, thisCache = cache[ id ];
+			// Reference to internal data cache key
+			internalKey = jQuery.expando,
 
-		// If we want to remove a specific section of the element's data
+			isNode = elem.nodeType,
+
+			// See jQuery.data for more information
+			cache = isNode ? jQuery.cache : elem,
+
+			// See jQuery.data for more information
+			id = isNode ? elem[ jQuery.expando ] : jQuery.expando;
+
+		// If there is already no cache entry for this object, there is no
+		// purpose in continuing
+		if ( !cache[ id ] ) {
+			return;
+		}
+
 		if ( name ) {
+
+			thisCache = pvt ? cache[ id ][ internalKey ] : cache[ id ];
+
 			if ( thisCache ) {
-				// Remove the section of cache data
+
+				// Support interoperable removal of hyphenated or camelcased keys
+				if ( !thisCache[ name ] ) {
+					name = jQuery.camelCase( name );
+				}
+
 				delete thisCache[ name ];
 
-				// If we've removed all the data, remove the element's cache
-				if ( jQuery.isEmptyObject(thisCache) ) {
-					jQuery.removeData( elem );
+				// If there is no data left in the cache, we want to continue
+				// and let the cache object itself get destroyed
+				if ( !isEmptyDataObject(thisCache) ) {
+					return;
 				}
 			}
+		}
 
-		// Otherwise, we want to remove all of the element's data
+		// See jQuery.data for more information
+		if ( pvt ) {
+			delete cache[ id ][ internalKey ];
+
+			// Don't destroy the parent cache unless the internal data object
+			// had been the only thing left in it
+			if ( !isEmptyDataObject(cache[ id ]) ) {
+				return;
+			}
+		}
+
+		var internalCache = cache[ id ][ internalKey ];
+
+		// Browsers that fail expando deletion also refuse to delete expandos on
+		// the window, but it will allow it on all other JS objects; other browsers
+		// don't care
+		// Ensure that `cache` is not a window object #10080
+		if ( jQuery.support.deleteExpando || !cache.setInterval ) {
+			delete cache[ id ];
 		} else {
-			if ( jQuery.support.deleteExpando ) {
-				delete elem[ jQuery.expando ];
+			cache[ id ] = null;
+		}
 
-			} else if ( elem.removeAttribute ) {
-				elem.removeAttribute( jQuery.expando );
+		// We destroyed the entire user cache at once because it's faster than
+		// iterating through each key, but we need to continue to persist internal
+		// data if it existed
+		if ( internalCache ) {
+			cache[ id ] = {};
+			// TODO: This is a hack for 1.5 ONLY. Avoids exposing jQuery
+			// metadata on plain JS objects when the object is serialized using
+			// JSON.stringify
+			if ( !isNode ) {
+				cache[ id ].toJSON = jQuery.noop;
 			}
 
-			// Completely remove the data cache
-			delete cache[ id ];
+			cache[ id ][ internalKey ] = internalCache;
+
+		// Otherwise, we need to eliminate the expando on the node to avoid
+		// false lookups in the cache for entries that no longer exist
+		} else if ( isNode ) {
+			// IE does not allow us to delete expando properties from nodes,
+			// nor does it have a removeAttribute function on Document nodes;
+			// we must handle all of these cases
+			if ( jQuery.support.deleteExpando ) {
+				delete elem[ jQuery.expando ];
+			} else if ( elem.removeAttribute ) {
+				elem.removeAttribute( jQuery.expando );
+			} else {
+				elem[ jQuery.expando ] = null;
+			}
 		}
+	},
+
+	// For internal use only.
+	_data: function( elem, name, data ) {
+		return jQuery.data( elem, name, data, true );
+	},
+
+	// A method for determining if a DOM node can handle the data expando
+	acceptData: function( elem ) {
+		if ( elem.nodeName ) {
+			var match = jQuery.noData[ elem.nodeName.toLowerCase() ];
+
+			if ( match ) {
+				return !(match === true || elem.getAttribute("classid") !== match);
+			}
+		}
+
+		return true;
 	}
 });
 
 jQuery.fn.extend({
 	data: function( key, value ) {
-		if ( typeof key === "undefined" && this.length ) {
-			return jQuery.data( this[0] );
+		var data = null;
+
+		if ( typeof key === "undefined" ) {
+			if ( this.length ) {
+				data = jQuery.data( this[0] );
+
+				if ( this[0].nodeType === 1 ) {
+			    var attr = this[0].attributes, name;
+					for ( var i = 0, l = attr.length; i < l; i++ ) {
+						name = attr[i].name;
+
+						if ( name.indexOf( "data-" ) === 0 ) {
+							name = jQuery.camelCase( name.substring(5) );
+
+							dataAttr( this[0], name, data[ name ] );
+						}
+					}
+				}
+			}
+
+			return data;
 
 		} else if ( typeof key === "object" ) {
 			return this.each(function() {
@@ -1092,17 +1694,26 @@ jQuery.fn.extend({
 		parts[1] = parts[1] ? "." + parts[1] : "";
 
 		if ( value === undefined ) {
-			var data = this.triggerHandler("getData" + parts[1] + "!", [parts[0]]);
+			data = this.triggerHandler("getData" + parts[1] + "!", [parts[0]]);
 
+			// Try to fetch any internally stored data first
 			if ( data === undefined && this.length ) {
 				data = jQuery.data( this[0], key );
+				data = dataAttr( this[0], key, data );
 			}
+
 			return data === undefined && parts[1] ?
 				this.data( parts[0] ) :
 				data;
+
 		} else {
-			return this.trigger("setData" + parts[1] + "!", [parts[0], value]).each(function() {
+			return this.each(function() {
+				var $this = jQuery( this ),
+					args = [ parts[0], value ];
+
+				$this.triggerHandler( "setData" + parts[1] + "!", args );
 				jQuery.data( this, key, value );
+				$this.triggerHandler( "changeData" + parts[1] + "!", args );
 			});
 		}
 	},
@@ -1113,34 +1724,123 @@ jQuery.fn.extend({
 		});
 	}
 });
-jQuery.extend({
-	queue: function( elem, type, data ) {
-		if ( !elem ) {
-			return;
-		}
 
-		type = (type || "fx") + "queue";
-		var q = jQuery.data( elem, type );
+function dataAttr( elem, key, data ) {
+	// If nothing was found internally, try to fetch any
+	// data from the HTML5 data-* attribute
+	if ( data === undefined && elem.nodeType === 1 ) {
 
-		// Speed up dequeue by getting out quickly if this is just a lookup
-		if ( !data ) {
-			return q || [];
-		}
+		var name = "data-" + key.replace( rmultiDash, "-$1" ).toLowerCase();
 
-		if ( !q || jQuery.isArray(data) ) {
-			q = jQuery.data( elem, type, jQuery.makeArray(data) );
+		data = elem.getAttribute( name );
+
+		if ( typeof data === "string" ) {
+			try {
+				data = data === "true" ? true :
+				data === "false" ? false :
+				data === "null" ? null :
+				!jQuery.isNaN( data ) ? parseFloat( data ) :
+					rbrace.test( data ) ? jQuery.parseJSON( data ) :
+					data;
+			} catch( e ) {}
+
+			// Make sure we set the data so it isn't changed later
+			jQuery.data( elem, key, data );
 
 		} else {
-			q.push( data );
+			data = undefined;
 		}
+	}
 
-		return q;
+	return data;
+}
+
+// TODO: This is a hack for 1.5 ONLY to allow objects with a single toJSON
+// property to be considered empty objects; this property always exists in
+// order to make sure JSON.stringify does not expose internal metadata
+function isEmptyDataObject( obj ) {
+	for ( var name in obj ) {
+		if ( name !== "toJSON" ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+
+
+function handleQueueMarkDefer( elem, type, src ) {
+	var deferDataKey = type + "defer",
+		queueDataKey = type + "queue",
+		markDataKey = type + "mark",
+		defer = jQuery.data( elem, deferDataKey, undefined, true );
+	if ( defer &&
+		( src === "queue" || !jQuery.data( elem, queueDataKey, undefined, true ) ) &&
+		( src === "mark" || !jQuery.data( elem, markDataKey, undefined, true ) ) ) {
+		// Give room for hard-coded callbacks to fire first
+		// and eventually mark/queue something else on the element
+		setTimeout( function() {
+			if ( !jQuery.data( elem, queueDataKey, undefined, true ) &&
+				!jQuery.data( elem, markDataKey, undefined, true ) ) {
+				jQuery.removeData( elem, deferDataKey, true );
+				defer.resolve();
+			}
+		}, 0 );
+	}
+}
+
+jQuery.extend({
+
+	_mark: function( elem, type ) {
+		if ( elem ) {
+			type = (type || "fx") + "mark";
+			jQuery.data( elem, type, (jQuery.data(elem,type,undefined,true) || 0) + 1, true );
+		}
+	},
+
+	_unmark: function( force, elem, type ) {
+		if ( force !== true ) {
+			type = elem;
+			elem = force;
+			force = false;
+		}
+		if ( elem ) {
+			type = type || "fx";
+			var key = type + "mark",
+				count = force ? 0 : ( (jQuery.data( elem, key, undefined, true) || 1 ) - 1 );
+			if ( count ) {
+				jQuery.data( elem, key, count, true );
+			} else {
+				jQuery.removeData( elem, key, true );
+				handleQueueMarkDefer( elem, type, "mark" );
+			}
+		}
+	},
+
+	queue: function( elem, type, data ) {
+		if ( elem ) {
+			type = (type || "fx") + "queue";
+			var q = jQuery.data( elem, type, undefined, true );
+			// Speed up dequeue by getting out quickly if this is just a lookup
+			if ( data ) {
+				if ( !q || jQuery.isArray(data) ) {
+					q = jQuery.data( elem, type, jQuery.makeArray(data), true );
+				} else {
+					q.push( data );
+				}
+			}
+			return q || [];
+		}
 	},
 
 	dequeue: function( elem, type ) {
 		type = type || "fx";
 
-		var queue = jQuery.queue( elem, type ), fn = queue.shift();
+		var queue = jQuery.queue( elem, type ),
+			fn = queue.shift(),
+			defer;
 
 		// If the fx queue is dequeued, always remove the progress sentinel
 		if ( fn === "inprogress" ) {
@@ -1158,6 +1858,11 @@ jQuery.extend({
 				jQuery.dequeue(elem, type);
 			});
 		}
+
+		if ( !queue.length ) {
+			jQuery.removeData( elem, type + "queue", true );
+			handleQueueMarkDefer( elem, type, "queue" );
+		}
 	}
 });
 
@@ -1171,7 +1876,7 @@ jQuery.fn.extend({
 		if ( data === undefined ) {
 			return jQuery.queue( this[0], type );
 		}
-		return this.each(function( i, elem ) {
+		return this.each(function() {
 			var queue = jQuery.queue( this, type, data );
 
 			if ( type === "fx" && queue[0] !== "inprogress" ) {
@@ -1184,7 +1889,6 @@ jQuery.fn.extend({
 			jQuery.dequeue( this, type );
 		});
 	},
-
 	// Based off of the plugin by Clint Helfers, with permission.
 	// http://blindsignals.com/index.php/2009/07/jquery-delay/
 	delay: function( time, type ) {
@@ -1198,57 +1902,108 @@ jQuery.fn.extend({
 			}, time );
 		});
 	},
-
 	clearQueue: function( type ) {
 		return this.queue( type || "fx", [] );
+	},
+	// Get a promise resolved when queues of a certain type
+	// are emptied (fx is the type by default)
+	promise: function( type, object ) {
+		if ( typeof type !== "string" ) {
+			object = type;
+			type = undefined;
+		}
+		type = type || "fx";
+		var defer = jQuery.Deferred(),
+			elements = this,
+			i = elements.length,
+			count = 1,
+			deferDataKey = type + "defer",
+			queueDataKey = type + "queue",
+			markDataKey = type + "mark",
+			tmp;
+		function resolve() {
+			if ( !( --count ) ) {
+				defer.resolveWith( elements, [ elements ] );
+			}
+		}
+		while( i-- ) {
+			if (( tmp = jQuery.data( elements[ i ], deferDataKey, undefined, true ) ||
+					( jQuery.data( elements[ i ], queueDataKey, undefined, true ) ||
+						jQuery.data( elements[ i ], markDataKey, undefined, true ) ) &&
+					jQuery.data( elements[ i ], deferDataKey, jQuery._Deferred(), true ) )) {
+				count++;
+				tmp.done( resolve );
+			}
+		}
+		resolve();
+		return defer.promise();
 	}
 });
-var rclass = /[\n\t]/g,
+
+
+
+
+var rclass = /[\n\t\r]/g,
 	rspace = /\s+/,
 	rreturn = /\r/g,
-	rspecialurl = /href|src|style/,
-	rtype = /(button|input)/i,
-	rfocusable = /(button|input|object|select|textarea)/i,
-	rclickable = /^(a|area)$/i,
-	rradiocheck = /radio|checkbox/;
+	rtype = /^(?:button|input)$/i,
+	rfocusable = /^(?:button|input|object|select|textarea)$/i,
+	rclickable = /^a(?:rea)?$/i,
+	rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i,
+	nodeHook, boolHook;
 
 jQuery.fn.extend({
 	attr: function( name, value ) {
-		return access( this, name, value, true, jQuery.attr );
+		return jQuery.access( this, name, value, true, jQuery.attr );
 	},
 
-	removeAttr: function( name, fn ) {
-		return this.each(function(){
-			jQuery.attr( this, name, "" );
-			if ( this.nodeType === 1 ) {
-				this.removeAttribute( name );
-			}
+	removeAttr: function( name ) {
+		return this.each(function() {
+			jQuery.removeAttr( this, name );
+		});
+	},
+	
+	prop: function( name, value ) {
+		return jQuery.access( this, name, value, true, jQuery.prop );
+	},
+	
+	removeProp: function( name ) {
+		name = jQuery.propFix[ name ] || name;
+		return this.each(function() {
+			// try/catch handles cases where IE balks (such as removing a property on window)
+			try {
+				this[ name ] = undefined;
+				delete this[ name ];
+			} catch( e ) {}
 		});
 	},
 
 	addClass: function( value ) {
-		if ( jQuery.isFunction(value) ) {
-			return this.each(function(i) {
-				var self = jQuery(this);
-				self.addClass( value.call(this, i, self.attr("class")) );
+		var classNames, i, l, elem,
+			setClass, c, cl;
+
+		if ( jQuery.isFunction( value ) ) {
+			return this.each(function( j ) {
+				jQuery( this ).addClass( value.call(this, j, this.className) );
 			});
 		}
 
 		if ( value && typeof value === "string" ) {
-			var classNames = (value || "").split( rspace );
+			classNames = value.split( rspace );
 
-			for ( var i = 0, l = this.length; i < l; i++ ) {
-				var elem = this[i];
+			for ( i = 0, l = this.length; i < l; i++ ) {
+				elem = this[ i ];
 
 				if ( elem.nodeType === 1 ) {
-					if ( !elem.className ) {
+					if ( !elem.className && classNames.length === 1 ) {
 						elem.className = value;
 
 					} else {
-						var className = " " + elem.className + " ", setClass = elem.className;
-						for ( var c = 0, cl = classNames.length; c < cl; c++ ) {
-							if ( className.indexOf( " " + classNames[c] + " " ) < 0 ) {
-								setClass += " " + classNames[c];
+						setClass = " " + elem.className + " ";
+
+						for ( c = 0, cl = classNames.length; c < cl; c++ ) {
+							if ( !~setClass.indexOf( " " + classNames[ c ] + " " ) ) {
+								setClass += classNames[ c ] + " ";
 							}
 						}
 						elem.className = jQuery.trim( setClass );
@@ -1261,24 +2016,25 @@ jQuery.fn.extend({
 	},
 
 	removeClass: function( value ) {
-		if ( jQuery.isFunction(value) ) {
-			return this.each(function(i) {
-				var self = jQuery(this);
-				self.removeClass( value.call(this, i, self.attr("class")) );
+		var classNames, i, l, elem, className, c, cl;
+
+		if ( jQuery.isFunction( value ) ) {
+			return this.each(function( j ) {
+				jQuery( this ).removeClass( value.call(this, j, this.className) );
 			});
 		}
 
 		if ( (value && typeof value === "string") || value === undefined ) {
-			var classNames = (value || "").split(rspace);
+			classNames = (value || "").split( rspace );
 
-			for ( var i = 0, l = this.length; i < l; i++ ) {
-				var elem = this[i];
+			for ( i = 0, l = this.length; i < l; i++ ) {
+				elem = this[ i ];
 
 				if ( elem.nodeType === 1 && elem.className ) {
 					if ( value ) {
-						var className = (" " + elem.className + " ").replace(rclass, " ");
-						for ( var c = 0, cl = classNames.length; c < cl; c++ ) {
-							className = className.replace(" " + classNames[c] + " ", " ");
+						className = (" " + elem.className + " ").replace( rclass, " " );
+						for ( c = 0, cl = classNames.length; c < cl; c++ ) {
+							className = className.replace(" " + classNames[ c ] + " ", " ");
 						}
 						elem.className = jQuery.trim( className );
 
@@ -1293,19 +2049,21 @@ jQuery.fn.extend({
 	},
 
 	toggleClass: function( value, stateVal ) {
-		var type = typeof value, isBool = typeof stateVal === "boolean";
+		var type = typeof value,
+			isBool = typeof stateVal === "boolean";
 
 		if ( jQuery.isFunction( value ) ) {
-			return this.each(function(i) {
-				var self = jQuery(this);
-				self.toggleClass( value.call(this, i, self.attr("class"), stateVal), stateVal );
+			return this.each(function( i ) {
+				jQuery( this ).toggleClass( value.call(this, i, this.className, stateVal), stateVal );
 			});
 		}
 
 		return this.each(function() {
 			if ( type === "string" ) {
 				// toggle individual class names
-				var className, i = 0, self = jQuery(this),
+				var className,
+					i = 0,
+					self = jQuery( this ),
 					state = stateVal,
 					classNames = value.split( rspace );
 
@@ -1318,11 +2076,11 @@ jQuery.fn.extend({
 			} else if ( type === "undefined" || type === "boolean" ) {
 				if ( this.className ) {
 					// store className if set
-					jQuery.data( this, "__className__", this.className );
+					jQuery._data( this, "__className__", this.className );
 				}
 
 				// toggle whole className
-				this.className = this.className || value === false ? "" : jQuery.data( this, "__className__" ) || "";
+				this.className = this.className || value === false ? "" : jQuery._data( this, "__className__" ) || "";
 			}
 		});
 	},
@@ -1330,7 +2088,7 @@ jQuery.fn.extend({
 	hasClass: function( selector ) {
 		var className = " " + selector + " ";
 		for ( var i = 0, l = this.length; i < l; i++ ) {
-			if ( (" " + this[i].className + " ").replace(rclass, " ").indexOf( className ) > -1 ) {
+			if ( this[i].nodeType === 1 && (" " + this[i].className + " ").replace(rclass, " ").indexOf( className ) > -1 ) {
 				return true;
 			}
 		}
@@ -1339,95 +2097,59 @@ jQuery.fn.extend({
 	},
 
 	val: function( value ) {
-		if ( value === undefined ) {
-			var elem = this[0];
-
+		var hooks, ret,
+			elem = this[0];
+		
+		if ( !arguments.length ) {
 			if ( elem ) {
-				if ( jQuery.nodeName( elem, "option" ) ) {
-					return (elem.attributes.value || {}).specified ? elem.value : elem.text;
+				hooks = jQuery.valHooks[ elem.nodeName.toLowerCase() ] || jQuery.valHooks[ elem.type ];
+
+				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
+					return ret;
 				}
 
-				// We need to handle select boxes special
-				if ( jQuery.nodeName( elem, "select" ) ) {
-					var index = elem.selectedIndex,
-						values = [],
-						options = elem.options,
-						one = elem.type === "select-one";
+				ret = elem.value;
 
-					// Nothing was selected
-					if ( index < 0 ) {
-						return null;
-					}
-
-					// Loop through all the selected options
-					for ( var i = one ? index : 0, max = one ? index + 1 : options.length; i < max; i++ ) {
-						var option = options[ i ];
-
-						if ( option.selected ) {
-							// Get the specifc value for the option
-							value = jQuery(option).val();
-
-							// We don't need an array for one selects
-							if ( one ) {
-								return value;
-							}
-
-							// Multi-Selects return an array
-							values.push( value );
-						}
-					}
-
-					return values;
-				}
-
-				// Handle the case where in Webkit "" is returned instead of "on" if a value isn't specified
-				if ( rradiocheck.test( elem.type ) && !jQuery.support.checkOn ) {
-					return elem.getAttribute("value") === null ? "on" : elem.value;
-				}
-				
-
-				// Everything else, we just grab the value
-				return (elem.value || "").replace(rreturn, "");
-
+				return typeof ret === "string" ? 
+					// handle most common string cases
+					ret.replace(rreturn, "") : 
+					// handle cases where value is null/undef or number
+					ret == null ? "" : ret;
 			}
 
 			return undefined;
 		}
 
-		var isFunction = jQuery.isFunction(value);
+		var isFunction = jQuery.isFunction( value );
 
-		return this.each(function(i) {
-			var self = jQuery(this), val = value;
+		return this.each(function( i ) {
+			var self = jQuery(this), val;
 
 			if ( this.nodeType !== 1 ) {
 				return;
 			}
 
 			if ( isFunction ) {
-				val = value.call(this, i, self.val());
-			}
-
-			// Typecast each time if the value is a Function and the appended
-			// value is therefore different each time.
-			if ( typeof val === "number" ) {
-				val += "";
-			}
-
-			if ( jQuery.isArray(val) && rradiocheck.test( this.type ) ) {
-				this.checked = jQuery.inArray( self.val(), val ) >= 0;
-
-			} else if ( jQuery.nodeName( this, "select" ) ) {
-				var values = jQuery.makeArray(val);
-
-				jQuery( "option", this ).each(function() {
-					this.selected = jQuery.inArray( jQuery(this).val(), values ) >= 0;
-				});
-
-				if ( !values.length ) {
-					this.selectedIndex = -1;
-				}
-
+				val = value.call( this, i, self.val() );
 			} else {
+				val = value;
+			}
+
+			// Treat null/undefined as ""; convert numbers to string
+			if ( val == null ) {
+				val = "";
+			} else if ( typeof val === "number" ) {
+				val += "";
+			} else if ( jQuery.isArray( val ) ) {
+				val = jQuery.map(val, function ( value ) {
+					return value == null ? "" : value + "";
+				});
+			}
+
+			hooks = jQuery.valHooks[ this.nodeName.toLowerCase() ] || jQuery.valHooks[ this.type ];
+
+			// If set returns undefined, fall back to normal setting
+			if ( !hooks || !("set" in hooks) || hooks.set( this, val, "value" ) === undefined ) {
 				this.value = val;
 			}
 		});
@@ -1435,6 +2157,72 @@ jQuery.fn.extend({
 });
 
 jQuery.extend({
+	valHooks: {
+		option: {
+			get: function( elem ) {
+				// attributes.value is undefined in Blackberry 4.7 but
+				// uses .value. See #6932
+				var val = elem.attributes.value;
+				return !val || val.specified ? elem.value : elem.text;
+			}
+		},
+		select: {
+			get: function( elem ) {
+				var value,
+					index = elem.selectedIndex,
+					values = [],
+					options = elem.options,
+					one = elem.type === "select-one";
+
+				// Nothing was selected
+				if ( index < 0 ) {
+					return null;
+				}
+
+				// Loop through all the selected options
+				for ( var i = one ? index : 0, max = one ? index + 1 : options.length; i < max; i++ ) {
+					var option = options[ i ];
+
+					// Don't return options that are disabled or in a disabled optgroup
+					if ( option.selected && (jQuery.support.optDisabled ? !option.disabled : option.getAttribute("disabled") === null) &&
+							(!option.parentNode.disabled || !jQuery.nodeName( option.parentNode, "optgroup" )) ) {
+
+						// Get the specific value for the option
+						value = jQuery( option ).val();
+
+						// We don't need an array for one selects
+						if ( one ) {
+							return value;
+						}
+
+						// Multi-Selects return an array
+						values.push( value );
+					}
+				}
+
+				// Fixes Bug #2551 -- select.val() broken in IE after form.reset()
+				if ( one && !values.length && options.length ) {
+					return jQuery( options[ index ] ).val();
+				}
+
+				return values;
+			},
+
+			set: function( elem, value ) {
+				var values = jQuery.makeArray( value );
+
+				jQuery(elem).find("option").each(function() {
+					this.selected = jQuery.inArray( jQuery(this).val(), values ) >= 0;
+				});
+
+				if ( !values.length ) {
+					elem.selectedIndex = -1;
+				}
+				return values;
+			}
+		}
+	},
+
 	attrFn: {
 		val: true,
 		css: true,
@@ -1445,106 +2233,349 @@ jQuery.extend({
 		height: true,
 		offset: true
 	},
-		
+	
+	attrFix: {
+		// Always normalize to ensure hook usage
+		tabindex: "tabIndex"
+	},
+	
 	attr: function( elem, name, value, pass ) {
-		// don't set attributes on text and comment nodes
-		if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 ) {
+		var nType = elem.nodeType;
+		
+		// don't get/set attributes on text, comment and attribute nodes
+		if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
 			return undefined;
 		}
 
 		if ( pass && name in jQuery.attrFn ) {
-			return jQuery(elem)[name](value);
+			return jQuery( elem )[ name ]( value );
 		}
 
-		var notxml = elem.nodeType !== 1 || !jQuery.isXMLDoc( elem ),
-			// Whether we are setting (or getting)
-			set = value !== undefined;
+		// Fallback to prop when attributes are not supported
+		if ( !("getAttribute" in elem) ) {
+			return jQuery.prop( elem, name, value );
+		}
 
-		// Try to normalize/fix the name
-		name = notxml && jQuery.props[ name ] || name;
+		var ret, hooks,
+			notxml = nType !== 1 || !jQuery.isXMLDoc( elem );
 
-		// Only do all the following if this is a node (faster for style)
-		if ( elem.nodeType === 1 ) {
-			// These attributes require special treatment
-			var special = rspecialurl.test( name );
+		// Normalize the name if needed
+		if ( notxml ) {
+			name = jQuery.attrFix[ name ] || name;
 
-			// Safari mis-reports the default selected property of an option
-			// Accessing the parent's selectedIndex property fixes it
-			if ( name === "selected" && !jQuery.support.optSelected ) {
-				var parent = elem.parentNode;
-				if ( parent ) {
-					parent.selectedIndex;
-	
-					// Make sure that it also works with optgroups, see #5701
-					if ( parent.parentNode ) {
-						parent.parentNode.selectedIndex;
-					}
+			hooks = jQuery.attrHooks[ name ];
+
+			if ( !hooks ) {
+				// Use boolHook for boolean attributes
+				if ( rboolean.test( name ) ) {
+					hooks = boolHook;
+
+				// Use nodeHook if available( IE6/7 )
+				} else if ( nodeHook ) {
+					hooks = nodeHook;
 				}
 			}
+		}
 
-			// If applicable, access the attribute via the DOM 0 way
-			if ( name in elem && notxml && !special ) {
-				if ( set ) {
-					// We can't allow the type property to be changed (since it causes problems in IE)
-					if ( name === "type" && rtype.test( elem.nodeName ) && elem.parentNode ) {
-						jQuery.error( "type property can't be changed" );
-					}
+		if ( value !== undefined ) {
 
-					elem[ name ] = value;
-				}
+			if ( value === null ) {
+				jQuery.removeAttr( elem, name );
+				return undefined;
 
-				// browsers index elements by id/name on forms, give priority to attributes.
-				if ( jQuery.nodeName( elem, "form" ) && elem.getAttributeNode(name) ) {
-					return elem.getAttributeNode( name ).nodeValue;
-				}
+			} else if ( hooks && "set" in hooks && notxml && (ret = hooks.set( elem, value, name )) !== undefined ) {
+				return ret;
 
-				// elem.tabIndex doesn't always return the correct value when it hasn't been explicitly set
-				// http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
-				if ( name === "tabIndex" ) {
-					var attributeNode = elem.getAttributeNode( "tabIndex" );
-
-					return attributeNode && attributeNode.specified ?
-						attributeNode.value :
-						rfocusable.test( elem.nodeName ) || rclickable.test( elem.nodeName ) && elem.href ?
-							0 :
-							undefined;
-				}
-
-				return elem[ name ];
-			}
-
-			if ( !jQuery.support.style && notxml && name === "style" ) {
-				if ( set ) {
-					elem.style.cssText = "" + value;
-				}
-
-				return elem.style.cssText;
-			}
-
-			if ( set ) {
-				// convert the value to a string (all browsers do this but IE) see #1070
+			} else {
 				elem.setAttribute( name, "" + value );
+				return value;
 			}
 
-			var attr = !jQuery.support.hrefNormalized && notxml && special ?
-					// Some attributes require a special call on IE
-					elem.getAttribute( name, 2 ) :
-					elem.getAttribute( name );
+		} else if ( hooks && "get" in hooks && notxml && (ret = hooks.get( elem, name )) !== null ) {
+			return ret;
+
+		} else {
+
+			ret = elem.getAttribute( name );
 
 			// Non-existent attributes return null, we normalize to undefined
-			return attr === null ? undefined : attr;
+			return ret === null ?
+				undefined :
+				ret;
+		}
+	},
+
+	removeAttr: function( elem, name ) {
+		var propName;
+		if ( elem.nodeType === 1 ) {
+			name = jQuery.attrFix[ name ] || name;
+
+			jQuery.attr( elem, name, "" );
+			elem.removeAttribute( name );
+
+			// Set corresponding property to false for boolean attributes
+			if ( rboolean.test( name ) && (propName = jQuery.propFix[ name ] || name) in elem ) {
+				elem[ propName ] = false;
+			}
+		}
+	},
+
+	attrHooks: {
+		type: {
+			set: function( elem, value ) {
+				// We can't allow the type property to be changed (since it causes problems in IE)
+				if ( rtype.test( elem.nodeName ) && elem.parentNode ) {
+					jQuery.error( "type property can't be changed" );
+				} else if ( !jQuery.support.radioValue && value === "radio" && jQuery.nodeName(elem, "input") ) {
+					// Setting the type on a radio button after the value resets the value in IE6-9
+					// Reset value to it's default in case type is set after value
+					// This is for element creation
+					var val = elem.value;
+					elem.setAttribute( "type", value );
+					if ( val ) {
+						elem.value = val;
+					}
+					return value;
+				}
+			}
+		},
+		// Use the value property for back compat
+		// Use the nodeHook for button elements in IE6/7 (#1954)
+		value: {
+			get: function( elem, name ) {
+				if ( nodeHook && jQuery.nodeName( elem, "button" ) ) {
+					return nodeHook.get( elem, name );
+				}
+				return name in elem ?
+					elem.value :
+					null;
+			},
+			set: function( elem, value, name ) {
+				if ( nodeHook && jQuery.nodeName( elem, "button" ) ) {
+					return nodeHook.set( elem, value, name );
+				}
+				// Does not return so that setAttribute is also used
+				elem.value = value;
+			}
+		}
+	},
+
+	propFix: {
+		tabindex: "tabIndex",
+		readonly: "readOnly",
+		"for": "htmlFor",
+		"class": "className",
+		maxlength: "maxLength",
+		cellspacing: "cellSpacing",
+		cellpadding: "cellPadding",
+		rowspan: "rowSpan",
+		colspan: "colSpan",
+		usemap: "useMap",
+		frameborder: "frameBorder",
+		contenteditable: "contentEditable"
+	},
+	
+	prop: function( elem, name, value ) {
+		var nType = elem.nodeType;
+
+		// don't get/set properties on text, comment and attribute nodes
+		if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
+			return undefined;
 		}
 
-		// elem is actually elem.style ... set the style
-		// Using attr for specific style information is now deprecated. Use style instead.
-		return jQuery.style( elem, name, value );
+		var ret, hooks,
+			notxml = nType !== 1 || !jQuery.isXMLDoc( elem );
+
+		if ( notxml ) {
+			// Fix name and attach hooks
+			name = jQuery.propFix[ name ] || name;
+			hooks = jQuery.propHooks[ name ];
+		}
+
+		if ( value !== undefined ) {
+			if ( hooks && "set" in hooks && (ret = hooks.set( elem, value, name )) !== undefined ) {
+				return ret;
+
+			} else {
+				return (elem[ name ] = value);
+			}
+
+		} else {
+			if ( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== null ) {
+				return ret;
+
+			} else {
+				return elem[ name ];
+			}
+		}
+	},
+	
+	propHooks: {
+		tabIndex: {
+			get: function( elem ) {
+				// elem.tabIndex doesn't always return the correct value when it hasn't been explicitly set
+				// http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+				var attributeNode = elem.getAttributeNode("tabindex");
+
+				return attributeNode && attributeNode.specified ?
+					parseInt( attributeNode.value, 10 ) :
+					rfocusable.test( elem.nodeName ) || rclickable.test( elem.nodeName ) && elem.href ?
+						0 :
+						undefined;
+			}
+		}
 	}
 });
-var rnamespaces = /\.(.*)$/,
-	fcleanup = function( nm ) {
-		return nm.replace(/[^\w\s\.\|`]/g, function( ch ) {
-			return "\\" + ch;
+
+// Add the tabindex propHook to attrHooks for back-compat
+jQuery.attrHooks.tabIndex = jQuery.propHooks.tabIndex;
+
+// Hook for boolean attributes
+boolHook = {
+	get: function( elem, name ) {
+		// Align boolean attributes with corresponding properties
+		// Fall back to attribute presence where some booleans are not supported
+		var attrNode;
+		return jQuery.prop( elem, name ) === true || ( attrNode = elem.getAttributeNode( name ) ) && attrNode.nodeValue !== false ?
+			name.toLowerCase() :
+			undefined;
+	},
+	set: function( elem, value, name ) {
+		var propName;
+		if ( value === false ) {
+			// Remove boolean attributes when set to false
+			jQuery.removeAttr( elem, name );
+		} else {
+			// value is true since we know at this point it's type boolean and not false
+			// Set boolean attributes to the same name and set the DOM property
+			propName = jQuery.propFix[ name ] || name;
+			if ( propName in elem ) {
+				// Only set the IDL specifically if it already exists on the element
+				elem[ propName ] = true;
+			}
+
+			elem.setAttribute( name, name.toLowerCase() );
+		}
+		return name;
+	}
+};
+
+// IE6/7 do not support getting/setting some attributes with get/setAttribute
+if ( !jQuery.support.getSetAttribute ) {
+	
+	// Use this for any attribute in IE6/7
+	// This fixes almost every IE6/7 issue
+	nodeHook = jQuery.valHooks.button = {
+		get: function( elem, name ) {
+			var ret;
+			ret = elem.getAttributeNode( name );
+			// Return undefined if nodeValue is empty string
+			return ret && ret.nodeValue !== "" ?
+				ret.nodeValue :
+				undefined;
+		},
+		set: function( elem, value, name ) {
+			// Set the existing or create a new attribute node
+			var ret = elem.getAttributeNode( name );
+			if ( !ret ) {
+				ret = document.createAttribute( name );
+				elem.setAttributeNode( ret );
+			}
+			return (ret.nodeValue = value + "");
+		}
+	};
+
+	// Set width and height to auto instead of 0 on empty string( Bug #8150 )
+	// This is for removals
+	jQuery.each([ "width", "height" ], function( i, name ) {
+		jQuery.attrHooks[ name ] = jQuery.extend( jQuery.attrHooks[ name ], {
+			set: function( elem, value ) {
+				if ( value === "" ) {
+					elem.setAttribute( name, "auto" );
+					return value;
+				}
+			}
 		});
+	});
+}
+
+
+// Some attributes require a special call on IE
+if ( !jQuery.support.hrefNormalized ) {
+	jQuery.each([ "href", "src", "width", "height" ], function( i, name ) {
+		jQuery.attrHooks[ name ] = jQuery.extend( jQuery.attrHooks[ name ], {
+			get: function( elem ) {
+				var ret = elem.getAttribute( name, 2 );
+				return ret === null ? undefined : ret;
+			}
+		});
+	});
+}
+
+if ( !jQuery.support.style ) {
+	jQuery.attrHooks.style = {
+		get: function( elem ) {
+			// Return undefined in the case of empty string
+			// Normalize to lowercase since IE uppercases css property names
+			return elem.style.cssText.toLowerCase() || undefined;
+		},
+		set: function( elem, value ) {
+			return (elem.style.cssText = "" + value);
+		}
+	};
+}
+
+// Safari mis-reports the default selected property of an option
+// Accessing the parent's selectedIndex property fixes it
+if ( !jQuery.support.optSelected ) {
+	jQuery.propHooks.selected = jQuery.extend( jQuery.propHooks.selected, {
+		get: function( elem ) {
+			var parent = elem.parentNode;
+
+			if ( parent ) {
+				parent.selectedIndex;
+
+				// Make sure that it also works with optgroups, see #5701
+				if ( parent.parentNode ) {
+					parent.parentNode.selectedIndex;
+				}
+			}
+			return null;
+		}
+	});
+}
+
+// Radios and checkboxes getter/setter
+if ( !jQuery.support.checkOn ) {
+	jQuery.each([ "radio", "checkbox" ], function() {
+		jQuery.valHooks[ this ] = {
+			get: function( elem ) {
+				// Handle the case where in Webkit "" is returned instead of "on" if a value isn't specified
+				return elem.getAttribute("value") === null ? "on" : elem.value;
+			}
+		};
+	});
+}
+jQuery.each([ "radio", "checkbox" ], function() {
+	jQuery.valHooks[ this ] = jQuery.extend( jQuery.valHooks[ this ], {
+		set: function( elem, value ) {
+			if ( jQuery.isArray( value ) ) {
+				return (elem.checked = jQuery.inArray( jQuery(elem).val(), value ) >= 0);
+			}
+		}
+	});
+});
+
+
+
+
+var rnamespaces = /\.(.*)$/,
+	rformElems = /^(?:textarea|input|select)$/i,
+	rperiod = /\./g,
+	rspaces = / /g,
+	rescape = /[^\w\s.|`]/g,
+	fcleanup = function( nm ) {
+		return nm.replace(rescape, "\\$&");
 	};
 
 /*
@@ -1561,10 +2592,11 @@ jQuery.event = {
 			return;
 		}
 
-		// For whatever reason, IE has trouble passing the window object
-		// around, causing it to be cloned in the process
-		if ( elem.setInterval && ( elem !== window && !elem.frameElement ) ) {
-			elem = window;
+		if ( handler === false ) {
+			handler = returnFalse;
+		} else if ( !handler ) {
+			// Fixes bug #7229. Fix recommended by jdalton
+			return;
 		}
 
 		var handleObjIn, handleObj;
@@ -1580,7 +2612,7 @@ jQuery.event = {
 		}
 
 		// Init the element's event structure
-		var elemData = jQuery.data( elem );
+		var elemData = jQuery._data( elem );
 
 		// If no elemData is found then we must be trying to bind to one of the
 		// banned noData elements
@@ -1588,14 +2620,18 @@ jQuery.event = {
 			return;
 		}
 
-		var events = elemData.events = elemData.events || {},
-			eventHandle = elemData.handle, eventHandle;
+		var events = elemData.events,
+			eventHandle = elemData.handle;
+
+		if ( !events ) {
+			elemData.events = events = {};
+		}
 
 		if ( !eventHandle ) {
-			elemData.handle = eventHandle = function() {
-				// Handle the second event of a trigger and when
-				// an event is called after a page has unloaded
-				return typeof jQuery !== "undefined" && !jQuery.event.triggered ?
+			elemData.handle = eventHandle = function( e ) {
+				// Discard the second event of a jQuery.event.trigger() and
+				// when an event is called after a page has unloaded
+				return typeof jQuery !== "undefined" && (!e || jQuery.event.triggered !== e.type) ?
 					jQuery.event.handle.apply( eventHandle.elem, arguments ) :
 					undefined;
 			};
@@ -1628,7 +2664,9 @@ jQuery.event = {
 			}
 
 			handleObj.type = type;
-			handleObj.guid = handler.guid;
+			if ( !handleObj.guid ) {
+				handleObj.guid = handler.guid;
+			}
 
 			// Get the current list of functions bound to this event
 			var handlers = events[ type ],
@@ -1651,9 +2689,9 @@ jQuery.event = {
 					}
 				}
 			}
-			
-			if ( special.add ) { 
-				special.add.call( elem, handleObj ); 
+
+			if ( special.add ) {
+				special.add.call( elem, handleObj );
 
 				if ( !handleObj.handler.guid ) {
 					handleObj.handler.guid = handler.guid;
@@ -1663,7 +2701,7 @@ jQuery.event = {
 			// Add the function to the element's handler list
 			handlers.push( handleObj );
 
-			// Keep track of which events have been used, for global triggering
+			// Keep track of which events have been used, for event optimization
 			jQuery.event.global[ type ] = true;
 		}
 
@@ -1680,8 +2718,12 @@ jQuery.event = {
 			return;
 		}
 
-		var ret, type, fn, i = 0, all, namespaces, namespace, special, eventType, handleObj, origType,
-			elemData = jQuery.data( elem ),
+		if ( handler === false ) {
+			handler = returnFalse;
+		}
+
+		var ret, type, fn, j, i = 0, all, namespaces, namespace, special, eventType, handleObj, origType,
+			elemData = jQuery.hasData( elem ) && jQuery._data( elem ),
 			events = elemData && elemData.events;
 
 		if ( !elemData || !events ) {
@@ -1720,8 +2762,8 @@ jQuery.event = {
 				namespaces = type.split(".");
 				type = namespaces.shift();
 
-				namespace = new RegExp("(^|\\.)" + 
-					jQuery.map( namespaces.slice(0).sort(), fcleanup ).join("\\.(?:.*\\.)?") + "(\\.|$)")
+				namespace = new RegExp("(^|\\.)" +
+					jQuery.map( namespaces.slice(0).sort(), fcleanup ).join("\\.(?:.*\\.)?") + "(\\.|$)");
 			}
 
 			eventType = events[ type ];
@@ -1731,7 +2773,7 @@ jQuery.event = {
 			}
 
 			if ( !handler ) {
-				for ( var j = 0; j < eventType.length; j++ ) {
+				for ( j = 0; j < eventType.length; j++ ) {
 					handleObj = eventType[ j ];
 
 					if ( all || namespace.test( handleObj.namespace ) ) {
@@ -1745,7 +2787,7 @@ jQuery.event = {
 
 			special = jQuery.event.special[ type ] || {};
 
-			for ( var j = pos || 0; j < eventType.length; j++ ) {
+			for ( j = pos || 0; j < eventType.length; j++ ) {
 				handleObj = eventType[ j ];
 
 				if ( handler.guid === handleObj.guid ) {
@@ -1769,7 +2811,7 @@ jQuery.event = {
 			// remove generic event handler if no more handlers exist
 			if ( eventType.length === 0 || pos != null && eventType.length === 1 ) {
 				if ( !special.teardown || special.teardown.call( elem, namespaces ) === false ) {
-					removeEvent( elem, type, elemData.handle );
+					jQuery.removeEvent( elem, type, elemData.handle );
 				}
 
 				ret = null;
@@ -1788,175 +2830,196 @@ jQuery.event = {
 			delete elemData.handle;
 
 			if ( jQuery.isEmptyObject( elemData ) ) {
-				jQuery.removeData( elem );
+				jQuery.removeData( elem, undefined, true );
 			}
 		}
 	},
+	
+	// Events that are safe to short-circuit if no handlers are attached.
+	// Native DOM events should not be added, they may have inline handlers.
+	customEvent: {
+		"getData": true,
+		"setData": true,
+		"changeData": true
+	},
 
-	// bubbling is internal
-	trigger: function( event, data, elem /*, bubbling */ ) {
+	trigger: function( event, data, elem, onlyHandlers ) {
 		// Event object or event type
 		var type = event.type || event,
-			bubbling = arguments[3];
+			namespaces = [],
+			exclusive;
 
-		if ( !bubbling ) {
-			event = typeof event === "object" ?
-				// jQuery.Event object
-				event[expando] ? event :
-				// Object literal
-				jQuery.extend( jQuery.Event(type), event ) :
-				// Just the event type (string)
-				jQuery.Event(type);
-
-			if ( type.indexOf("!") >= 0 ) {
-				event.type = type = type.slice(0, -1);
-				event.exclusive = true;
-			}
-
-			// Handle a global trigger
-			if ( !elem ) {
-				// Don't bubble custom events when global (to avoid too much overhead)
-				event.stopPropagation();
-
-				// Only trigger if we've ever bound an event for it
-				if ( jQuery.event.global[ type ] ) {
-					jQuery.each( jQuery.cache, function() {
-						if ( this.events && this.events[type] ) {
-							jQuery.event.trigger( event, data, this.handle.elem );
-						}
-					});
-				}
-			}
-
-			// Handle triggering a single element
-
-			// don't do events on text and comment nodes
-			if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 ) {
-				return undefined;
-			}
-
-			// Clean up in case it is reused
-			event.result = undefined;
-			event.target = elem;
-
-			// Clone the incoming data, if any
-			data = jQuery.makeArray( data );
-			data.unshift( event );
+		if ( type.indexOf("!") >= 0 ) {
+			// Exclusive events trigger only for the exact event (no namespaces)
+			type = type.slice(0, -1);
+			exclusive = true;
 		}
 
-		event.currentTarget = elem;
-
-		// Trigger the event, it is assumed that "handle" is a function
-		var handle = jQuery.data( elem, "handle" );
-		if ( handle ) {
-			handle.apply( elem, data );
+		if ( type.indexOf(".") >= 0 ) {
+			// Namespaced trigger; create a regexp to match event type in handle()
+			namespaces = type.split(".");
+			type = namespaces.shift();
+			namespaces.sort();
 		}
 
-		var parent = elem.parentNode || elem.ownerDocument;
+		if ( (!elem || jQuery.event.customEvent[ type ]) && !jQuery.event.global[ type ] ) {
+			// No jQuery handlers for this event type, and it can't have inline handlers
+			return;
+		}
 
-		// Trigger an inline bound script
-		try {
-			if ( !(elem && elem.nodeName && jQuery.noData[elem.nodeName.toLowerCase()]) ) {
-				if ( elem[ "on" + type ] && elem[ "on" + type ].apply( elem, data ) === false ) {
-					event.result = false;
+		// Caller can pass in an Event, Object, or just an event type string
+		event = typeof event === "object" ?
+			// jQuery.Event object
+			event[ jQuery.expando ] ? event :
+			// Object literal
+			new jQuery.Event( type, event ) :
+			// Just the event type (string)
+			new jQuery.Event( type );
+
+		event.type = type;
+		event.exclusive = exclusive;
+		event.namespace = namespaces.join(".");
+		event.namespace_re = new RegExp("(^|\\.)" + namespaces.join("\\.(?:.*\\.)?") + "(\\.|$)");
+		
+		// triggerHandler() and global events don't bubble or run the default action
+		if ( onlyHandlers || !elem ) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+
+		// Handle a global trigger
+		if ( !elem ) {
+			// TODO: Stop taunting the data cache; remove global events and always attach to document
+			jQuery.each( jQuery.cache, function() {
+				// internalKey variable is just used to make it easier to find
+				// and potentially change this stuff later; currently it just
+				// points to jQuery.expando
+				var internalKey = jQuery.expando,
+					internalCache = this[ internalKey ];
+				if ( internalCache && internalCache.events && internalCache.events[ type ] ) {
+					jQuery.event.trigger( event, data, internalCache.handle.elem );
 				}
+			});
+			return;
+		}
+
+		// Don't do events on text and comment nodes
+		if ( elem.nodeType === 3 || elem.nodeType === 8 ) {
+			return;
+		}
+
+		// Clean up the event in case it is being reused
+		event.result = undefined;
+		event.target = elem;
+
+		// Clone any incoming data and prepend the event, creating the handler arg list
+		data = data != null ? jQuery.makeArray( data ) : [];
+		data.unshift( event );
+
+		var cur = elem,
+			// IE doesn't like method names with a colon (#3533, #8272)
+			ontype = type.indexOf(":") < 0 ? "on" + type : "";
+
+		// Fire event on the current element, then bubble up the DOM tree
+		do {
+			var handle = jQuery._data( cur, "handle" );
+
+			event.currentTarget = cur;
+			if ( handle ) {
+				handle.apply( cur, data );
 			}
 
-		// prevent IE from throwing an error for some elements with some event types, see #3533
-		} catch (e) {}
+			// Trigger an inline bound script
+			if ( ontype && jQuery.acceptData( cur ) && cur[ ontype ] && cur[ ontype ].apply( cur, data ) === false ) {
+				event.result = false;
+				event.preventDefault();
+			}
 
-		if ( !event.isPropagationStopped() && parent ) {
-			jQuery.event.trigger( event, data, parent, true );
+			// Bubble up to document, then to window
+			cur = cur.parentNode || cur.ownerDocument || cur === event.target.ownerDocument && window;
+		} while ( cur && !event.isPropagationStopped() );
 
-		} else if ( !event.isDefaultPrevented() ) {
-			var target = event.target, old,
-				isClick = jQuery.nodeName(target, "a") && type === "click",
+		// If nobody prevented the default action, do it now
+		if ( !event.isDefaultPrevented() ) {
+			var old,
 				special = jQuery.event.special[ type ] || {};
 
-			if ( (!special._default || special._default.call( elem, event ) === false) && 
-				!isClick && !(target && target.nodeName && jQuery.noData[target.nodeName.toLowerCase()]) ) {
+			if ( (!special._default || special._default.call( elem.ownerDocument, event ) === false) &&
+				!(type === "click" && jQuery.nodeName( elem, "a" )) && jQuery.acceptData( elem ) ) {
 
+				// Call a native DOM method on the target with the same name name as the event.
+				// Can't use an .isFunction)() check here because IE6/7 fails that test.
+				// IE<9 dies on focus to hidden element (#1486), may want to revisit a try/catch.
 				try {
-					if ( target[ type ] ) {
-						// Make sure that we don't accidentally re-trigger the onFOO events
-						old = target[ "on" + type ];
+					if ( ontype && elem[ type ] ) {
+						// Don't re-trigger an onFOO event when we call its FOO() method
+						old = elem[ ontype ];
 
 						if ( old ) {
-							target[ "on" + type ] = null;
+							elem[ ontype ] = null;
 						}
 
-						jQuery.event.triggered = true;
-						target[ type ]();
+						jQuery.event.triggered = type;
+						elem[ type ]();
 					}
-
-				// prevent IE from throwing an error for some elements with some event types, see #3533
-				} catch (e) {}
+				} catch ( ieError ) {}
 
 				if ( old ) {
-					target[ "on" + type ] = old;
+					elem[ ontype ] = old;
 				}
 
-				jQuery.event.triggered = false;
+				jQuery.event.triggered = undefined;
 			}
 		}
-	},
-
-	handle: function( event ) {
-		var all, handlers, namespaces, namespace, events;
-
-		event = arguments[0] = jQuery.event.fix( event || window.event );
-		event.currentTarget = this;
-
-		// Namespaced event handlers
-		all = event.type.indexOf(".") < 0 && !event.exclusive;
-
-		if ( !all ) {
-			namespaces = event.type.split(".");
-			event.type = namespaces.shift();
-			namespace = new RegExp("(^|\\.)" + namespaces.slice(0).sort().join("\\.(?:.*\\.)?") + "(\\.|$)");
-		}
-
-		var events = jQuery.data(this, "events"), handlers = events[ event.type ];
-
-		if ( events && handlers ) {
-			// Clone the handlers to prevent manipulation
-			handlers = handlers.slice(0);
-
-			for ( var j = 0, l = handlers.length; j < l; j++ ) {
-				var handleObj = handlers[ j ];
-
-				// Filter the functions by class
-				if ( all || namespace.test( handleObj.namespace ) ) {
-					// Pass in a reference to the handler function itself
-					// So that we can later remove it
-					event.handler = handleObj.handler;
-					event.data = handleObj.data;
-					event.handleObj = handleObj;
-	
-					var ret = handleObj.handler.apply( this, arguments );
-
-					if ( ret !== undefined ) {
-						event.result = ret;
-						if ( ret === false ) {
-							event.preventDefault();
-							event.stopPropagation();
-						}
-					}
-
-					if ( event.isImmediatePropagationStopped() ) {
-						break;
-					}
-				}
-			}
-		}
-
+		
 		return event.result;
 	},
 
-	props: "altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarget data detail eventPhase fromElement handler keyCode layerX layerY metaKey newValue offsetX offsetY originalTarget pageX pageY prevValue relatedNode relatedTarget screenX screenY shiftKey srcElement target toElement view wheelDelta which".split(" "),
+	handle: function( event ) {
+		event = jQuery.event.fix( event || window.event );
+		// Snapshot the handlers list since a called handler may add/remove events.
+		var handlers = ((jQuery._data( this, "events" ) || {})[ event.type ] || []).slice(0),
+			run_all = !event.exclusive && !event.namespace,
+			args = Array.prototype.slice.call( arguments, 0 );
+
+		// Use the fix-ed Event rather than the (read-only) native event
+		args[0] = event;
+		event.currentTarget = this;
+
+		for ( var j = 0, l = handlers.length; j < l; j++ ) {
+			var handleObj = handlers[ j ];
+
+			// Triggered event must 1) be non-exclusive and have no namespace, or
+			// 2) have namespace(s) a subset or equal to those in the bound event.
+			if ( run_all || event.namespace_re.test( handleObj.namespace ) ) {
+				// Pass in a reference to the handler function itself
+				// So that we can later remove it
+				event.handler = handleObj.handler;
+				event.data = handleObj.data;
+				event.handleObj = handleObj;
+
+				var ret = handleObj.handler.apply( this, args );
+
+				if ( ret !== undefined ) {
+					event.result = ret;
+					if ( ret === false ) {
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				}
+
+				if ( event.isImmediatePropagationStopped() ) {
+					break;
+				}
+			}
+		}
+		return event.result;
+	},
+
+	props: "altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarget data detail eventPhase fromElement handler keyCode layerX layerY metaKey newValue offsetX offsetY pageX pageY prevValue relatedNode relatedTarget screenX screenY shiftKey srcElement target toElement view wheelDelta which".split(" "),
 
 	fix: function( event ) {
-		if ( event[ expando ] ) {
+		if ( event[ jQuery.expando ] ) {
 			return event;
 		}
 
@@ -1972,7 +3035,8 @@ jQuery.event = {
 
 		// Fix target property, if necessary
 		if ( !event.target ) {
-			event.target = event.srcElement || document; // Fixes #1925 where srcElement might not be defined either
+			// Fixes #1925 where srcElement might not be defined either
+			event.target = event.srcElement || document;
 		}
 
 		// check if target is a textnode (safari)
@@ -1987,14 +3051,17 @@ jQuery.event = {
 
 		// Calculate pageX/Y if missing and clientX/Y available
 		if ( event.pageX == null && event.clientX != null ) {
-			var doc = document.documentElement, body = document.body;
+			var eventDocument = event.target.ownerDocument || document,
+				doc = eventDocument.documentElement,
+				body = eventDocument.body;
+
 			event.pageX = event.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc && doc.clientLeft || body && body.clientLeft || 0);
 			event.pageY = event.clientY + (doc && doc.scrollTop  || body && body.scrollTop  || 0) - (doc && doc.clientTop  || body && body.clientTop  || 0);
 		}
 
 		// Add which for key events
-		if ( !event.which && ((event.charCode || event.charCode === 0) ? event.charCode : event.keyCode) ) {
-			event.which = event.charCode || event.keyCode;
+		if ( event.which == null && (event.charCode != null || event.keyCode != null) ) {
+			event.which = event.charCode != null ? event.charCode : event.keyCode;
 		}
 
 		// Add metaKey to non-Mac browsers (use ctrl for PC's and Meta for Macs)
@@ -2026,36 +3093,24 @@ jQuery.event = {
 
 		live: {
 			add: function( handleObj ) {
-				jQuery.event.add( this, handleObj.origType, jQuery.extend({}, handleObj, {handler: liveHandler}) ); 
+				jQuery.event.add( this,
+					liveConvert( handleObj.origType, handleObj.selector ),
+					jQuery.extend({}, handleObj, {handler: liveHandler, guid: handleObj.handler.guid}) );
 			},
 
 			remove: function( handleObj ) {
-				var remove = true,
-					type = handleObj.origType.replace(rnamespaces, "");
-				
-				jQuery.each( jQuery.data(this, "events").live || [], function() {
-					if ( type === this.origType.replace(rnamespaces, "") ) {
-						remove = false;
-						return false;
-					}
-				});
-
-				if ( remove ) {
-					jQuery.event.remove( this, handleObj.origType, liveHandler );
-				}
+				jQuery.event.remove( this, liveConvert( handleObj.origType, handleObj.selector ), handleObj );
 			}
-
 		},
 
 		beforeunload: {
 			setup: function( data, namespaces, eventHandle ) {
 				// We only want to do this special case on windows
-				if ( this.setInterval ) {
+				if ( jQuery.isWindow( this ) ) {
 					this.onbeforeunload = eventHandle;
 				}
-
-				return false;
 			},
+
 			teardown: function( namespaces, eventHandle ) {
 				if ( this.onbeforeunload === eventHandle ) {
 					this.onbeforeunload = null;
@@ -2065,35 +3120,50 @@ jQuery.event = {
 	}
 };
 
-var removeEvent = document.removeEventListener ?
+jQuery.removeEvent = document.removeEventListener ?
 	function( elem, type, handle ) {
-		elem.removeEventListener( type, handle, false );
-	} : 
+		if ( elem.removeEventListener ) {
+			elem.removeEventListener( type, handle, false );
+		}
+	} :
 	function( elem, type, handle ) {
-		elem.detachEvent( "on" + type, handle );
+		if ( elem.detachEvent ) {
+			elem.detachEvent( "on" + type, handle );
+		}
 	};
 
-jQuery.Event = function( src ) {
+jQuery.Event = function( src, props ) {
 	// Allow instantiation without the 'new' keyword
 	if ( !this.preventDefault ) {
-		return new jQuery.Event( src );
+		return new jQuery.Event( src, props );
 	}
 
 	// Event object
 	if ( src && src.type ) {
 		this.originalEvent = src;
 		this.type = src.type;
+
+		// Events bubbling up the document may have been marked as prevented
+		// by a handler lower down the tree; reflect the correct value.
+		this.isDefaultPrevented = (src.defaultPrevented || src.returnValue === false ||
+			src.getPreventDefault && src.getPreventDefault()) ? returnTrue : returnFalse;
+
 	// Event type
 	} else {
 		this.type = src;
 	}
 
+	// Put explicitly provided properties onto the event object
+	if ( props ) {
+		jQuery.extend( this, props );
+	}
+
 	// timeStamp is buggy for some events on Firefox(#3843)
 	// So we won't rely on the native value
-	this.timeStamp = now();
+	this.timeStamp = jQuery.now();
 
 	// Mark it as fixed
-	this[ expando ] = true;
+	this[ jQuery.expando ] = true;
 };
 
 function returnFalse() {
@@ -2113,13 +3183,15 @@ jQuery.Event.prototype = {
 		if ( !e ) {
 			return;
 		}
-		
+
 		// if preventDefault exists run it on the original event
 		if ( e.preventDefault ) {
 			e.preventDefault();
-		}
+
 		// otherwise set the returnValue property of the original event to false (IE)
-		e.returnValue = false;
+		} else {
+			e.returnValue = false;
+		}
 	},
 	stopPropagation: function() {
 		this.isPropagationStopped = returnTrue;
@@ -2147,27 +3219,27 @@ jQuery.Event.prototype = {
 // Checks if an event happened on an element within another element
 // Used in jQuery.event.special.mouseenter and mouseleave handlers
 var withinElement = function( event ) {
+
 	// Check if mouse(over|out) are still within the same parent element
-	var parent = event.relatedTarget;
+	var related = event.relatedTarget,
+		inside = false,
+		eventType = event.type;
 
-	// Firefox sometimes assigns relatedTarget a XUL element
-	// which we cannot access the parentNode property of
-	try {
-		// Traverse up the tree
-		while ( parent && parent !== this ) {
-			parent = parent.parentNode;
+	event.type = event.data;
+
+	if ( related !== this ) {
+
+		if ( related ) {
+			inside = jQuery.contains( this, related );
 		}
 
-		if ( parent !== this ) {
-			// set the correct event type
-			event.type = event.data;
+		if ( !inside ) {
 
-			// handle event if we actually just moused on to a non sub-element
 			jQuery.event.handle.apply( this, arguments );
-		}
 
-	// assuming we've left the element since we most likely mousedover a xul element
-	} catch(e) { }
+			event.type = eventType;
+		}
+	}
 },
 
 // In case of event delegation, we only need to rename the event.type,
@@ -2197,20 +3269,23 @@ if ( !jQuery.support.submitBubbles ) {
 
 	jQuery.event.special.submit = {
 		setup: function( data, namespaces ) {
-			if ( this.nodeName.toLowerCase() !== "form" ) {
+			if ( !jQuery.nodeName( this, "form" ) ) {
 				jQuery.event.add(this, "click.specialSubmit", function( e ) {
-					var elem = e.target, type = elem.type;
+					// Avoid triggering error on non-existent type attribute in IE VML (#7071)
+					var elem = e.target,
+						type = jQuery.nodeName( elem, "input" ) || jQuery.nodeName( elem, "button" ) ? elem.type : "";
 
 					if ( (type === "submit" || type === "image") && jQuery( elem ).closest("form").length ) {
-						return trigger( "submit", this, arguments );
+						trigger( "submit", this, arguments );
 					}
 				});
-	 
+
 				jQuery.event.add(this, "keypress.specialSubmit", function( e ) {
-					var elem = e.target, type = elem.type;
+					var elem = e.target,
+						type = jQuery.nodeName( elem, "input" ) || jQuery.nodeName( elem, "button" ) ? elem.type : "";
 
 					if ( (type === "text" || type === "password") && jQuery( elem ).closest("form").length && e.keyCode === 13 ) {
-						return trigger( "submit", this, arguments );
+						trigger( "submit", this, arguments );
 					}
 				});
 
@@ -2229,12 +3304,11 @@ if ( !jQuery.support.submitBubbles ) {
 // change delegation, happens here so we have bind.
 if ( !jQuery.support.changeBubbles ) {
 
-	var formElems = /textarea|input|select/i,
-
-	changeFilters,
+	var changeFilters,
 
 	getVal = function( elem ) {
-		var type = elem.type, val = elem.value;
+		var type = jQuery.nodeName( elem, "input" ) ? elem.type : "",
+			val = elem.value;
 
 		if ( type === "radio" || type === "checkbox" ) {
 			val = elem.checked;
@@ -2246,7 +3320,7 @@ if ( !jQuery.support.changeBubbles ) {
 				}).join("-") :
 				"";
 
-		} else if ( elem.nodeName.toLowerCase() === "select" ) {
+		} else if ( jQuery.nodeName( elem, "select" ) ) {
 			val = elem.selectedIndex;
 		}
 
@@ -2256,58 +3330,61 @@ if ( !jQuery.support.changeBubbles ) {
 	testChange = function testChange( e ) {
 		var elem = e.target, data, val;
 
-		if ( !formElems.test( elem.nodeName ) || elem.readOnly ) {
+		if ( !rformElems.test( elem.nodeName ) || elem.readOnly ) {
 			return;
 		}
 
-		data = jQuery.data( elem, "_change_data" );
+		data = jQuery._data( elem, "_change_data" );
 		val = getVal(elem);
 
 		// the current data will be also retrieved by beforeactivate
 		if ( e.type !== "focusout" || elem.type !== "radio" ) {
-			jQuery.data( elem, "_change_data", val );
+			jQuery._data( elem, "_change_data", val );
 		}
-		
+
 		if ( data === undefined || val === data ) {
 			return;
 		}
 
 		if ( data != null || val ) {
 			e.type = "change";
-			return jQuery.event.trigger( e, arguments[1], elem );
+			e.liveFired = undefined;
+			jQuery.event.trigger( e, arguments[1], elem );
 		}
 	};
 
 	jQuery.event.special.change = {
 		filters: {
-			focusout: testChange, 
+			focusout: testChange,
+
+			beforedeactivate: testChange,
 
 			click: function( e ) {
-				var elem = e.target, type = elem.type;
+				var elem = e.target, type = jQuery.nodeName( elem, "input" ) ? elem.type : "";
 
-				if ( type === "radio" || type === "checkbox" || elem.nodeName.toLowerCase() === "select" ) {
-					return testChange.call( this, e );
+				if ( type === "radio" || type === "checkbox" || jQuery.nodeName( elem, "select" ) ) {
+					testChange.call( this, e );
 				}
 			},
 
 			// Change has to be called before submit
 			// Keydown will be called before keypress, which is used in submit-event delegation
 			keydown: function( e ) {
-				var elem = e.target, type = elem.type;
+				var elem = e.target, type = jQuery.nodeName( elem, "input" ) ? elem.type : "";
 
-				if ( (e.keyCode === 13 && elem.nodeName.toLowerCase() !== "textarea") ||
+				if ( (e.keyCode === 13 && !jQuery.nodeName( elem, "textarea" ) ) ||
 					(e.keyCode === 32 && (type === "checkbox" || type === "radio")) ||
 					type === "select-multiple" ) {
-					return testChange.call( this, e );
+					testChange.call( this, e );
 				}
 			},
 
 			// Beforeactivate happens also before the previous element is blurred
 			// with this event you can't trigger a change event, but you can store
-			// information/focus[in] is not needed anymore
+			// information
 			beforeactivate: function( e ) {
 				var elem = e.target;
-				jQuery.data( elem, "_change_data", getVal(elem) );
+				jQuery._data( elem, "_change_data", getVal(elem) );
 			}
 		},
 
@@ -2320,46 +3397,75 @@ if ( !jQuery.support.changeBubbles ) {
 				jQuery.event.add( this, type + ".specialChange", changeFilters[type] );
 			}
 
-			return formElems.test( this.nodeName );
+			return rformElems.test( this.nodeName );
 		},
 
 		teardown: function( namespaces ) {
 			jQuery.event.remove( this, ".specialChange" );
 
-			return formElems.test( this.nodeName );
+			return rformElems.test( this.nodeName );
 		}
 	};
 
 	changeFilters = jQuery.event.special.change.filters;
+
+	// Handle when the input is .focus()'d
+	changeFilters.focus = changeFilters.beforeactivate;
 }
 
 function trigger( type, elem, args ) {
-	args[0].type = type;
-	return jQuery.event.handle.apply( elem, args );
+	// Piggyback on a donor event to simulate a different one.
+	// Fake originalEvent to avoid donor's stopPropagation, but if the
+	// simulated event prevents default then we do the same on the donor.
+	// Don't pass args or remember liveFired; they apply to the donor event.
+	var event = jQuery.extend( {}, args[ 0 ] );
+	event.type = type;
+	event.originalEvent = {};
+	event.liveFired = undefined;
+	jQuery.event.handle.call( elem, event );
+	if ( event.isDefaultPrevented() ) {
+		args[ 0 ].preventDefault();
+	}
 }
 
 // Create "bubbling" focus and blur events
-if ( document.addEventListener ) {
+if ( !jQuery.support.focusinBubbles ) {
 	jQuery.each({ focus: "focusin", blur: "focusout" }, function( orig, fix ) {
+
+		// Attach a single capturing handler while someone wants focusin/focusout
+		var attaches = 0;
+
 		jQuery.event.special[ fix ] = {
 			setup: function() {
-				this.addEventListener( orig, handler, true );
-			}, 
-			teardown: function() { 
-				this.removeEventListener( orig, handler, true );
+				if ( attaches++ === 0 ) {
+					document.addEventListener( orig, handler, true );
+				}
+			},
+			teardown: function() {
+				if ( --attaches === 0 ) {
+					document.removeEventListener( orig, handler, true );
+				}
 			}
 		};
 
-		function handler( e ) { 
-			e = jQuery.event.fix( e );
+		function handler( donor ) {
+			// Donor event is always a native one; fix it and switch its type.
+			// Let focusin/out handler cancel the donor focus/blur event.
+			var e = jQuery.event.fix( donor );
 			e.type = fix;
-			return jQuery.event.handle.call( this, e );
+			e.originalEvent = {};
+			jQuery.event.trigger( e, null, e.target );
+			if ( e.isDefaultPrevented() ) {
+				donor.preventDefault();
+			}
 		}
 	});
 }
 
 jQuery.each(["bind", "one"], function( i, name ) {
 	jQuery.fn[ name ] = function( type, data, fn ) {
+		var handler;
+
 		// Handle object literals
 		if ( typeof type === "object" ) {
 			for ( var key in type ) {
@@ -2367,16 +3473,21 @@ jQuery.each(["bind", "one"], function( i, name ) {
 			}
 			return this;
 		}
-		
-		if ( jQuery.isFunction( data ) ) {
+
+		if ( arguments.length === 2 || data === false ) {
 			fn = data;
 			data = undefined;
 		}
 
-		var handler = name === "one" ? jQuery.proxy( fn, function( event ) {
-			jQuery( this ).unbind( event, handler );
-			return fn.apply( this, arguments );
-		}) : fn;
+		if ( name === "one" ) {
+			handler = function( event ) {
+				jQuery( this ).unbind( event, handler );
+				return fn.apply( this, arguments );
+			};
+			handler.guid = fn.guid || jQuery.guid++;
+		} else {
+			handler = fn;
+		}
 
 		if ( type === "unload" && name !== "one" ) {
 			this.one( type, data, fn );
@@ -2407,20 +3518,20 @@ jQuery.fn.extend({
 
 		return this;
 	},
-	
+
 	delegate: function( selector, types, data, fn ) {
 		return this.live( types, data, fn, selector );
 	},
-	
+
 	undelegate: function( selector, types, fn ) {
 		if ( arguments.length === 0 ) {
-				return this.unbind( "live" );
-		
+			return this.unbind( "live" );
+
 		} else {
 			return this.die( types, null, fn, selector );
 		}
 	},
-	
+
 	trigger: function( type, data ) {
 		return this.each(function() {
 			jQuery.event.trigger( type, data, this );
@@ -2429,34 +3540,34 @@ jQuery.fn.extend({
 
 	triggerHandler: function( type, data ) {
 		if ( this[0] ) {
-			var event = jQuery.Event( type );
-			event.preventDefault();
-			event.stopPropagation();
-			jQuery.event.trigger( event, data, this[0] );
-			return event.result;
+			return jQuery.event.trigger( type, data, this[0], true );
 		}
 	},
 
 	toggle: function( fn ) {
 		// Save reference to arguments for access in closure
-		var args = arguments, i = 1;
+		var args = arguments,
+			guid = fn.guid || jQuery.guid++,
+			i = 0,
+			toggler = function( event ) {
+				// Figure out which function to execute
+				var lastToggle = ( jQuery.data( this, "lastToggle" + fn.guid ) || 0 ) % i;
+				jQuery.data( this, "lastToggle" + fn.guid, lastToggle + 1 );
+
+				// Make sure that clicks stop
+				event.preventDefault();
+
+				// and execute the function
+				return args[ lastToggle ].apply( this, arguments ) || false;
+			};
 
 		// link all the functions, so any of them can unbind this click handler
+		toggler.guid = guid;
 		while ( i < args.length ) {
-			jQuery.proxy( fn, args[ i++ ] );
+			args[ i++ ].guid = guid;
 		}
 
-		return this.click( jQuery.proxy( fn, function( event ) {
-			// Figure out which function to execute
-			var lastToggle = ( jQuery.data( this, "lastToggle" + fn.guid ) || 0 ) % i;
-			jQuery.data( this, "lastToggle" + fn.guid, lastToggle + 1 );
-
-			// Make sure that clicks stop
-			event.preventDefault();
-
-			// and execute the function
-			return args[ lastToggle ].apply( this, arguments ) || false;
-		}));
+		return this.click( toggler );
 	},
 
 	hover: function( fnOver, fnOut ) {
@@ -2477,8 +3588,24 @@ jQuery.each(["live", "die"], function( i, name ) {
 			selector = origSelector || this.selector,
 			context = origSelector ? this : jQuery( this.context );
 
-		if ( jQuery.isFunction( data ) ) {
-			fn = data;
+		if ( typeof types === "object" && !types.preventDefault ) {
+			for ( var key in types ) {
+				context[ name ]( key, data, types[key], selector );
+			}
+
+			return this;
+		}
+
+		if ( name === "die" && !types &&
+					origSelector && origSelector.charAt(0) === "." ) {
+
+			context.unbind( origSelector );
+
+			return this;
+		}
+
+		if ( data === false || jQuery.isFunction( data ) ) {
+			fn = data || returnFalse;
 			data = undefined;
 		}
 
@@ -2500,7 +3627,7 @@ jQuery.each(["live", "die"], function( i, name ) {
 
 			preType = type;
 
-			if ( type === "focus" || type === "blur" ) {
+			if ( liveMap[ type ] ) {
 				types.push( liveMap[ type ] + namespaces );
 				type = type + namespaces;
 
@@ -2510,29 +3637,34 @@ jQuery.each(["live", "die"], function( i, name ) {
 
 			if ( name === "live" ) {
 				// bind live handler
-				context.each(function(){
-					jQuery.event.add( this, liveConvert( type, selector ),
+				for ( var j = 0, l = context.length; j < l; j++ ) {
+					jQuery.event.add( context[j], "live." + liveConvert( type, selector ),
 						{ data: data, selector: selector, handler: fn, origType: type, origHandler: fn, preType: preType } );
-				});
+				}
 
 			} else {
 				// unbind live handler
-				context.unbind( liveConvert( type, selector ), fn );
+				context.unbind( "live." + liveConvert( type, selector ), fn );
 			}
 		}
-		
+
 		return this;
-	}
+	};
 });
 
 function liveHandler( event ) {
-	var stop, elems = [], selectors = [], args = arguments,
-		related, match, handleObj, elem, j, i, l, data,
-		events = jQuery.data( this, "events" );
+	var stop, maxLevel, related, match, handleObj, elem, j, i, l, data, close, namespace, ret,
+		elems = [],
+		selectors = [],
+		events = jQuery._data( this, "events" );
 
-	// Make sure we avoid non-left-click bubbling in Firefox (#3861)
-	if ( event.liveFired === this || !events || !events.live || event.button && event.type === "click" ) {
+	// Make sure we avoid non-left-click bubbling in Firefox (#3861) and disabled elements in IE (#6911)
+	if ( event.liveFired === this || !events || !events.live || event.target.disabled || event.button && event.type === "click" ) {
 		return;
+	}
+
+	if ( event.namespace ) {
+		namespace = new RegExp("(^|\\.)" + event.namespace.split(".").join("\\.(?:.*\\.)?") + "(\\.|$)");
 	}
 
 	event.liveFired = this;
@@ -2553,20 +3685,28 @@ function liveHandler( event ) {
 	match = jQuery( event.target ).closest( selectors, event.currentTarget );
 
 	for ( i = 0, l = match.length; i < l; i++ ) {
+		close = match[i];
+
 		for ( j = 0; j < live.length; j++ ) {
 			handleObj = live[j];
 
-			if ( match[i].selector === handleObj.selector ) {
-				elem = match[i].elem;
+			if ( close.selector === handleObj.selector && (!namespace || namespace.test( handleObj.namespace )) && !close.elem.disabled ) {
+				elem = close.elem;
 				related = null;
 
 				// Those two events require additional checking
 				if ( handleObj.preType === "mouseenter" || handleObj.preType === "mouseleave" ) {
+					event.type = handleObj.preType;
 					related = jQuery( event.relatedTarget ).closest( handleObj.selector )[0];
+
+					// Make sure not to accidentally match a child element with the same selector
+					if ( related && jQuery.contains( elem, related ) ) {
+						related = elem;
+					}
 				}
 
 				if ( !related || related !== elem ) {
-					elems.push({ elem: elem, handleObj: handleObj });
+					elems.push({ elem: elem, handleObj: handleObj, level: close.level });
 				}
 			}
 		}
@@ -2574,13 +3714,26 @@ function liveHandler( event ) {
 
 	for ( i = 0, l = elems.length; i < l; i++ ) {
 		match = elems[i];
+
+		if ( maxLevel && match.level > maxLevel ) {
+			break;
+		}
+
 		event.currentTarget = match.elem;
 		event.data = match.handleObj.data;
 		event.handleObj = match.handleObj;
 
-		if ( match.handleObj.origHandler.apply( match.elem, args ) === false ) {
-			stop = false;
-			break;
+		ret = match.handleObj.origHandler.apply( match.elem, arguments );
+
+		if ( ret === false || event.isPropagationStopped() ) {
+			maxLevel = match.level;
+
+			if ( ret === false ) {
+				stop = false;
+			}
+			if ( event.isImmediatePropagationStopped() ) {
+				break;
+			}
 		}
 	}
 
@@ -2588,7 +3741,7 @@ function liveHandler( event ) {
 }
 
 function liveConvert( type, selector ) {
-	return "live." + (type && type !== "*" ? type + "." : "") + selector.replace(/\./g, "`").replace(/ /g, "&");
+	return (type && type !== "*" ? type + "." : "") + selector.replace(rperiod, "`").replace(rspaces, "&");
 }
 
 jQuery.each( ("blur focus focusin focusout load resize scroll unload click dblclick " +
@@ -2596,8 +3749,15 @@ jQuery.each( ("blur focus focusin focusout load resize scroll unload click dblcl
 	"change select submit keydown keypress keyup error").split(" "), function( i, name ) {
 
 	// Handle event binding
-	jQuery.fn[ name ] = function( fn ) {
-		return fn ? this.bind( name, fn ) : this.trigger( name );
+	jQuery.fn[ name ] = function( data, fn ) {
+		if ( fn == null ) {
+			fn = data;
+			data = null;
+		}
+
+		return arguments.length > 0 ?
+			this.bind( name, data, fn ) :
+			this.trigger( name );
 	};
 
 	if ( jQuery.attrFn ) {
@@ -2605,48 +3765,38 @@ jQuery.each( ("blur focus focusin focusout load resize scroll unload click dblcl
 	}
 });
 
-// Prevent memory leaks in IE
-// Window isn't included so as not to unbind existing unload events
-// More info:
-//  - http://isaacschlueter.com/2006/10/msie-memory-leaks/
-if ( window.attachEvent && !window.addEventListener ) {
-	window.attachEvent("onunload", function() {
-		for ( var id in jQuery.cache ) {
-			if ( jQuery.cache[ id ].handle ) {
-				// Try/Catch is to handle iframes being unloaded, see #4280
-				try {
-					jQuery.event.remove( jQuery.cache[ id ].handle.elem );
-				} catch(e) {}
-			}
-		}
-	});
-}
+
+
 /*!
- * Sizzle CSS Selector Engine - v1.0
- *  Copyright 2009, The Dojo Foundation
+ * Sizzle CSS Selector Engine
+ *  Copyright 2011, The Dojo Foundation
  *  Released under the MIT, BSD, and GPL Licenses.
  *  More information: http://sizzlejs.com/
  */
 (function(){
 
-var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?((?:.|\r|\n)*)/g,
+var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^\[\]]*\]|['"][^'"]*['"]|[^\[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?((?:.|\r|\n)*)/g,
 	done = 0,
 	toString = Object.prototype.toString,
 	hasDuplicate = false,
-	baseHasDuplicate = true;
+	baseHasDuplicate = true,
+	rBackslash = /\\/g,
+	rNonWord = /\W/;
 
 // Here we check if the JavaScript engine is using some sort of
 // optimization where it does not always call our comparision
 // function. If that is the case, discard the hasDuplicate value.
 //   Thus far that includes Google Chrome.
-[0, 0].sort(function(){
+[0, 0].sort(function() {
 	baseHasDuplicate = false;
 	return 0;
 });
 
-var Sizzle = function(selector, context, results, seed) {
+var Sizzle = function( selector, context, results, seed ) {
 	results = results || [];
-	var origContext = context = context || document;
+	context = context || document;
+
+	var origContext = context;
 
 	if ( context.nodeType !== 1 && context.nodeType !== 9 ) {
 		return [];
@@ -2656,24 +3806,34 @@ var Sizzle = function(selector, context, results, seed) {
 		return results;
 	}
 
-	var parts = [], m, set, checkSet, extra, prune = true, contextXML = isXML(context),
+	var m, set, checkSet, extra, ret, cur, pop, i,
+		prune = true,
+		contextXML = Sizzle.isXML( context ),
+		parts = [],
 		soFar = selector;
 	
 	// Reset the position of the chunker regexp (start from head)
-	while ( (chunker.exec(""), m = chunker.exec(soFar)) !== null ) {
-		soFar = m[3];
+	do {
+		chunker.exec( "" );
+		m = chunker.exec( soFar );
+
+		if ( m ) {
+			soFar = m[3];
 		
-		parts.push( m[1] );
+			parts.push( m[1] );
 		
-		if ( m[2] ) {
-			extra = m[3];
-			break;
+			if ( m[2] ) {
+				extra = m[3];
+				break;
+			}
 		}
-	}
+	} while ( m );
 
 	if ( parts.length > 1 && origPOS.exec( selector ) ) {
+
 		if ( parts.length === 2 && Expr.relative[ parts[0] ] ) {
 			set = posProcess( parts[0] + parts[1], context );
+
 		} else {
 			set = Expr.relative[ parts[0] ] ?
 				[ context ] :
@@ -2689,29 +3849,38 @@ var Sizzle = function(selector, context, results, seed) {
 				set = posProcess( selector, set );
 			}
 		}
+
 	} else {
 		// Take a shortcut and set the context if the root selector is an ID
 		// (but not if it'll be faster if the inner selector is an ID)
 		if ( !seed && parts.length > 1 && context.nodeType === 9 && !contextXML &&
 				Expr.match.ID.test(parts[0]) && !Expr.match.ID.test(parts[parts.length - 1]) ) {
-			var ret = Sizzle.find( parts.shift(), context, contextXML );
-			context = ret.expr ? Sizzle.filter( ret.expr, ret.set )[0] : ret.set[0];
+
+			ret = Sizzle.find( parts.shift(), context, contextXML );
+			context = ret.expr ?
+				Sizzle.filter( ret.expr, ret.set )[0] :
+				ret.set[0];
 		}
 
 		if ( context ) {
-			var ret = seed ?
+			ret = seed ?
 				{ expr: parts.pop(), set: makeArray(seed) } :
 				Sizzle.find( parts.pop(), parts.length === 1 && (parts[0] === "~" || parts[0] === "+") && context.parentNode ? context.parentNode : context, contextXML );
-			set = ret.expr ? Sizzle.filter( ret.expr, ret.set ) : ret.set;
+
+			set = ret.expr ?
+				Sizzle.filter( ret.expr, ret.set ) :
+				ret.set;
 
 			if ( parts.length > 0 ) {
-				checkSet = makeArray(set);
+				checkSet = makeArray( set );
+
 			} else {
 				prune = false;
 			}
 
 			while ( parts.length ) {
-				var cur = parts.pop(), pop = cur;
+				cur = parts.pop();
+				pop = cur;
 
 				if ( !Expr.relative[ cur ] ) {
 					cur = "";
@@ -2725,6 +3894,7 @@ var Sizzle = function(selector, context, results, seed) {
 
 				Expr.relative[ cur ]( checkSet, pop, contextXML );
 			}
+
 		} else {
 			checkSet = parts = [];
 		}
@@ -2741,19 +3911,22 @@ var Sizzle = function(selector, context, results, seed) {
 	if ( toString.call(checkSet) === "[object Array]" ) {
 		if ( !prune ) {
 			results.push.apply( results, checkSet );
+
 		} else if ( context && context.nodeType === 1 ) {
-			for ( var i = 0; checkSet[i] != null; i++ ) {
-				if ( checkSet[i] && (checkSet[i] === true || checkSet[i].nodeType === 1 && contains(context, checkSet[i])) ) {
+			for ( i = 0; checkSet[i] != null; i++ ) {
+				if ( checkSet[i] && (checkSet[i] === true || checkSet[i].nodeType === 1 && Sizzle.contains(context, checkSet[i])) ) {
 					results.push( set[i] );
 				}
 			}
+
 		} else {
-			for ( var i = 0; checkSet[i] != null; i++ ) {
+			for ( i = 0; checkSet[i] != null; i++ ) {
 				if ( checkSet[i] && checkSet[i].nodeType === 1 ) {
 					results.push( set[i] );
 				}
 			}
 		}
+
 	} else {
 		makeArray( checkSet, results );
 	}
@@ -2766,15 +3939,15 @@ var Sizzle = function(selector, context, results, seed) {
 	return results;
 };
 
-Sizzle.uniqueSort = function(results){
+Sizzle.uniqueSort = function( results ) {
 	if ( sortOrder ) {
 		hasDuplicate = baseHasDuplicate;
-		results.sort(sortOrder);
+		results.sort( sortOrder );
 
 		if ( hasDuplicate ) {
 			for ( var i = 1; i < results.length; i++ ) {
-				if ( results[i] === results[i-1] ) {
-					results.splice(i--, 1);
+				if ( results[i] === results[ i - 1 ] ) {
+					results.splice( i--, 1 );
 				}
 			}
 		}
@@ -2783,27 +3956,33 @@ Sizzle.uniqueSort = function(results){
 	return results;
 };
 
-Sizzle.matches = function(expr, set){
-	return Sizzle(expr, null, null, set);
+Sizzle.matches = function( expr, set ) {
+	return Sizzle( expr, null, null, set );
 };
 
-Sizzle.find = function(expr, context, isXML){
-	var set, match;
+Sizzle.matchesSelector = function( node, expr ) {
+	return Sizzle( expr, null, null, [node] ).length > 0;
+};
+
+Sizzle.find = function( expr, context, isXML ) {
+	var set;
 
 	if ( !expr ) {
 		return [];
 	}
 
 	for ( var i = 0, l = Expr.order.length; i < l; i++ ) {
-		var type = Expr.order[i], match;
+		var match,
+			type = Expr.order[i];
 		
 		if ( (match = Expr.leftMatch[ type ].exec( expr )) ) {
 			var left = match[1];
-			match.splice(1,1);
+			match.splice( 1, 1 );
 
 			if ( left.substr( left.length - 1 ) !== "\\" ) {
-				match[1] = (match[1] || "").replace(/\\/g, "");
+				match[1] = (match[1] || "").replace( rBackslash, "" );
 				set = Expr.find[ type ]( match, context, isXML );
+
 				if ( set != null ) {
 					expr = expr.replace( Expr.match[ type ], "" );
 					break;
@@ -2813,20 +3992,28 @@ Sizzle.find = function(expr, context, isXML){
 	}
 
 	if ( !set ) {
-		set = context.getElementsByTagName("*");
+		set = typeof context.getElementsByTagName !== "undefined" ?
+			context.getElementsByTagName( "*" ) :
+			[];
 	}
 
-	return {set: set, expr: expr};
+	return { set: set, expr: expr };
 };
 
-Sizzle.filter = function(expr, set, inplace, not){
-	var old = expr, result = [], curLoop = set, match, anyFound,
-		isXMLFilter = set && set[0] && isXML(set[0]);
+Sizzle.filter = function( expr, set, inplace, not ) {
+	var match, anyFound,
+		old = expr,
+		result = [],
+		curLoop = set,
+		isXMLFilter = set && set[0] && Sizzle.isXML( set[0] );
 
 	while ( expr && set.length ) {
 		for ( var type in Expr.filter ) {
 			if ( (match = Expr.leftMatch[ type ].exec( expr )) != null && match[2] ) {
-				var filter = Expr.filter[ type ], found, item, left = match[1];
+				var found, item,
+					filter = Expr.filter[ type ],
+					left = match[1];
+
 				anyFound = false;
 
 				match.splice(1,1);
@@ -2844,6 +4031,7 @@ Sizzle.filter = function(expr, set, inplace, not){
 
 					if ( !match ) {
 						anyFound = found = true;
+
 					} else if ( match === true ) {
 						continue;
 					}
@@ -2858,9 +4046,11 @@ Sizzle.filter = function(expr, set, inplace, not){
 							if ( inplace && found != null ) {
 								if ( pass ) {
 									anyFound = true;
+
 								} else {
 									curLoop[i] = false;
 								}
+
 							} else if ( pass ) {
 								result.push( item );
 								anyFound = true;
@@ -2889,6 +4079,7 @@ Sizzle.filter = function(expr, set, inplace, not){
 		if ( expr === old ) {
 			if ( anyFound == null ) {
 				Sizzle.error( expr );
+
 			} else {
 				break;
 			}
@@ -2906,30 +4097,38 @@ Sizzle.error = function( msg ) {
 
 var Expr = Sizzle.selectors = {
 	order: [ "ID", "NAME", "TAG" ],
+
 	match: {
-		ID: /#((?:[\w\u00c0-\uFFFF-]|\\.)+)/,
-		CLASS: /\.((?:[\w\u00c0-\uFFFF-]|\\.)+)/,
-		NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF-]|\\.)+)['"]*\]/,
-		ATTR: /\[\s*((?:[\w\u00c0-\uFFFF-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/,
-		TAG: /^((?:[\w\u00c0-\uFFFF\*-]|\\.)+)/,
-		CHILD: /:(only|nth|last|first)-child(?:\((even|odd|[\dn+-]*)\))?/,
-		POS: /:(nth|eq|gt|lt|first|last|even|odd)(?:\((\d*)\))?(?=[^-]|$)/,
-		PSEUDO: /:((?:[\w\u00c0-\uFFFF-]|\\.)+)(?:\((['"]?)((?:\([^\)]+\)|[^\(\)]*)+)\2\))?/
+		ID: /#((?:[\w\u00c0-\uFFFF\-]|\\.)+)/,
+		CLASS: /\.((?:[\w\u00c0-\uFFFF\-]|\\.)+)/,
+		NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF\-]|\\.)+)['"]*\]/,
+		ATTR: /\[\s*((?:[\w\u00c0-\uFFFF\-]|\\.)+)\s*(?:(\S?=)\s*(?:(['"])(.*?)\3|(#?(?:[\w\u00c0-\uFFFF\-]|\\.)*)|)|)\s*\]/,
+		TAG: /^((?:[\w\u00c0-\uFFFF\*\-]|\\.)+)/,
+		CHILD: /:(only|nth|last|first)-child(?:\(\s*(even|odd|(?:[+\-]?\d+|(?:[+\-]?\d*)?n\s*(?:[+\-]\s*\d+)?))\s*\))?/,
+		POS: /:(nth|eq|gt|lt|first|last|even|odd)(?:\((\d*)\))?(?=[^\-]|$)/,
+		PSEUDO: /:((?:[\w\u00c0-\uFFFF\-]|\\.)+)(?:\((['"]?)((?:\([^\)]+\)|[^\(\)]*)+)\2\))?/
 	},
+
 	leftMatch: {},
+
 	attrMap: {
 		"class": "className",
 		"for": "htmlFor"
 	},
+
 	attrHandle: {
-		href: function(elem){
-			return elem.getAttribute("href");
+		href: function( elem ) {
+			return elem.getAttribute( "href" );
+		},
+		type: function( elem ) {
+			return elem.getAttribute( "type" );
 		}
 	},
+
 	relative: {
 		"+": function(checkSet, part){
 			var isPartStr = typeof part === "string",
-				isTag = isPartStr && !/\W/.test(part),
+				isTag = isPartStr && !rNonWord.test( part ),
 				isPartStrNotTag = isPartStr && !isTag;
 
 			if ( isTag ) {
@@ -2950,22 +4149,29 @@ var Expr = Sizzle.selectors = {
 				Sizzle.filter( part, checkSet, true );
 			}
 		},
-		">": function(checkSet, part){
-			var isPartStr = typeof part === "string";
 
-			if ( isPartStr && !/\W/.test(part) ) {
+		">": function( checkSet, part ) {
+			var elem,
+				isPartStr = typeof part === "string",
+				i = 0,
+				l = checkSet.length;
+
+			if ( isPartStr && !rNonWord.test( part ) ) {
 				part = part.toLowerCase();
 
-				for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-					var elem = checkSet[i];
+				for ( ; i < l; i++ ) {
+					elem = checkSet[i];
+
 					if ( elem ) {
 						var parent = elem.parentNode;
 						checkSet[i] = parent.nodeName.toLowerCase() === part ? parent : false;
 					}
 				}
+
 			} else {
-				for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-					var elem = checkSet[i];
+				for ( ; i < l; i++ ) {
+					elem = checkSet[i];
+
 					if ( elem ) {
 						checkSet[i] = isPartStr ?
 							elem.parentNode :
@@ -2978,37 +4184,50 @@ var Expr = Sizzle.selectors = {
 				}
 			}
 		},
+
 		"": function(checkSet, part, isXML){
-			var doneName = done++, checkFn = dirCheck;
+			var nodeCheck,
+				doneName = done++,
+				checkFn = dirCheck;
 
-			if ( typeof part === "string" && !/\W/.test(part) ) {
-				var nodeCheck = part = part.toLowerCase();
+			if ( typeof part === "string" && !rNonWord.test( part ) ) {
+				part = part.toLowerCase();
+				nodeCheck = part;
 				checkFn = dirNodeCheck;
 			}
 
-			checkFn("parentNode", part, doneName, checkSet, nodeCheck, isXML);
+			checkFn( "parentNode", part, doneName, checkSet, nodeCheck, isXML );
 		},
-		"~": function(checkSet, part, isXML){
-			var doneName = done++, checkFn = dirCheck;
 
-			if ( typeof part === "string" && !/\W/.test(part) ) {
-				var nodeCheck = part = part.toLowerCase();
+		"~": function( checkSet, part, isXML ) {
+			var nodeCheck,
+				doneName = done++,
+				checkFn = dirCheck;
+
+			if ( typeof part === "string" && !rNonWord.test( part ) ) {
+				part = part.toLowerCase();
+				nodeCheck = part;
 				checkFn = dirNodeCheck;
 			}
 
-			checkFn("previousSibling", part, doneName, checkSet, nodeCheck, isXML);
+			checkFn( "previousSibling", part, doneName, checkSet, nodeCheck, isXML );
 		}
 	},
+
 	find: {
-		ID: function(match, context, isXML){
+		ID: function( match, context, isXML ) {
 			if ( typeof context.getElementById !== "undefined" && !isXML ) {
 				var m = context.getElementById(match[1]);
-				return m ? [m] : [];
+				// Check parentNode to catch when Blackberry 4.6 returns
+				// nodes that are no longer in the document #6963
+				return m && m.parentNode ? [m] : [];
 			}
 		},
-		NAME: function(match, context){
+
+		NAME: function( match, context ) {
 			if ( typeof context.getElementsByName !== "undefined" ) {
-				var ret = [], results = context.getElementsByName(match[1]);
+				var ret = [],
+					results = context.getElementsByName( match[1] );
 
 				for ( var i = 0, l = results.length; i < l; i++ ) {
 					if ( results[i].getAttribute("name") === match[1] ) {
@@ -3019,13 +4238,16 @@ var Expr = Sizzle.selectors = {
 				return ret.length === 0 ? null : ret;
 			}
 		},
-		TAG: function(match, context){
-			return context.getElementsByTagName(match[1]);
+
+		TAG: function( match, context ) {
+			if ( typeof context.getElementsByTagName !== "undefined" ) {
+				return context.getElementsByTagName( match[1] );
+			}
 		}
 	},
 	preFilter: {
-		CLASS: function(match, curLoop, inplace, result, not, isXML){
-			match = " " + match[1].replace(/\\/g, "") + " ";
+		CLASS: function( match, curLoop, inplace, result, not, isXML ) {
+			match = " " + match[1].replace( rBackslash, "" ) + " ";
 
 			if ( isXML ) {
 				return match;
@@ -3033,10 +4255,11 @@ var Expr = Sizzle.selectors = {
 
 			for ( var i = 0, elem; (elem = curLoop[i]) != null; i++ ) {
 				if ( elem ) {
-					if ( not ^ (elem.className && (" " + elem.className + " ").replace(/[\t\n]/g, " ").indexOf(match) >= 0) ) {
+					if ( not ^ (elem.className && (" " + elem.className + " ").replace(/[\t\n\r]/g, " ").indexOf(match) >= 0) ) {
 						if ( !inplace ) {
 							result.push( elem );
 						}
+
 					} else if ( inplace ) {
 						curLoop[i] = false;
 					}
@@ -3045,16 +4268,25 @@ var Expr = Sizzle.selectors = {
 
 			return false;
 		},
-		ID: function(match){
-			return match[1].replace(/\\/g, "");
+
+		ID: function( match ) {
+			return match[1].replace( rBackslash, "" );
 		},
-		TAG: function(match, curLoop){
-			return match[1].toLowerCase();
+
+		TAG: function( match, curLoop ) {
+			return match[1].replace( rBackslash, "" ).toLowerCase();
 		},
-		CHILD: function(match){
+
+		CHILD: function( match ) {
 			if ( match[1] === "nth" ) {
+				if ( !match[2] ) {
+					Sizzle.error( match[0] );
+				}
+
+				match[2] = match[2].replace(/^\+|\s*/g, '');
+
 				// parse equations like 'even', 'odd', '5', '2n', '3n+2', '4n-1', '-n+6'
-				var test = /(-?)(\d*)n((?:\+|-)?\d*)/.exec(
+				var test = /(-?)(\d*)(?:n([+\-]?\d*))?/.exec(
 					match[2] === "even" && "2n" || match[2] === "odd" && "2n+1" ||
 					!/\D/.test( match[2] ) && "0n+" + match[2] || match[2]);
 
@@ -3062,18 +4294,25 @@ var Expr = Sizzle.selectors = {
 				match[2] = (test[1] + (test[2] || 1)) - 0;
 				match[3] = test[3] - 0;
 			}
+			else if ( match[2] ) {
+				Sizzle.error( match[0] );
+			}
 
 			// TODO: Move to normal caching system
 			match[0] = done++;
 
 			return match;
 		},
-		ATTR: function(match, curLoop, inplace, result, not, isXML){
-			var name = match[1].replace(/\\/g, "");
+
+		ATTR: function( match, curLoop, inplace, result, not, isXML ) {
+			var name = match[1] = match[1].replace( rBackslash, "" );
 			
 			if ( !isXML && Expr.attrMap[name] ) {
 				match[1] = Expr.attrMap[name];
 			}
+
+			// Handle if an un-quoted value was used
+			match[4] = ( match[4] || match[5] || "" ).replace( rBackslash, "" );
 
 			if ( match[2] === "~=" ) {
 				match[4] = " " + match[4] + " ";
@@ -3081,159 +4320,217 @@ var Expr = Sizzle.selectors = {
 
 			return match;
 		},
-		PSEUDO: function(match, curLoop, inplace, result, not){
+
+		PSEUDO: function( match, curLoop, inplace, result, not ) {
 			if ( match[1] === "not" ) {
 				// If we're dealing with a complex expression, or a simple one
 				if ( ( chunker.exec(match[3]) || "" ).length > 1 || /^\w/.test(match[3]) ) {
 					match[3] = Sizzle(match[3], null, null, curLoop);
+
 				} else {
 					var ret = Sizzle.filter(match[3], curLoop, inplace, true ^ not);
+
 					if ( !inplace ) {
 						result.push.apply( result, ret );
 					}
+
 					return false;
 				}
+
 			} else if ( Expr.match.POS.test( match[0] ) || Expr.match.CHILD.test( match[0] ) ) {
 				return true;
 			}
 			
 			return match;
 		},
-		POS: function(match){
+
+		POS: function( match ) {
 			match.unshift( true );
+
 			return match;
 		}
 	},
+	
 	filters: {
-		enabled: function(elem){
+		enabled: function( elem ) {
 			return elem.disabled === false && elem.type !== "hidden";
 		},
-		disabled: function(elem){
+
+		disabled: function( elem ) {
 			return elem.disabled === true;
 		},
-		checked: function(elem){
+
+		checked: function( elem ) {
 			return elem.checked === true;
 		},
-		selected: function(elem){
+		
+		selected: function( elem ) {
 			// Accessing this property makes selected-by-default
 			// options in Safari work properly
-			elem.parentNode.selectedIndex;
+			if ( elem.parentNode ) {
+				elem.parentNode.selectedIndex;
+			}
+			
 			return elem.selected === true;
 		},
-		parent: function(elem){
+
+		parent: function( elem ) {
 			return !!elem.firstChild;
 		},
-		empty: function(elem){
+
+		empty: function( elem ) {
 			return !elem.firstChild;
 		},
-		has: function(elem, i, match){
+
+		has: function( elem, i, match ) {
 			return !!Sizzle( match[3], elem ).length;
 		},
-		header: function(elem){
-			return /h\d/i.test( elem.nodeName );
+
+		header: function( elem ) {
+			return (/h\d/i).test( elem.nodeName );
 		},
-		text: function(elem){
-			return "text" === elem.type;
+
+		text: function( elem ) {
+			var attr = elem.getAttribute( "type" ), type = elem.type;
+			// IE6 and 7 will map elem.type to 'text' for new HTML5 types (search, etc) 
+			// use getAttribute instead to test this case
+			return elem.nodeName.toLowerCase() === "input" && "text" === type && ( attr === type || attr === null );
 		},
-		radio: function(elem){
-			return "radio" === elem.type;
+
+		radio: function( elem ) {
+			return elem.nodeName.toLowerCase() === "input" && "radio" === elem.type;
 		},
-		checkbox: function(elem){
-			return "checkbox" === elem.type;
+
+		checkbox: function( elem ) {
+			return elem.nodeName.toLowerCase() === "input" && "checkbox" === elem.type;
 		},
-		file: function(elem){
-			return "file" === elem.type;
+
+		file: function( elem ) {
+			return elem.nodeName.toLowerCase() === "input" && "file" === elem.type;
 		},
-		password: function(elem){
-			return "password" === elem.type;
+
+		password: function( elem ) {
+			return elem.nodeName.toLowerCase() === "input" && "password" === elem.type;
 		},
-		submit: function(elem){
-			return "submit" === elem.type;
+
+		submit: function( elem ) {
+			var name = elem.nodeName.toLowerCase();
+			return (name === "input" || name === "button") && "submit" === elem.type;
 		},
-		image: function(elem){
-			return "image" === elem.type;
+
+		image: function( elem ) {
+			return elem.nodeName.toLowerCase() === "input" && "image" === elem.type;
 		},
-		reset: function(elem){
-			return "reset" === elem.type;
+
+		reset: function( elem ) {
+			var name = elem.nodeName.toLowerCase();
+			return (name === "input" || name === "button") && "reset" === elem.type;
 		},
-		button: function(elem){
-			return "button" === elem.type || elem.nodeName.toLowerCase() === "button";
+
+		button: function( elem ) {
+			var name = elem.nodeName.toLowerCase();
+			return name === "input" && "button" === elem.type || name === "button";
 		},
-		input: function(elem){
-			return /input|select|textarea|button/i.test(elem.nodeName);
+
+		input: function( elem ) {
+			return (/input|select|textarea|button/i).test( elem.nodeName );
+		},
+
+		focus: function( elem ) {
+			return elem === elem.ownerDocument.activeElement;
 		}
 	},
 	setFilters: {
-		first: function(elem, i){
+		first: function( elem, i ) {
 			return i === 0;
 		},
-		last: function(elem, i, match, array){
+
+		last: function( elem, i, match, array ) {
 			return i === array.length - 1;
 		},
-		even: function(elem, i){
+
+		even: function( elem, i ) {
 			return i % 2 === 0;
 		},
-		odd: function(elem, i){
+
+		odd: function( elem, i ) {
 			return i % 2 === 1;
 		},
-		lt: function(elem, i, match){
+
+		lt: function( elem, i, match ) {
 			return i < match[3] - 0;
 		},
-		gt: function(elem, i, match){
+
+		gt: function( elem, i, match ) {
 			return i > match[3] - 0;
 		},
-		nth: function(elem, i, match){
+
+		nth: function( elem, i, match ) {
 			return match[3] - 0 === i;
 		},
-		eq: function(elem, i, match){
+
+		eq: function( elem, i, match ) {
 			return match[3] - 0 === i;
 		}
 	},
 	filter: {
-		PSEUDO: function(elem, match, i, array){
-			var name = match[1], filter = Expr.filters[ name ];
+		PSEUDO: function( elem, match, i, array ) {
+			var name = match[1],
+				filter = Expr.filters[ name ];
 
 			if ( filter ) {
 				return filter( elem, i, match, array );
+
 			} else if ( name === "contains" ) {
-				return (elem.textContent || elem.innerText || getText([ elem ]) || "").indexOf(match[3]) >= 0;
+				return (elem.textContent || elem.innerText || Sizzle.getText([ elem ]) || "").indexOf(match[3]) >= 0;
+
 			} else if ( name === "not" ) {
 				var not = match[3];
 
-				for ( var i = 0, l = not.length; i < l; i++ ) {
-					if ( not[i] === elem ) {
+				for ( var j = 0, l = not.length; j < l; j++ ) {
+					if ( not[j] === elem ) {
 						return false;
 					}
 				}
 
 				return true;
+
 			} else {
-				Sizzle.error( "Syntax error, unrecognized expression: " + name );
+				Sizzle.error( name );
 			}
 		},
-		CHILD: function(elem, match){
-			var type = match[1], node = elem;
-			switch (type) {
-				case 'only':
-				case 'first':
+
+		CHILD: function( elem, match ) {
+			var type = match[1],
+				node = elem;
+
+			switch ( type ) {
+				case "only":
+				case "first":
 					while ( (node = node.previousSibling) )	 {
 						if ( node.nodeType === 1 ) { 
 							return false; 
 						}
 					}
+
 					if ( type === "first" ) { 
 						return true; 
 					}
+
 					node = elem;
-				case 'last':
+
+				case "last":
 					while ( (node = node.nextSibling) )	 {
 						if ( node.nodeType === 1 ) { 
 							return false; 
 						}
 					}
+
 					return true;
-				case 'nth':
-					var first = match[2], last = match[3];
+
+				case "nth":
+					var first = match[2],
+						last = match[3];
 
 					if ( first === 1 && last === 0 ) {
 						return true;
@@ -3244,33 +4541,41 @@ var Expr = Sizzle.selectors = {
 	
 					if ( parent && (parent.sizcache !== doneName || !elem.nodeIndex) ) {
 						var count = 0;
+						
 						for ( node = parent.firstChild; node; node = node.nextSibling ) {
 							if ( node.nodeType === 1 ) {
 								node.nodeIndex = ++count;
 							}
 						} 
+
 						parent.sizcache = doneName;
 					}
 					
 					var diff = elem.nodeIndex - last;
+
 					if ( first === 0 ) {
 						return diff === 0;
+
 					} else {
 						return ( diff % first === 0 && diff / first >= 0 );
 					}
 			}
 		},
-		ID: function(elem, match){
+
+		ID: function( elem, match ) {
 			return elem.nodeType === 1 && elem.getAttribute("id") === match;
 		},
-		TAG: function(elem, match){
+
+		TAG: function( elem, match ) {
 			return (match === "*" && elem.nodeType === 1) || elem.nodeName.toLowerCase() === match;
 		},
-		CLASS: function(elem, match){
+		
+		CLASS: function( elem, match ) {
 			return (" " + (elem.className || elem.getAttribute("class")) + " ")
 				.indexOf( match ) > -1;
 		},
-		ATTR: function(elem, match){
+
+		ATTR: function( elem, match ) {
 			var name = match[1],
 				result = Expr.attrHandle[ name ] ?
 					Expr.attrHandle[ name ]( elem ) :
@@ -3301,8 +4606,10 @@ var Expr = Sizzle.selectors = {
 				value === check || value.substr(0, check.length + 1) === check + "-" :
 				false;
 		},
-		POS: function(elem, match, i, array){
-			var name = match[2], filter = Expr.setFilters[ name ];
+
+		POS: function( elem, match, i, array ) {
+			var name = match[2],
+				filter = Expr.setFilters[ name ];
 
 			if ( filter ) {
 				return filter( elem, i, match, array );
@@ -3311,16 +4618,17 @@ var Expr = Sizzle.selectors = {
 	}
 };
 
-var origPOS = Expr.match.POS;
+var origPOS = Expr.match.POS,
+	fescape = function(all, num){
+		return "\\" + (num - 0 + 1);
+	};
 
 for ( var type in Expr.match ) {
-	Expr.match[ type ] = new RegExp( Expr.match[ type ].source + /(?![^\[]*\])(?![^\(]*\))/.source );
-	Expr.leftMatch[ type ] = new RegExp( /(^(?:.|\r|\n)*?)/.source + Expr.match[ type ].source.replace(/\\(\d+)/g, function(all, num){
-		return "\\" + (num - 0 + 1);
-	}));
+	Expr.match[ type ] = new RegExp( Expr.match[ type ].source + (/(?![^\[]*\])(?![^\(]*\))/.source) );
+	Expr.leftMatch[ type ] = new RegExp( /(^(?:.|\r|\n)*?)/.source + Expr.match[ type ].source.replace(/\\(\d+)/g, fescape) );
 }
 
-var makeArray = function(array, results) {
+var makeArray = function( array, results ) {
 	array = Array.prototype.slice.call( array, 0 );
 
 	if ( results ) {
@@ -3339,19 +4647,22 @@ try {
 	Array.prototype.slice.call( document.documentElement.childNodes, 0 )[0].nodeType;
 
 // Provide a fallback method if it does not work
-} catch(e){
-	makeArray = function(array, results) {
-		var ret = results || [];
+} catch( e ) {
+	makeArray = function( array, results ) {
+		var i = 0,
+			ret = results || [];
 
 		if ( toString.call(array) === "[object Array]" ) {
 			Array.prototype.push.apply( ret, array );
+
 		} else {
 			if ( typeof array.length === "number" ) {
-				for ( var i = 0, l = array.length; i < l; i++ ) {
+				for ( var l = array.length; i < l; i++ ) {
 					ret.push( array[i] );
 				}
+
 			} else {
-				for ( var i = 0; array[i]; i++ ) {
+				for ( ; array[i]; i++ ) {
 					ret.push( array[i] );
 				}
 			}
@@ -3361,62 +4672,104 @@ try {
 	};
 }
 
-var sortOrder;
+var sortOrder, siblingCheck;
 
 if ( document.documentElement.compareDocumentPosition ) {
 	sortOrder = function( a, b ) {
+		if ( a === b ) {
+			hasDuplicate = true;
+			return 0;
+		}
+
 		if ( !a.compareDocumentPosition || !b.compareDocumentPosition ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
 			return a.compareDocumentPosition ? -1 : 1;
 		}
 
-		var ret = a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
-		if ( ret === 0 ) {
-			hasDuplicate = true;
-		}
-		return ret;
+		return a.compareDocumentPosition(b) & 4 ? -1 : 1;
 	};
-} else if ( "sourceIndex" in document.documentElement ) {
+
+} else {
 	sortOrder = function( a, b ) {
-		if ( !a.sourceIndex || !b.sourceIndex ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
-			return a.sourceIndex ? -1 : 1;
+		// The nodes are identical, we can exit early
+		if ( a === b ) {
+			hasDuplicate = true;
+			return 0;
+
+		// Fallback to using sourceIndex (in IE) if it's available on both nodes
+		} else if ( a.sourceIndex && b.sourceIndex ) {
+			return a.sourceIndex - b.sourceIndex;
 		}
 
-		var ret = a.sourceIndex - b.sourceIndex;
-		if ( ret === 0 ) {
-			hasDuplicate = true;
-		}
-		return ret;
-	};
-} else if ( document.createRange ) {
-	sortOrder = function( a, b ) {
-		if ( !a.ownerDocument || !b.ownerDocument ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
-			return a.ownerDocument ? -1 : 1;
+		var al, bl,
+			ap = [],
+			bp = [],
+			aup = a.parentNode,
+			bup = b.parentNode,
+			cur = aup;
+
+		// If the nodes are siblings (or identical) we can do a quick check
+		if ( aup === bup ) {
+			return siblingCheck( a, b );
+
+		// If no parents were found then the nodes are disconnected
+		} else if ( !aup ) {
+			return -1;
+
+		} else if ( !bup ) {
+			return 1;
 		}
 
-		var aRange = a.ownerDocument.createRange(), bRange = b.ownerDocument.createRange();
-		aRange.setStart(a, 0);
-		aRange.setEnd(a, 0);
-		bRange.setStart(b, 0);
-		bRange.setEnd(b, 0);
-		var ret = aRange.compareBoundaryPoints(Range.START_TO_END, bRange);
-		if ( ret === 0 ) {
-			hasDuplicate = true;
+		// Otherwise they're somewhere else in the tree so we need
+		// to build up a full list of the parentNodes for comparison
+		while ( cur ) {
+			ap.unshift( cur );
+			cur = cur.parentNode;
 		}
-		return ret;
+
+		cur = bup;
+
+		while ( cur ) {
+			bp.unshift( cur );
+			cur = cur.parentNode;
+		}
+
+		al = ap.length;
+		bl = bp.length;
+
+		// Start walking down the tree looking for a discrepancy
+		for ( var i = 0; i < al && i < bl; i++ ) {
+			if ( ap[i] !== bp[i] ) {
+				return siblingCheck( ap[i], bp[i] );
+			}
+		}
+
+		// We ended someplace up the tree so do a sibling check
+		return i === al ?
+			siblingCheck( a, bp[i], -1 ) :
+			siblingCheck( ap[i], b, 1 );
+	};
+
+	siblingCheck = function( a, b, ret ) {
+		if ( a === b ) {
+			return ret;
+		}
+
+		var cur = a.nextSibling;
+
+		while ( cur ) {
+			if ( cur === b ) {
+				return -1;
+			}
+
+			cur = cur.nextSibling;
+		}
+
+		return 1;
 	};
 }
 
 // Utility function for retreiving the text value of an array of DOM nodes
-function getText( elems ) {
+Sizzle.getText = function( elems ) {
 	var ret = "", elem;
 
 	for ( var i = 0; elems[i]; i++ ) {
@@ -3428,43 +4781,52 @@ function getText( elems ) {
 
 		// Traverse everything else, except comment nodes
 		} else if ( elem.nodeType !== 8 ) {
-			ret += getText( elem.childNodes );
+			ret += Sizzle.getText( elem.childNodes );
 		}
 	}
 
 	return ret;
-}
+};
 
 // Check to see if the browser returns elements by name when
 // querying by getElementById (and provide a workaround)
 (function(){
 	// We're going to inject a fake input element with a specified name
 	var form = document.createElement("div"),
-		id = "script" + (new Date).getTime();
+		id = "script" + (new Date()).getTime(),
+		root = document.documentElement;
+
 	form.innerHTML = "<a name='" + id + "'/>";
 
 	// Inject it into the root element, check its status, and remove it quickly
-	var root = document.documentElement;
 	root.insertBefore( form, root.firstChild );
 
 	// The workaround has to do additional checks after a getElementById
 	// Which slows things down for other browsers (hence the branching)
 	if ( document.getElementById( id ) ) {
-		Expr.find.ID = function(match, context, isXML){
+		Expr.find.ID = function( match, context, isXML ) {
 			if ( typeof context.getElementById !== "undefined" && !isXML ) {
 				var m = context.getElementById(match[1]);
-				return m ? m.id === match[1] || typeof m.getAttributeNode !== "undefined" && m.getAttributeNode("id").nodeValue === match[1] ? [m] : undefined : [];
+
+				return m ?
+					m.id === match[1] || typeof m.getAttributeNode !== "undefined" && m.getAttributeNode("id").nodeValue === match[1] ?
+						[m] :
+						undefined :
+					[];
 			}
 		};
 
-		Expr.filter.ID = function(elem, match){
+		Expr.filter.ID = function( elem, match ) {
 			var node = typeof elem.getAttributeNode !== "undefined" && elem.getAttributeNode("id");
+
 			return elem.nodeType === 1 && node && node.nodeValue === match;
 		};
 	}
 
 	root.removeChild( form );
-	root = form = null; // release memory in IE
+
+	// release memory in IE
+	root = form = null;
 })();
 
 (function(){
@@ -3477,8 +4839,8 @@ function getText( elems ) {
 
 	// Make sure no comments are found
 	if ( div.getElementsByTagName("*").length > 0 ) {
-		Expr.find.TAG = function(match, context){
-			var results = context.getElementsByTagName(match[1]);
+		Expr.find.TAG = function( match, context ) {
+			var results = context.getElementsByTagName( match[1] );
 
 			// Filter out possible comments
 			if ( match[1] === "*" ) {
@@ -3499,19 +4861,25 @@ function getText( elems ) {
 
 	// Check to see if an attribute returns normalized href attributes
 	div.innerHTML = "<a href='#'></a>";
+
 	if ( div.firstChild && typeof div.firstChild.getAttribute !== "undefined" &&
 			div.firstChild.getAttribute("href") !== "#" ) {
-		Expr.attrHandle.href = function(elem){
-			return elem.getAttribute("href", 2);
+
+		Expr.attrHandle.href = function( elem ) {
+			return elem.getAttribute( "href", 2 );
 		};
 	}
 
-	div = null; // release memory in IE
+	// release memory in IE
+	div = null;
 })();
 
 if ( document.querySelectorAll ) {
 	(function(){
-		var oldSizzle = Sizzle, div = document.createElement("div");
+		var oldSizzle = Sizzle,
+			div = document.createElement("div"),
+			id = "__sizzle__";
+
 		div.innerHTML = "<p class='TEST'></p>";
 
 		// Safari can't handle uppercase or unicode characters when
@@ -3520,15 +4888,86 @@ if ( document.querySelectorAll ) {
 			return;
 		}
 	
-		Sizzle = function(query, context, extra, seed){
+		Sizzle = function( query, context, extra, seed ) {
 			context = context || document;
 
 			// Only use querySelectorAll on non-XML documents
 			// (ID selectors don't work in non-HTML documents)
-			if ( !seed && context.nodeType === 9 && !isXML(context) ) {
-				try {
-					return makeArray( context.querySelectorAll(query), extra );
-				} catch(e){}
+			if ( !seed && !Sizzle.isXML(context) ) {
+				// See if we find a selector to speed up
+				var match = /^(\w+$)|^\.([\w\-]+$)|^#([\w\-]+$)/.exec( query );
+				
+				if ( match && (context.nodeType === 1 || context.nodeType === 9) ) {
+					// Speed-up: Sizzle("TAG")
+					if ( match[1] ) {
+						return makeArray( context.getElementsByTagName( query ), extra );
+					
+					// Speed-up: Sizzle(".CLASS")
+					} else if ( match[2] && Expr.find.CLASS && context.getElementsByClassName ) {
+						return makeArray( context.getElementsByClassName( match[2] ), extra );
+					}
+				}
+				
+				if ( context.nodeType === 9 ) {
+					// Speed-up: Sizzle("body")
+					// The body element only exists once, optimize finding it
+					if ( query === "body" && context.body ) {
+						return makeArray( [ context.body ], extra );
+						
+					// Speed-up: Sizzle("#ID")
+					} else if ( match && match[3] ) {
+						var elem = context.getElementById( match[3] );
+
+						// Check parentNode to catch when Blackberry 4.6 returns
+						// nodes that are no longer in the document #6963
+						if ( elem && elem.parentNode ) {
+							// Handle the case where IE and Opera return items
+							// by name instead of ID
+							if ( elem.id === match[3] ) {
+								return makeArray( [ elem ], extra );
+							}
+							
+						} else {
+							return makeArray( [], extra );
+						}
+					}
+					
+					try {
+						return makeArray( context.querySelectorAll(query), extra );
+					} catch(qsaError) {}
+
+				// qSA works strangely on Element-rooted queries
+				// We can work around this by specifying an extra ID on the root
+				// and working up from there (Thanks to Andrew Dupont for the technique)
+				// IE 8 doesn't work on object elements
+				} else if ( context.nodeType === 1 && context.nodeName.toLowerCase() !== "object" ) {
+					var oldContext = context,
+						old = context.getAttribute( "id" ),
+						nid = old || id,
+						hasParent = context.parentNode,
+						relativeHierarchySelector = /^\s*[+~]/.test( query );
+
+					if ( !old ) {
+						context.setAttribute( "id", nid );
+					} else {
+						nid = nid.replace( /'/g, "\\$&" );
+					}
+					if ( relativeHierarchySelector && hasParent ) {
+						context = context.parentNode;
+					}
+
+					try {
+						if ( !relativeHierarchySelector || hasParent ) {
+							return makeArray( context.querySelectorAll( "[id='" + nid + "'] " + query ), extra );
+						}
+
+					} catch(pseudoError) {
+					} finally {
+						if ( !old ) {
+							oldContext.removeAttribute( "id" );
+						}
+					}
+				}
 			}
 		
 			return oldSizzle(query, context, extra, seed);
@@ -3538,9 +4977,54 @@ if ( document.querySelectorAll ) {
 			Sizzle[ prop ] = oldSizzle[ prop ];
 		}
 
-		div = null; // release memory in IE
+		// release memory in IE
+		div = null;
 	})();
 }
+
+(function(){
+	var html = document.documentElement,
+		matches = html.matchesSelector || html.mozMatchesSelector || html.webkitMatchesSelector || html.msMatchesSelector;
+
+	if ( matches ) {
+		// Check to see if it's possible to do matchesSelector
+		// on a disconnected node (IE 9 fails this)
+		var disconnectedMatch = !matches.call( document.createElement( "div" ), "div" ),
+			pseudoWorks = false;
+
+		try {
+			// This should fail with an exception
+			// Gecko does not error, returns false instead
+			matches.call( document.documentElement, "[test!='']:sizzle" );
+	
+		} catch( pseudoError ) {
+			pseudoWorks = true;
+		}
+
+		Sizzle.matchesSelector = function( node, expr ) {
+			// Make sure that attribute selectors are quoted
+			expr = expr.replace(/\=\s*([^'"\]]*)\s*\]/g, "='$1']");
+
+			if ( !Sizzle.isXML( node ) ) {
+				try { 
+					if ( pseudoWorks || !Expr.match.PSEUDO.test( expr ) && !/!=/.test( expr ) ) {
+						var ret = matches.call( node, expr );
+
+						// IE 9's matchesSelector returns false on disconnected nodes
+						if ( ret || !disconnectedMatch ||
+								// As well, disconnected nodes are said to be in a document
+								// fragment in IE 9, so check for that
+								node.document && node.document.nodeType !== 11 ) {
+							return ret;
+						}
+					}
+				} catch(e) {}
+			}
+
+			return Sizzle(expr, null, null, [node]).length > 0;
+		};
+	}
+})();
 
 (function(){
 	var div = document.createElement("div");
@@ -3561,21 +5045,24 @@ if ( document.querySelectorAll ) {
 	}
 	
 	Expr.order.splice(1, 0, "CLASS");
-	Expr.find.CLASS = function(match, context, isXML) {
+	Expr.find.CLASS = function( match, context, isXML ) {
 		if ( typeof context.getElementsByClassName !== "undefined" && !isXML ) {
 			return context.getElementsByClassName(match[1]);
 		}
 	};
 
-	div = null; // release memory in IE
+	// release memory in IE
+	div = null;
 })();
 
 function dirNodeCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 	for ( var i = 0, l = checkSet.length; i < l; i++ ) {
 		var elem = checkSet[i];
+
 		if ( elem ) {
-			elem = elem[dir];
 			var match = false;
+
+			elem = elem[dir];
 
 			while ( elem ) {
 				if ( elem.sizcache === doneName ) {
@@ -3604,9 +5091,11 @@ function dirNodeCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 function dirCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 	for ( var i = 0, l = checkSet.length; i < l; i++ ) {
 		var elem = checkSet[i];
+
 		if ( elem ) {
-			elem = elem[dir];
 			var match = false;
+			
+			elem = elem[dir];
 
 			while ( elem ) {
 				if ( elem.sizcache === doneName ) {
@@ -3619,6 +5108,7 @@ function dirCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 						elem.sizcache = doneName;
 						elem.sizset = i;
 					}
+
 					if ( typeof cur !== "string" ) {
 						if ( elem === cur ) {
 							match = true;
@@ -3639,21 +5129,34 @@ function dirCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 	}
 }
 
-var contains = document.compareDocumentPosition ? function(a, b){
-	return !!(a.compareDocumentPosition(b) & 16);
-} : function(a, b){
-	return a !== b && (a.contains ? a.contains(b) : true);
-};
+if ( document.documentElement.contains ) {
+	Sizzle.contains = function( a, b ) {
+		return a !== b && (a.contains ? a.contains(b) : true);
+	};
 
-var isXML = function(elem){
+} else if ( document.documentElement.compareDocumentPosition ) {
+	Sizzle.contains = function( a, b ) {
+		return !!(a.compareDocumentPosition(b) & 16);
+	};
+
+} else {
+	Sizzle.contains = function() {
+		return false;
+	};
+}
+
+Sizzle.isXML = function( elem ) {
 	// documentElement is verified for cases where it doesn't yet exist
 	// (such as loading iframes in IE - #4833) 
 	var documentElement = (elem ? elem.ownerDocument || elem : 0).documentElement;
+
 	return documentElement ? documentElement.nodeName !== "HTML" : false;
 };
 
-var posProcess = function(selector, context){
-	var tmpSet = [], later = "", match,
+var posProcess = function( selector, context ) {
+	var match,
+		tmpSet = [],
+		later = "",
 		root = context.nodeType ? [context] : context;
 
 	// Position selectors must be done after the filter
@@ -3677,62 +5180,55 @@ jQuery.find = Sizzle;
 jQuery.expr = Sizzle.selectors;
 jQuery.expr[":"] = jQuery.expr.filters;
 jQuery.unique = Sizzle.uniqueSort;
-jQuery.text = getText;
-jQuery.isXMLDoc = isXML;
-jQuery.contains = contains;
+jQuery.text = Sizzle.getText;
+jQuery.isXMLDoc = Sizzle.isXML;
+jQuery.contains = Sizzle.contains;
 
-return;
-
-window.Sizzle = Sizzle;
 
 })();
+
+
 var runtil = /Until$/,
 	rparentsprev = /^(?:parents|prevUntil|prevAll)/,
 	// Note: This RegExp should be improved, or likely pulled from Sizzle
 	rmultiselector = /,/,
-	slice = Array.prototype.slice;
-
-// Implement the identical functionality for filter and not
-var winnow = function( elements, qualifier, keep ) {
-	if ( jQuery.isFunction( qualifier ) ) {
-		return jQuery.grep(elements, function( elem, i ) {
-			return !!qualifier.call( elem, i, elem ) === keep;
-		});
-
-	} else if ( qualifier.nodeType ) {
-		return jQuery.grep(elements, function( elem, i ) {
-			return (elem === qualifier) === keep;
-		});
-
-	} else if ( typeof qualifier === "string" ) {
-		var filtered = jQuery.grep(elements, function( elem ) {
-			return elem.nodeType === 1;
-		});
-
-		if ( isSimple.test( qualifier ) ) {
-			return jQuery.filter(qualifier, filtered, !keep);
-		} else {
-			qualifier = jQuery.filter( qualifier, filtered );
-		}
-	}
-
-	return jQuery.grep(elements, function( elem, i ) {
-		return (jQuery.inArray( elem, qualifier ) >= 0) === keep;
-	});
-};
+	isSimple = /^.[^:#\[\.,]*$/,
+	slice = Array.prototype.slice,
+	POS = jQuery.expr.match.POS,
+	// methods guaranteed to produce a unique set when starting from a unique set
+	guaranteedUnique = {
+		children: true,
+		contents: true,
+		next: true,
+		prev: true
+	};
 
 jQuery.fn.extend({
 	find: function( selector ) {
-		var ret = this.pushStack( "", "find", selector ), length = 0;
+		var self = this,
+			i, l;
 
-		for ( var i = 0, l = this.length; i < l; i++ ) {
+		if ( typeof selector !== "string" ) {
+			return jQuery( selector ).filter(function() {
+				for ( i = 0, l = self.length; i < l; i++ ) {
+					if ( jQuery.contains( self[ i ], this ) ) {
+						return true;
+					}
+				}
+			});
+		}
+
+		var ret = this.pushStack( "", "find", selector ),
+			length, n, r;
+
+		for ( i = 0, l = this.length; i < l; i++ ) {
 			length = ret.length;
 			jQuery.find( selector, this[i], ret );
 
 			if ( i > 0 ) {
 				// Make sure that the results are unique
-				for ( var n = length; n < ret.length; n++ ) {
-					for ( var r = 0; r < length; r++ ) {
+				for ( n = length; n < ret.length; n++ ) {
+					for ( r = 0; r < length; r++ ) {
 						if ( ret[r] === ret[n] ) {
 							ret.splice(n--, 1);
 							break;
@@ -3763,21 +5259,28 @@ jQuery.fn.extend({
 	filter: function( selector ) {
 		return this.pushStack( winnow(this, selector, true), "filter", selector );
 	},
-	
+
 	is: function( selector ) {
-		return !!selector && jQuery.filter( selector, this ).length > 0;
+		return !!selector && ( typeof selector === "string" ?
+			jQuery.filter( selector, this ).length > 0 :
+			this.filter( selector ).length > 0 );
 	},
 
 	closest: function( selectors, context ) {
+		var ret = [], i, l, cur = this[0];
+		
+		// Array
 		if ( jQuery.isArray( selectors ) ) {
-			var ret = [], cur = this[0], match, matches = {}, selector;
+			var match, selector,
+				matches = {},
+				level = 1;
 
 			if ( cur && selectors.length ) {
-				for ( var i = 0, l = selectors.length; i < l; i++ ) {
+				for ( i = 0, l = selectors.length; i < l; i++ ) {
 					selector = selectors[i];
 
-					if ( !matches[selector] ) {
-						matches[selector] = jQuery.expr.match.POS.test( selector ) ? 
+					if ( !matches[ selector ] ) {
+						matches[ selector ] = POS.test( selector ) ?
 							jQuery( selector, context || this.context ) :
 							selector;
 					}
@@ -3785,43 +5288,62 @@ jQuery.fn.extend({
 
 				while ( cur && cur.ownerDocument && cur !== context ) {
 					for ( selector in matches ) {
-						match = matches[selector];
+						match = matches[ selector ];
 
-						if ( match.jquery ? match.index(cur) > -1 : jQuery(cur).is(match) ) {
-							ret.push({ selector: selector, elem: cur });
-							delete matches[selector];
+						if ( match.jquery ? match.index( cur ) > -1 : jQuery( cur ).is( match ) ) {
+							ret.push({ selector: selector, elem: cur, level: level });
 						}
 					}
+
 					cur = cur.parentNode;
+					level++;
 				}
 			}
 
 			return ret;
 		}
 
-		var pos = jQuery.expr.match.POS.test( selectors ) ? 
-			jQuery( selectors, context || this.context ) : null;
+		// String
+		var pos = POS.test( selectors ) || typeof selectors !== "string" ?
+				jQuery( selectors, context || this.context ) :
+				0;
 
-		return this.map(function( i, cur ) {
-			while ( cur && cur.ownerDocument && cur !== context ) {
-				if ( pos ? pos.index(cur) > -1 : jQuery(cur).is(selectors) ) {
-					return cur;
+		for ( i = 0, l = this.length; i < l; i++ ) {
+			cur = this[i];
+
+			while ( cur ) {
+				if ( pos ? pos.index(cur) > -1 : jQuery.find.matchesSelector(cur, selectors) ) {
+					ret.push( cur );
+					break;
+
+				} else {
+					cur = cur.parentNode;
+					if ( !cur || !cur.ownerDocument || cur === context || cur.nodeType === 11 ) {
+						break;
+					}
 				}
-				cur = cur.parentNode;
 			}
-			return null;
-		});
+		}
+
+		ret = ret.length > 1 ? jQuery.unique( ret ) : ret;
+
+		return this.pushStack( ret, "closest", selectors );
 	},
-	
+
 	// Determine the position of an element within
 	// the matched set of elements
 	index: function( elem ) {
-		if ( !elem || typeof elem === "string" ) {
-			return jQuery.inArray( this[0],
-				// If it receives a string, the selector is used
-				// If it receives nothing, the siblings are used
-				elem ? jQuery( elem ) : this.parent().children() );
+
+		// No argument, return index in parent
+		if ( !elem ) {
+			return ( this[0] && this[0].parentNode ) ? this.prevAll().length : -1;
 		}
+
+		// index in selector
+		if ( typeof elem === "string" ) {
+			return jQuery.inArray( this[0], jQuery( elem ) );
+		}
+
 		// Locate the position of the desired element
 		return jQuery.inArray(
 			// If it receives a jQuery object, the first element is used
@@ -3830,8 +5352,8 @@ jQuery.fn.extend({
 
 	add: function( selector, context ) {
 		var set = typeof selector === "string" ?
-				jQuery( selector, context || this.context ) :
-				jQuery.makeArray( selector ),
+				jQuery( selector, context ) :
+				jQuery.makeArray( selector && selector.nodeType ? [ selector ] : selector ),
 			all = jQuery.merge( this.get(), set );
 
 		return this.pushStack( isDisconnected( set[0] ) || isDisconnected( all[0] ) ?
@@ -3892,8 +5414,13 @@ jQuery.each({
 	}
 }, function( name, fn ) {
 	jQuery.fn[ name ] = function( until, selector ) {
-		var ret = jQuery.map( this, fn, until );
-		
+		var ret = jQuery.map( this, fn, until ),
+			// The variable 'args' was introduced in
+			// https://github.com/jquery/jquery/commit/52a0238
+			// to work around a bug in Chrome 10 (Dev) and should be removed when the bug is fixed.
+			// http://code.google.com/p/v8/issues/detail?id=1050
+			args = slice.call(arguments);
+
 		if ( !runtil.test( name ) ) {
 			selector = until;
 		}
@@ -3902,13 +5429,13 @@ jQuery.each({
 			ret = jQuery.filter( selector, ret );
 		}
 
-		ret = this.length > 1 ? jQuery.unique( ret ) : ret;
+		ret = this.length > 1 && !guaranteedUnique[ name ] ? jQuery.unique( ret ) : ret;
 
 		if ( (this.length > 1 || rmultiselector.test( selector )) && rparentsprev.test( name ) ) {
 			ret = ret.reverse();
 		}
 
-		return this.pushStack( ret, name, slice.call(arguments).join(",") );
+		return this.pushStack( ret, name, args.join(",") );
 	};
 });
 
@@ -3918,11 +5445,15 @@ jQuery.extend({
 			expr = ":not(" + expr + ")";
 		}
 
-		return jQuery.find.matches(expr, elems);
+		return elems.length === 1 ?
+			jQuery.find.matchesSelector(elems[0], expr) ? [ elems[0] ] : [] :
+			jQuery.find.matches(expr, elems);
 	},
-	
+
 	dir: function( elem, dir, until ) {
-		var matched = [], cur = elem[dir];
+		var matched = [],
+			cur = elem[ dir ];
+
 		while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !jQuery( cur ).is( until )) ) {
 			if ( cur.nodeType === 1 ) {
 				matched.push( cur );
@@ -3957,20 +5488,56 @@ jQuery.extend({
 		return r;
 	}
 });
+
+// Implement the identical functionality for filter and not
+function winnow( elements, qualifier, keep ) {
+
+	// Can't pass null or undefined to indexOf in Firefox 4
+	// Set to 0 to skip string check
+	qualifier = qualifier || 0;
+
+	if ( jQuery.isFunction( qualifier ) ) {
+		return jQuery.grep(elements, function( elem, i ) {
+			var retVal = !!qualifier.call( elem, i, elem );
+			return retVal === keep;
+		});
+
+	} else if ( qualifier.nodeType ) {
+		return jQuery.grep(elements, function( elem, i ) {
+			return (elem === qualifier) === keep;
+		});
+
+	} else if ( typeof qualifier === "string" ) {
+		var filtered = jQuery.grep(elements, function( elem ) {
+			return elem.nodeType === 1;
+		});
+
+		if ( isSimple.test( qualifier ) ) {
+			return jQuery.filter(qualifier, filtered, !keep);
+		} else {
+			qualifier = jQuery.filter( qualifier, filtered );
+		}
+	}
+
+	return jQuery.grep(elements, function( elem, i ) {
+		return (jQuery.inArray( elem, qualifier ) >= 0) === keep;
+	});
+}
+
+
+
+
 var rinlinejQuery = / jQuery\d+="(?:\d+|null)"/g,
 	rleadingWhitespace = /^\s+/,
-	rxhtmlTag = /(<([\w:]+)[^>]*?)\/>/g,
-	rselfClosing = /^(?:area|br|col|embed|hr|img|input|link|meta|param)$/i,
+	rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/ig,
 	rtagName = /<([\w:]+)/,
 	rtbody = /<tbody/i,
 	rhtml = /<|&#?\w+;/,
-	rnocache = /<script|<object|<embed|<option|<style/i,
-	rchecked = /checked\s*(?:[^=]|=\s*.checked.)/i,  // checked="checked" or checked (html5)
-	fcloseTag = function( all, front, tag ) {
-		return rselfClosing.test( tag ) ?
-			all :
-			front + "></" + tag + ">";
-	},
+	rnocache = /<(?:script|object|embed|option|style)/i,
+	// checked="checked" or checked
+	rchecked = /checked\s*(?:[^=]|=\s*.checked.)/i,
+	rscriptType = /\/(java|ecma)script/i,
+	rcleanScript = /^\s*<!(?:\[CDATA\[|\-\-)/,
 	wrapMap = {
 		option: [ 1, "<select multiple='multiple'>", "</select>" ],
 		legend: [ 1, "<fieldset>", "</fieldset>" ],
@@ -3995,7 +5562,8 @@ jQuery.fn.extend({
 	text: function( text ) {
 		if ( jQuery.isFunction(text) ) {
 			return this.each(function(i) {
-				var self = jQuery(this);
+				var self = jQuery( this );
+
 				self.text( text.call(this, i, self.text()) );
 			});
 		}
@@ -4030,7 +5598,7 @@ jQuery.fn.extend({
 				}
 
 				return elem;
-			}).append(this);
+			}).append( this );
 		}
 
 		return this;
@@ -4044,7 +5612,8 @@ jQuery.fn.extend({
 		}
 
 		return this.each(function() {
-			var self = jQuery( this ), contents = self.contents();
+			var self = jQuery( this ),
+				contents = self.contents();
 
 			if ( contents.length ) {
 				contents.wrapAll( html );
@@ -4108,7 +5677,7 @@ jQuery.fn.extend({
 			return set;
 		}
 	},
-	
+
 	// keepData is for internal use only--do not document
 	remove: function( selector, keepData ) {
 		for ( var i = 0, elem; (elem = this[i]) != null; i++ ) {
@@ -4119,11 +5688,11 @@ jQuery.fn.extend({
 				}
 
 				if ( elem.parentNode ) {
-					 elem.parentNode.removeChild( elem );
+					elem.parentNode.removeChild( elem );
 				}
 			}
 		}
-		
+
 		return this;
 	},
 
@@ -4139,46 +5708,17 @@ jQuery.fn.extend({
 				elem.removeChild( elem.firstChild );
 			}
 		}
-		
+
 		return this;
 	},
 
-	clone: function( events ) {
-		// Do the clone
-		var ret = this.map(function() {
-			if ( !jQuery.support.noCloneEvent && !jQuery.isXMLDoc(this) ) {
-				// IE copies events bound via attachEvent when
-				// using cloneNode. Calling detachEvent on the
-				// clone will also remove the events from the orignal
-				// In order to get around this, we use innerHTML.
-				// Unfortunately, this means some modifications to
-				// attributes in IE that are actually only stored
-				// as properties will not be copied (such as the
-				// the name attribute on an input).
-				var html = this.outerHTML, ownerDocument = this.ownerDocument;
-				if ( !html ) {
-					var div = ownerDocument.createElement("div");
-					div.appendChild( this.cloneNode(true) );
-					html = div.innerHTML;
-				}
+	clone: function( dataAndEvents, deepDataAndEvents ) {
+		dataAndEvents = dataAndEvents == null ? false : dataAndEvents;
+		deepDataAndEvents = deepDataAndEvents == null ? dataAndEvents : deepDataAndEvents;
 
-				return jQuery.clean([html.replace(rinlinejQuery, "")
-					// Handle the case in IE 8 where action=/test/> self-closes a tag
-					.replace(/=([^="'>\s]+\/)>/g, '="$1">')
-					.replace(rleadingWhitespace, "")], ownerDocument)[0];
-			} else {
-				return this.cloneNode(true);
-			}
+		return this.map( function () {
+			return jQuery.clone( this, dataAndEvents, deepDataAndEvents );
 		});
-
-		// Copy the events from the original to the clone
-		if ( events === true ) {
-			cloneCopyEvent( this, ret );
-			cloneCopyEvent( this.find("*"), ret.find("*") );
-		}
-
-		// Return the cloned set
-		return ret;
 	},
 
 	html: function( value ) {
@@ -4192,7 +5732,7 @@ jQuery.fn.extend({
 			(jQuery.support.leadingWhitespace || !rleadingWhitespace.test( value )) &&
 			!wrapMap[ (rtagName.exec( value ) || ["", ""])[1].toLowerCase() ] ) {
 
-			value = value.replace(rxhtmlTag, fcloseTag);
+			value = value.replace(rxhtmlTag, "<$1></$2>");
 
 			try {
 				for ( var i = 0, l = this.length; i < l; i++ ) {
@@ -4210,10 +5750,9 @@ jQuery.fn.extend({
 
 		} else if ( jQuery.isFunction( value ) ) {
 			this.each(function(i){
-				var self = jQuery(this), old = self.html();
-				self.empty().append(function(){
-					return value.call( this, i, old );
-				});
+				var self = jQuery( this );
+
+				self.html( value.call(this, i, self.html()) );
 			});
 
 		} else {
@@ -4235,13 +5774,14 @@ jQuery.fn.extend({
 			}
 
 			if ( typeof value !== "string" ) {
-				value = jQuery(value).detach();
+				value = jQuery( value ).detach();
 			}
 
 			return this.each(function() {
-				var next = this.nextSibling, parent = this.parentNode;
+				var next = this.nextSibling,
+					parent = this.parentNode;
 
-				jQuery(this).remove();
+				jQuery( this ).remove();
 
 				if ( next ) {
 					jQuery(next).before( value );
@@ -4250,7 +5790,9 @@ jQuery.fn.extend({
 				}
 			});
 		} else {
-			return this.pushStack( jQuery(jQuery.isFunction(value) ? value() : value), "replaceWith", value );
+			return this.length ?
+				this.pushStack( jQuery(jQuery.isFunction(value) ? value() : value), "replaceWith", value ) :
+				this;
 		}
 	},
 
@@ -4259,7 +5801,9 @@ jQuery.fn.extend({
 	},
 
 	domManip: function( args, table, callback ) {
-		var results, first, value = args[0], scripts = [], fragment, parent;
+		var results, first, fragment, parent,
+			value = args[0],
+			scripts = [];
 
 		// We can't cloneNode fragments that contain checked, in WebKit
 		if ( !jQuery.support.checkClone && arguments.length === 3 && typeof value === "string" && rchecked.test( value ) ) {
@@ -4284,11 +5828,11 @@ jQuery.fn.extend({
 				results = { fragment: parent };
 
 			} else {
-				results = buildFragment( args, this, scripts );
+				results = jQuery.buildFragment( args, this, scripts );
 			}
-			
+
 			fragment = results.fragment;
-			
+
 			if ( fragment.childNodes.length === 1 ) {
 				first = fragment = fragment.firstChild;
 			} else {
@@ -4298,13 +5842,20 @@ jQuery.fn.extend({
 			if ( first ) {
 				table = table && jQuery.nodeName( first, "tr" );
 
-				for ( var i = 0, l = this.length; i < l; i++ ) {
+				for ( var i = 0, l = this.length, lastIndex = l - 1; i < l; i++ ) {
 					callback.call(
 						table ?
 							root(this[i], first) :
 							this[i],
-						i > 0 || results.cacheable || this.length > 1  ?
-							fragment.cloneNode(true) :
+						// Make sure that we do not leak memory by inadvertently discarding
+						// the original fragment (which might have attached data) instead of
+						// using it; in addition, use the original fragment object for the last
+						// item instead of first because it can end up being emptied incorrectly
+						// in certain situations (Bug #8070).
+						// Fragments from the fragment cache must always be cloned and never used
+						// in place.
+						results.cacheable || (l > 1 && i < lastIndex) ?
+							jQuery.clone( fragment, true, true ) :
 							fragment
 					);
 				}
@@ -4316,56 +5867,132 @@ jQuery.fn.extend({
 		}
 
 		return this;
-
-		function root( elem, cur ) {
-			return jQuery.nodeName(elem, "table") ?
-				(elem.getElementsByTagName("tbody")[0] ||
-				elem.appendChild(elem.ownerDocument.createElement("tbody"))) :
-				elem;
-		}
 	}
 });
 
-function cloneCopyEvent(orig, ret) {
-	var i = 0;
+function root( elem, cur ) {
+	return jQuery.nodeName(elem, "table") ?
+		(elem.getElementsByTagName("tbody")[0] ||
+		elem.appendChild(elem.ownerDocument.createElement("tbody"))) :
+		elem;
+}
 
-	ret.each(function() {
-		if ( this.nodeName !== (orig[i] && orig[i].nodeName) ) {
-			return;
-		}
+function cloneCopyEvent( src, dest ) {
 
-		var oldData = jQuery.data( orig[i++] ), curData = jQuery.data( this, oldData ), events = oldData && oldData.events;
+	if ( dest.nodeType !== 1 || !jQuery.hasData( src ) ) {
+		return;
+	}
+
+	var internalKey = jQuery.expando,
+		oldData = jQuery.data( src ),
+		curData = jQuery.data( dest, oldData );
+
+	// Switch to use the internal data object, if it exists, for the next
+	// stage of data copying
+	if ( (oldData = oldData[ internalKey ]) ) {
+		var events = oldData.events;
+				curData = curData[ internalKey ] = jQuery.extend({}, oldData);
 
 		if ( events ) {
 			delete curData.handle;
 			curData.events = {};
 
 			for ( var type in events ) {
-				for ( var handler in events[ type ] ) {
-					jQuery.event.add( this, type, events[ type ][ handler ], events[ type ][ handler ].data );
+				for ( var i = 0, l = events[ type ].length; i < l; i++ ) {
+					jQuery.event.add( dest, type + ( events[ type ][ i ].namespace ? "." : "" ) + events[ type ][ i ].namespace, events[ type ][ i ], events[ type ][ i ].data );
 				}
 			}
 		}
-	});
+	}
 }
 
-function buildFragment( args, nodes, scripts ) {
-	var fragment, cacheable, cacheresults,
-		doc = (nodes && nodes[0] ? nodes[0].ownerDocument || nodes[0] : document);
+function cloneFixAttributes( src, dest ) {
+	var nodeName;
 
-	// Only cache "small" (1/2 KB) strings that are associated with the main document
+	// We do not need to do anything for non-Elements
+	if ( dest.nodeType !== 1 ) {
+		return;
+	}
+
+	// clearAttributes removes the attributes, which we don't want,
+	// but also removes the attachEvent events, which we *do* want
+	if ( dest.clearAttributes ) {
+		dest.clearAttributes();
+	}
+
+	// mergeAttributes, in contrast, only merges back on the
+	// original attributes, not the events
+	if ( dest.mergeAttributes ) {
+		dest.mergeAttributes( src );
+	}
+
+	nodeName = dest.nodeName.toLowerCase();
+
+	// IE6-8 fail to clone children inside object elements that use
+	// the proprietary classid attribute value (rather than the type
+	// attribute) to identify the type of content to display
+	if ( nodeName === "object" ) {
+		dest.outerHTML = src.outerHTML;
+
+	} else if ( nodeName === "input" && (src.type === "checkbox" || src.type === "radio") ) {
+		// IE6-8 fails to persist the checked state of a cloned checkbox
+		// or radio button. Worse, IE6-7 fail to give the cloned element
+		// a checked appearance if the defaultChecked value isn't also set
+		if ( src.checked ) {
+			dest.defaultChecked = dest.checked = src.checked;
+		}
+
+		// IE6-7 get confused and end up setting the value of a cloned
+		// checkbox/radio button to an empty string instead of "on"
+		if ( dest.value !== src.value ) {
+			dest.value = src.value;
+		}
+
+	// IE6-8 fails to return the selected option to the default selected
+	// state when cloning options
+	} else if ( nodeName === "option" ) {
+		dest.selected = src.defaultSelected;
+
+	// IE6-8 fails to set the defaultValue to the correct value when
+	// cloning other types of input fields
+	} else if ( nodeName === "input" || nodeName === "textarea" ) {
+		dest.defaultValue = src.defaultValue;
+	}
+
+	// Event data gets referenced instead of copied if the expando
+	// gets copied too
+	dest.removeAttribute( jQuery.expando );
+}
+
+jQuery.buildFragment = function( args, nodes, scripts ) {
+	var fragment, cacheable, cacheresults, doc;
+
+  // nodes may contain either an explicit document object,
+  // a jQuery collection or context object.
+  // If nodes[0] contains a valid object to assign to doc
+  if ( nodes && nodes[0] ) {
+    doc = nodes[0].ownerDocument || nodes[0];
+  }
+
+  // Ensure that an attr object doesn't incorrectly stand in as a document object
+	// Chrome and Firefox seem to allow this to occur and will throw exception
+	// Fixes #8950
+	if ( !doc.createDocumentFragment ) {
+		doc = document;
+	}
+
+	// Only cache "small" (1/2 KB) HTML strings that are associated with the main document
 	// Cloning options loses the selected state, so don't cache them
 	// IE 6 doesn't like it when you put <object> or <embed> elements in a fragment
 	// Also, WebKit does not clone 'checked' attributes on cloneNode, so don't cache
 	if ( args.length === 1 && typeof args[0] === "string" && args[0].length < 512 && doc === document &&
-		!rnocache.test( args[0] ) && (jQuery.support.checkClone || !rchecked.test( args[0] )) ) {
+		args[0].charAt(0) === "<" && !rnocache.test( args[0] ) && (jQuery.support.checkClone || !rchecked.test( args[0] )) ) {
 
 		cacheable = true;
+
 		cacheresults = jQuery.fragments[ args[0] ];
-		if ( cacheresults ) {
-			if ( cacheresults !== 1 ) {
-				fragment = cacheresults;
-			}
+		if ( cacheresults && cacheresults !== 1 ) {
+			fragment = cacheresults;
 		}
 	}
 
@@ -4379,7 +6006,7 @@ function buildFragment( args, nodes, scripts ) {
 	}
 
 	return { fragment: fragment, cacheable: cacheable };
-}
+};
 
 jQuery.fragments = {};
 
@@ -4391,27 +6018,109 @@ jQuery.each({
 	replaceAll: "replaceWith"
 }, function( name, original ) {
 	jQuery.fn[ name ] = function( selector ) {
-		var ret = [], insert = jQuery( selector ),
+		var ret = [],
+			insert = jQuery( selector ),
 			parent = this.length === 1 && this[0].parentNode;
-		
+
 		if ( parent && parent.nodeType === 11 && parent.childNodes.length === 1 && insert.length === 1 ) {
 			insert[ original ]( this[0] );
 			return this;
-			
+
 		} else {
 			for ( var i = 0, l = insert.length; i < l; i++ ) {
 				var elems = (i > 0 ? this.clone(true) : this).get();
-				jQuery.fn[ original ].apply( jQuery(insert[i]), elems );
+				jQuery( insert[i] )[ original ]( elems );
 				ret = ret.concat( elems );
 			}
-		
+
 			return this.pushStack( ret, name, insert.selector );
 		}
 	};
 });
 
+function getAll( elem ) {
+	if ( "getElementsByTagName" in elem ) {
+		return elem.getElementsByTagName( "*" );
+
+	} else if ( "querySelectorAll" in elem ) {
+		return elem.querySelectorAll( "*" );
+
+	} else {
+		return [];
+	}
+}
+
+// Used in clean, fixes the defaultChecked property
+function fixDefaultChecked( elem ) {
+	if ( elem.type === "checkbox" || elem.type === "radio" ) {
+		elem.defaultChecked = elem.checked;
+	}
+}
+// Finds all inputs and passes them to fixDefaultChecked
+function findInputs( elem ) {
+	if ( jQuery.nodeName( elem, "input" ) ) {
+		fixDefaultChecked( elem );
+	} else if ( "getElementsByTagName" in elem ) {
+		jQuery.grep( elem.getElementsByTagName("input"), fixDefaultChecked );
+	}
+}
+
 jQuery.extend({
+	clone: function( elem, dataAndEvents, deepDataAndEvents ) {
+		var clone = elem.cloneNode(true),
+				srcElements,
+				destElements,
+				i;
+
+		if ( (!jQuery.support.noCloneEvent || !jQuery.support.noCloneChecked) &&
+				(elem.nodeType === 1 || elem.nodeType === 11) && !jQuery.isXMLDoc(elem) ) {
+			// IE copies events bound via attachEvent when using cloneNode.
+			// Calling detachEvent on the clone will also remove the events
+			// from the original. In order to get around this, we use some
+			// proprietary methods to clear the events. Thanks to MooTools
+			// guys for this hotness.
+
+			cloneFixAttributes( elem, clone );
+
+			// Using Sizzle here is crazy slow, so we use getElementsByTagName
+			// instead
+			srcElements = getAll( elem );
+			destElements = getAll( clone );
+
+			// Weird iteration because IE will replace the length property
+			// with an element if you are cloning the body and one of the
+			// elements on the page has a name or id of "length"
+			for ( i = 0; srcElements[i]; ++i ) {
+				// Ensure that the destination node is not null; Fixes #9587
+				if ( destElements[i] ) {
+					cloneFixAttributes( srcElements[i], destElements[i] );
+				}
+			}
+		}
+
+		// Copy the events from the original to the clone
+		if ( dataAndEvents ) {
+			cloneCopyEvent( elem, clone );
+
+			if ( deepDataAndEvents ) {
+				srcElements = getAll( elem );
+				destElements = getAll( clone );
+
+				for ( i = 0; srcElements[i]; ++i ) {
+					cloneCopyEvent( srcElements[i], destElements[i] );
+				}
+			}
+		}
+
+		srcElements = destElements = null;
+
+		// Return the cloned set
+		return clone;
+	},
+
 	clean: function( elems, context, fragment, scripts ) {
+		var checkScriptType;
+
 		context = context || document;
 
 		// !context.createElement fails in IE with an error but returns typeof 'object'
@@ -4419,7 +6128,7 @@ jQuery.extend({
 			context = context.ownerDocument || context[0] && context[0].ownerDocument || document;
 		}
 
-		var ret = [];
+		var ret = [], j;
 
 		for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
 			if ( typeof elem === "number" ) {
@@ -4431,54 +6140,67 @@ jQuery.extend({
 			}
 
 			// Convert html string into DOM nodes
-			if ( typeof elem === "string" && !rhtml.test( elem ) ) {
-				elem = context.createTextNode( elem );
+			if ( typeof elem === "string" ) {
+				if ( !rhtml.test( elem ) ) {
+					elem = context.createTextNode( elem );
+				} else {
+					// Fix "XHTML"-style tags in all browsers
+					elem = elem.replace(rxhtmlTag, "<$1></$2>");
 
-			} else if ( typeof elem === "string" ) {
-				// Fix "XHTML"-style tags in all browsers
-				elem = elem.replace(rxhtmlTag, fcloseTag);
+					// Trim whitespace, otherwise indexOf won't work as expected
+					var tag = (rtagName.exec( elem ) || ["", ""])[1].toLowerCase(),
+						wrap = wrapMap[ tag ] || wrapMap._default,
+						depth = wrap[0],
+						div = context.createElement("div");
 
-				// Trim whitespace, otherwise indexOf won't work as expected
-				var tag = (rtagName.exec( elem ) || ["", ""])[1].toLowerCase(),
-					wrap = wrapMap[ tag ] || wrapMap._default,
-					depth = wrap[0],
-					div = context.createElement("div");
+					// Go to html and back, then peel off extra wrappers
+					div.innerHTML = wrap[1] + elem + wrap[2];
 
-				// Go to html and back, then peel off extra wrappers
-				div.innerHTML = wrap[1] + elem + wrap[2];
+					// Move to the right depth
+					while ( depth-- ) {
+						div = div.lastChild;
+					}
 
-				// Move to the right depth
-				while ( depth-- ) {
-					div = div.lastChild;
-				}
+					// Remove IE's autoinserted <tbody> from table fragments
+					if ( !jQuery.support.tbody ) {
 
-				// Remove IE's autoinserted <tbody> from table fragments
-				if ( !jQuery.support.tbody ) {
+						// String was a <table>, *may* have spurious <tbody>
+						var hasBody = rtbody.test(elem),
+							tbody = tag === "table" && !hasBody ?
+								div.firstChild && div.firstChild.childNodes :
 
-					// String was a <table>, *may* have spurious <tbody>
-					var hasBody = rtbody.test(elem),
-						tbody = tag === "table" && !hasBody ?
-							div.firstChild && div.firstChild.childNodes :
+								// String was a bare <thead> or <tfoot>
+								wrap[1] === "<table>" && !hasBody ?
+									div.childNodes :
+									[];
 
-							// String was a bare <thead> or <tfoot>
-							wrap[1] === "<table>" && !hasBody ?
-								div.childNodes :
-								[];
-
-					for ( var j = tbody.length - 1; j >= 0 ; --j ) {
-						if ( jQuery.nodeName( tbody[ j ], "tbody" ) && !tbody[ j ].childNodes.length ) {
-							tbody[ j ].parentNode.removeChild( tbody[ j ] );
+						for ( j = tbody.length - 1; j >= 0 ; --j ) {
+							if ( jQuery.nodeName( tbody[ j ], "tbody" ) && !tbody[ j ].childNodes.length ) {
+								tbody[ j ].parentNode.removeChild( tbody[ j ] );
+							}
 						}
 					}
 
-				}
+					// IE completely kills leading whitespace when innerHTML is used
+					if ( !jQuery.support.leadingWhitespace && rleadingWhitespace.test( elem ) ) {
+						div.insertBefore( context.createTextNode( rleadingWhitespace.exec(elem)[0] ), div.firstChild );
+					}
 
-				// IE completely kills leading whitespace when innerHTML is used
-				if ( !jQuery.support.leadingWhitespace && rleadingWhitespace.test( elem ) ) {
-					div.insertBefore( context.createTextNode( rleadingWhitespace.exec(elem)[0] ), div.firstChild );
+					elem = div.childNodes;
 				}
+			}
 
-				elem = div.childNodes;
+			// Resets defaultChecked for any radios and checkboxes
+			// about to be appended to the DOM in IE 6/7 (#8060)
+			var len;
+			if ( !jQuery.support.appendChecked ) {
+				if ( elem[0] && typeof (len = elem.length) === "number" ) {
+					for ( j = 0; j < len; j++ ) {
+						findInputs( elem[j] );
+					}
+				} else {
+					findInputs( elem );
+				}
 			}
 
 			if ( elem.nodeType ) {
@@ -4489,13 +6211,18 @@ jQuery.extend({
 		}
 
 		if ( fragment ) {
-			for ( var i = 0; ret[i]; i++ ) {
+			checkScriptType = function( elem ) {
+				return !elem.type || rscriptType.test( elem.type );
+			};
+			for ( i = 0; ret[i]; i++ ) {
 				if ( scripts && jQuery.nodeName( ret[i], "script" ) && (!ret[i].type || ret[i].type.toLowerCase() === "text/javascript") ) {
 					scripts.push( ret[i].parentNode ? ret[i].parentNode.removeChild( ret[i] ) : ret[i] );
-				
+
 				} else {
 					if ( ret[i].nodeType === 1 ) {
-						ret.splice.apply( ret, [i + 1, 0].concat(jQuery.makeArray(ret[i].getElementsByTagName("script"))) );
+						var jsTags = jQuery.grep( ret[i].getElementsByTagName( "script" ), checkScriptType );
+
+						ret.splice.apply( ret, [i + 1, 0].concat( jsTags ) );
 					}
 					fragment.appendChild( ret[i] );
 				}
@@ -4504,233 +6231,211 @@ jQuery.extend({
 
 		return ret;
 	},
-	
+
 	cleanData: function( elems ) {
-		var data, id, cache = jQuery.cache,
-			special = jQuery.event.special,
+		var data, id, cache = jQuery.cache, internalKey = jQuery.expando, special = jQuery.event.special,
 			deleteExpando = jQuery.support.deleteExpando;
-		
+
 		for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+			if ( elem.nodeName && jQuery.noData[elem.nodeName.toLowerCase()] ) {
+				continue;
+			}
+
 			id = elem[ jQuery.expando ];
-			
+
 			if ( id ) {
-				data = cache[ id ];
-				
-				if ( data.events ) {
+				data = cache[ id ] && cache[ id ][ internalKey ];
+
+				if ( data && data.events ) {
 					for ( var type in data.events ) {
 						if ( special[ type ] ) {
 							jQuery.event.remove( elem, type );
 
+						// This is a shortcut to avoid jQuery.event.remove's overhead
 						} else {
-							removeEvent( elem, type, data.handle );
+							jQuery.removeEvent( elem, type, data.handle );
 						}
 					}
+
+					// Null the DOM reference to avoid IE6/7/8 leak (#7054)
+					if ( data.handle ) {
+						data.handle.elem = null;
+					}
 				}
-				
+
 				if ( deleteExpando ) {
 					delete elem[ jQuery.expando ];
 
 				} else if ( elem.removeAttribute ) {
 					elem.removeAttribute( jQuery.expando );
 				}
-				
+
 				delete cache[ id ];
 			}
 		}
 	}
 });
-// exclude the following css properties to add px
-var rexclude = /z-?index|font-?weight|opacity|zoom|line-?height/i,
-	ralpha = /alpha\([^)]*\)/,
+
+function evalScript( i, elem ) {
+	if ( elem.src ) {
+		jQuery.ajax({
+			url: elem.src,
+			async: false,
+			dataType: "script"
+		});
+	} else {
+		jQuery.globalEval( ( elem.text || elem.textContent || elem.innerHTML || "" ).replace( rcleanScript, "/*$0*/" ) );
+	}
+
+	if ( elem.parentNode ) {
+		elem.parentNode.removeChild( elem );
+	}
+}
+
+
+
+
+var ralpha = /alpha\([^)]*\)/i,
 	ropacity = /opacity=([^)]*)/,
-	rfloat = /float/i,
-	rdashAlpha = /-([a-z])/ig,
-	rupper = /([A-Z])/g,
+	// fixed for IE9, see #8346
+	rupper = /([A-Z]|^ms)/g,
 	rnumpx = /^-?\d+(?:px)?$/i,
 	rnum = /^-?\d/,
+	rrelNum = /^([\-+])=([\-+.\de]+)/,
 
-	cssShow = { position: "absolute", visibility: "hidden", display:"block" },
+	cssShow = { position: "absolute", visibility: "hidden", display: "block" },
 	cssWidth = [ "Left", "Right" ],
 	cssHeight = [ "Top", "Bottom" ],
+	curCSS,
 
-	// cache check for defaultView.getComputedStyle
-	getComputedStyle = document.defaultView && document.defaultView.getComputedStyle,
-	// normalize float css property
-	styleFloat = jQuery.support.cssFloat ? "cssFloat" : "styleFloat",
-	fcamelCase = function( all, letter ) {
-		return letter.toUpperCase();
-	};
+	getComputedStyle,
+	currentStyle;
 
 jQuery.fn.css = function( name, value ) {
-	return access( this, name, value, true, function( elem, name, value ) {
-		if ( value === undefined ) {
-			return jQuery.curCSS( elem, name );
-		}
-		
-		if ( typeof value === "number" && !rexclude.test(name) ) {
-			value += "px";
-		}
+	// Setting 'undefined' is a no-op
+	if ( arguments.length === 2 && value === undefined ) {
+		return this;
+	}
 
-		jQuery.style( elem, name, value );
+	return jQuery.access( this, name, value, true, function( elem, name, value ) {
+		return value !== undefined ?
+			jQuery.style( elem, name, value ) :
+			jQuery.css( elem, name );
 	});
 };
 
 jQuery.extend({
-	style: function( elem, name, value ) {
-		// don't set styles on text and comment nodes
-		if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 ) {
-			return undefined;
-		}
+	// Add in style property hooks for overriding the default
+	// behavior of getting and setting a style property
+	cssHooks: {
+		opacity: {
+			get: function( elem, computed ) {
+				if ( computed ) {
+					// We should always get a number back from opacity
+					var ret = curCSS( elem, "opacity", "opacity" );
+					return ret === "" ? "1" : ret;
 
-		// ignore negative width and height values #1599
-		if ( (name === "width" || name === "height") && parseFloat(value) < 0 ) {
-			value = undefined;
-		}
-
-		var style = elem.style || elem, set = value !== undefined;
-
-		// IE uses filters for opacity
-		if ( !jQuery.support.opacity && name === "opacity" ) {
-			if ( set ) {
-				// IE has trouble with opacity if it does not have layout
-				// Force it by setting the zoom level
-				style.zoom = 1;
-
-				// Set the alpha filter to set the opacity
-				var opacity = parseInt( value, 10 ) + "" === "NaN" ? "" : "alpha(opacity=" + value * 100 + ")";
-				var filter = style.filter || jQuery.curCSS( elem, "filter" ) || "";
-				style.filter = ralpha.test(filter) ? filter.replace(ralpha, opacity) : opacity;
-			}
-
-			return style.filter && style.filter.indexOf("opacity=") >= 0 ?
-				(parseFloat( ropacity.exec(style.filter)[1] ) / 100) + "":
-				"";
-		}
-
-		// Make sure we're using the right name for getting the float value
-		if ( rfloat.test( name ) ) {
-			name = styleFloat;
-		}
-
-		name = name.replace(rdashAlpha, fcamelCase);
-
-		if ( set ) {
-			style[ name ] = value;
-		}
-
-		return style[ name ];
-	},
-
-	css: function( elem, name, force, extra ) {
-		if ( name === "width" || name === "height" ) {
-			var val, props = cssShow, which = name === "width" ? cssWidth : cssHeight;
-
-			function getWH() {
-				val = name === "width" ? elem.offsetWidth : elem.offsetHeight;
-
-				if ( extra === "border" ) {
-					return;
+				} else {
+					return elem.style.opacity;
 				}
-
-				jQuery.each( which, function() {
-					if ( !extra ) {
-						val -= parseFloat(jQuery.curCSS( elem, "padding" + this, true)) || 0;
-					}
-
-					if ( extra === "margin" ) {
-						val += parseFloat(jQuery.curCSS( elem, "margin" + this, true)) || 0;
-					} else {
-						val -= parseFloat(jQuery.curCSS( elem, "border" + this + "Width", true)) || 0;
-					}
-				});
 			}
-
-			if ( elem.offsetWidth !== 0 ) {
-				getWH();
-			} else {
-				jQuery.swap( elem, props, getWH );
-			}
-
-			return Math.max(0, Math.round(val));
 		}
-
-		return jQuery.curCSS( elem, name, force );
 	},
 
-	curCSS: function( elem, name, force ) {
-		var ret, style = elem.style, filter;
+	// Exclude the following css properties to add px
+	cssNumber: {
+		"fillOpacity": true,
+		"fontWeight": true,
+		"lineHeight": true,
+		"opacity": true,
+		"orphans": true,
+		"widows": true,
+		"zIndex": true,
+		"zoom": true
+	},
 
-		// IE uses filters for opacity
-		if ( !jQuery.support.opacity && name === "opacity" && elem.currentStyle ) {
-			ret = ropacity.test(elem.currentStyle.filter || "") ?
-				(parseFloat(RegExp.$1) / 100) + "" :
-				"";
+	// Add in properties whose names you wish to fix before
+	// setting or getting the value
+	cssProps: {
+		// normalize float css property
+		"float": jQuery.support.cssFloat ? "cssFloat" : "styleFloat"
+	},
 
-			return ret === "" ?
-				"1" :
-				ret;
+	// Get and set the style property on a DOM Node
+	style: function( elem, name, value, extra ) {
+		// Don't set styles on text and comment nodes
+		if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 || !elem.style ) {
+			return;
 		}
 
-		// Make sure we're using the right name for getting the float value
-		if ( rfloat.test( name ) ) {
-			name = styleFloat;
+		// Make sure that we're working with the right name
+		var ret, type, origName = jQuery.camelCase( name ),
+			style = elem.style, hooks = jQuery.cssHooks[ origName ];
+
+		name = jQuery.cssProps[ origName ] || origName;
+
+		// Check if we're setting a value
+		if ( value !== undefined ) {
+			type = typeof value;
+
+			// convert relative number strings (+= or -=) to relative numbers. #7345
+			if ( type === "string" && (ret = rrelNum.exec( value )) ) {
+				value = ( +( ret[1] + 1) * +ret[2] ) + parseFloat( jQuery.css( elem, name ) );
+				// Fixes bug #9237
+				type = "number";
+			}
+
+			// Make sure that NaN and null values aren't set. See: #7116
+			if ( value == null || type === "number" && isNaN( value ) ) {
+				return;
+			}
+
+			// If a number was passed in, add 'px' to the (except for certain CSS properties)
+			if ( type === "number" && !jQuery.cssNumber[ origName ] ) {
+				value += "px";
+			}
+
+			// If a hook was provided, use that value, otherwise just set the specified value
+			if ( !hooks || !("set" in hooks) || (value = hooks.set( elem, value )) !== undefined ) {
+				// Wrapped to prevent IE from throwing errors when 'invalid' values are provided
+				// Fixes bug #5509
+				try {
+					style[ name ] = value;
+				} catch(e) {}
+			}
+
+		} else {
+			// If a hook was provided get the non-computed value from there
+			if ( hooks && "get" in hooks && (ret = hooks.get( elem, false, extra )) !== undefined ) {
+				return ret;
+			}
+
+			// Otherwise just get the value from the style object
+			return style[ name ];
+		}
+	},
+
+	css: function( elem, name, extra ) {
+		var ret, hooks;
+
+		// Make sure that we're working with the right name
+		name = jQuery.camelCase( name );
+		hooks = jQuery.cssHooks[ name ];
+		name = jQuery.cssProps[ name ] || name;
+
+		// cssFloat needs a special treatment
+		if ( name === "cssFloat" ) {
+			name = "float";
 		}
 
-		if ( !force && style && style[ name ] ) {
-			ret = style[ name ];
+		// If a hook was provided get the computed value from there
+		if ( hooks && "get" in hooks && (ret = hooks.get( elem, true, extra )) !== undefined ) {
+			return ret;
 
-		} else if ( getComputedStyle ) {
-
-			// Only "float" is needed here
-			if ( rfloat.test( name ) ) {
-				name = "float";
-			}
-
-			name = name.replace( rupper, "-$1" ).toLowerCase();
-
-			var defaultView = elem.ownerDocument.defaultView;
-
-			if ( !defaultView ) {
-				return null;
-			}
-
-			var computedStyle = defaultView.getComputedStyle( elem, null );
-
-			if ( computedStyle ) {
-				ret = computedStyle.getPropertyValue( name );
-			}
-
-			// We should always get a number back from opacity
-			if ( name === "opacity" && ret === "" ) {
-				ret = "1";
-			}
-
-		} else if ( elem.currentStyle ) {
-			var camelCase = name.replace(rdashAlpha, fcamelCase);
-
-			ret = elem.currentStyle[ name ] || elem.currentStyle[ camelCase ];
-
-			// From the awesome hack by Dean Edwards
-			// http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-
-			// If we're not dealing with a regular pixel number
-			// but a number that has a weird ending, we need to convert it to pixels
-			if ( !rnumpx.test( ret ) && rnum.test( ret ) ) {
-				// Remember the original values
-				var left = style.left, rsLeft = elem.runtimeStyle.left;
-
-				// Put in the new values to get a computed value out
-				elem.runtimeStyle.left = elem.currentStyle.left;
-				style.left = camelCase === "fontSize" ? "1em" : (ret || 0);
-				ret = style.pixelLeft + "px";
-
-				// Revert the changed values
-				style.left = left;
-				elem.runtimeStyle.left = rsLeft;
-			}
+		// Otherwise, if a way to get the computed value exists, use that
+		} else if ( curCSS ) {
+			return curCSS( elem, name );
 		}
-
-		return ret;
 	},
 
 	// A method for quickly swapping in/out CSS properties to get correct calculations
@@ -4746,55 +6451,400 @@ jQuery.extend({
 		callback.call( elem );
 
 		// Revert the old values
-		for ( var name in options ) {
+		for ( name in options ) {
 			elem.style[ name ] = old[ name ];
 		}
 	}
 });
 
+// DEPRECATED, Use jQuery.css() instead
+jQuery.curCSS = jQuery.css;
+
+jQuery.each(["height", "width"], function( i, name ) {
+	jQuery.cssHooks[ name ] = {
+		get: function( elem, computed, extra ) {
+			var val;
+
+			if ( computed ) {
+				if ( elem.offsetWidth !== 0 ) {
+					return getWH( elem, name, extra );
+				} else {
+					jQuery.swap( elem, cssShow, function() {
+						val = getWH( elem, name, extra );
+					});
+				}
+
+				return val;
+			}
+		},
+
+		set: function( elem, value ) {
+			if ( rnumpx.test( value ) ) {
+				// ignore negative width and height values #1599
+				value = parseFloat( value );
+
+				if ( value >= 0 ) {
+					return value + "px";
+				}
+
+			} else {
+				return value;
+			}
+		}
+	};
+});
+
+if ( !jQuery.support.opacity ) {
+	jQuery.cssHooks.opacity = {
+		get: function( elem, computed ) {
+			// IE uses filters for opacity
+			return ropacity.test( (computed && elem.currentStyle ? elem.currentStyle.filter : elem.style.filter) || "" ) ?
+				( parseFloat( RegExp.$1 ) / 100 ) + "" :
+				computed ? "1" : "";
+		},
+
+		set: function( elem, value ) {
+			var style = elem.style,
+				currentStyle = elem.currentStyle,
+				opacity = jQuery.isNaN( value ) ? "" : "alpha(opacity=" + value * 100 + ")",
+				filter = currentStyle && currentStyle.filter || style.filter || "";
+
+			// IE has trouble with opacity if it does not have layout
+			// Force it by setting the zoom level
+			style.zoom = 1;
+
+			// if setting opacity to 1, and no other filters exist - attempt to remove filter attribute #6652
+			if ( value >= 1 && jQuery.trim( filter.replace( ralpha, "" ) ) === "" ) {
+
+				// Setting style.filter to null, "" & " " still leave "filter:" in the cssText
+				// if "filter:" is present at all, clearType is disabled, we want to avoid this
+				// style.removeAttribute is IE Only, but so apparently is this code path...
+				style.removeAttribute( "filter" );
+
+				// if there there is no filter style applied in a css rule, we are done
+				if ( currentStyle && !currentStyle.filter ) {
+					return;
+				}
+			}
+
+			// otherwise, set new filter values
+			style.filter = ralpha.test( filter ) ?
+				filter.replace( ralpha, opacity ) :
+				filter + " " + opacity;
+		}
+	};
+}
+
+jQuery(function() {
+	// This hook cannot be added until DOM ready because the support test
+	// for it is not run until after DOM ready
+	if ( !jQuery.support.reliableMarginRight ) {
+		jQuery.cssHooks.marginRight = {
+			get: function( elem, computed ) {
+				// WebKit Bug 13343 - getComputedStyle returns wrong value for margin-right
+				// Work around by temporarily setting element display to inline-block
+				var ret;
+				jQuery.swap( elem, { "display": "inline-block" }, function() {
+					if ( computed ) {
+						ret = curCSS( elem, "margin-right", "marginRight" );
+					} else {
+						ret = elem.style.marginRight;
+					}
+				});
+				return ret;
+			}
+		};
+	}
+});
+
+if ( document.defaultView && document.defaultView.getComputedStyle ) {
+	getComputedStyle = function( elem, name ) {
+		var ret, defaultView, computedStyle;
+
+		name = name.replace( rupper, "-$1" ).toLowerCase();
+
+		if ( !(defaultView = elem.ownerDocument.defaultView) ) {
+			return undefined;
+		}
+
+		if ( (computedStyle = defaultView.getComputedStyle( elem, null )) ) {
+			ret = computedStyle.getPropertyValue( name );
+			if ( ret === "" && !jQuery.contains( elem.ownerDocument.documentElement, elem ) ) {
+				ret = jQuery.style( elem, name );
+			}
+		}
+
+		return ret;
+	};
+}
+
+if ( document.documentElement.currentStyle ) {
+	currentStyle = function( elem, name ) {
+		var left,
+			ret = elem.currentStyle && elem.currentStyle[ name ],
+			rsLeft = elem.runtimeStyle && elem.runtimeStyle[ name ],
+			style = elem.style;
+
+		// From the awesome hack by Dean Edwards
+		// http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
+
+		// If we're not dealing with a regular pixel number
+		// but a number that has a weird ending, we need to convert it to pixels
+		if ( !rnumpx.test( ret ) && rnum.test( ret ) ) {
+			// Remember the original values
+			left = style.left;
+
+			// Put in the new values to get a computed value out
+			if ( rsLeft ) {
+				elem.runtimeStyle.left = elem.currentStyle.left;
+			}
+			style.left = name === "fontSize" ? "1em" : (ret || 0);
+			ret = style.pixelLeft + "px";
+
+			// Revert the changed values
+			style.left = left;
+			if ( rsLeft ) {
+				elem.runtimeStyle.left = rsLeft;
+			}
+		}
+
+		return ret === "" ? "auto" : ret;
+	};
+}
+
+curCSS = getComputedStyle || currentStyle;
+
+function getWH( elem, name, extra ) {
+
+	// Start with offset property
+	var val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
+		which = name === "width" ? cssWidth : cssHeight;
+
+	if ( val > 0 ) {
+		if ( extra !== "border" ) {
+			jQuery.each( which, function() {
+				if ( !extra ) {
+					val -= parseFloat( jQuery.css( elem, "padding" + this ) ) || 0;
+				}
+				if ( extra === "margin" ) {
+					val += parseFloat( jQuery.css( elem, extra + this ) ) || 0;
+				} else {
+					val -= parseFloat( jQuery.css( elem, "border" + this + "Width" ) ) || 0;
+				}
+			});
+		}
+
+		return val + "px";
+	}
+
+	// Fall back to computed then uncomputed css if necessary
+	val = curCSS( elem, name, name );
+	if ( val < 0 || val == null ) {
+		val = elem.style[ name ] || 0;
+	}
+	// Normalize "", auto, and prepare for extra
+	val = parseFloat( val ) || 0;
+
+	// Add padding, border, margin
+	if ( extra ) {
+		jQuery.each( which, function() {
+			val += parseFloat( jQuery.css( elem, "padding" + this ) ) || 0;
+			if ( extra !== "padding" ) {
+				val += parseFloat( jQuery.css( elem, "border" + this + "Width" ) ) || 0;
+			}
+			if ( extra === "margin" ) {
+				val += parseFloat( jQuery.css( elem, extra + this ) ) || 0;
+			}
+		});
+	}
+
+	return val + "px";
+}
+
 if ( jQuery.expr && jQuery.expr.filters ) {
 	jQuery.expr.filters.hidden = function( elem ) {
-		var width = elem.offsetWidth, height = elem.offsetHeight,
-			skip = elem.nodeName.toLowerCase() === "tr";
+		var width = elem.offsetWidth,
+			height = elem.offsetHeight;
 
-		return width === 0 && height === 0 && !skip ?
-			true :
-			width > 0 && height > 0 && !skip ?
-				false :
-				jQuery.curCSS(elem, "display") === "none";
+		return (width === 0 && height === 0) || (!jQuery.support.reliableHiddenOffsets && (elem.style.display || jQuery.css( elem, "display" )) === "none");
 	};
 
 	jQuery.expr.filters.visible = function( elem ) {
 		return !jQuery.expr.filters.hidden( elem );
 	};
 }
-var jsc = now(),
-	rscript = /<script(.|\s)*?\/script>/gi,
-	rselectTextarea = /select|textarea/i,
-	rinput = /color|date|datetime|email|hidden|month|number|password|range|search|tel|text|time|url|week/i,
-	jsre = /=\?(&|$)/,
+
+
+
+
+var r20 = /%20/g,
+	rbracket = /\[\]$/,
+	rCRLF = /\r?\n/g,
+	rhash = /#.*$/,
+	rheaders = /^(.*?):[ \t]*([^\r\n]*)\r?$/mg, // IE leaves an \r character at EOL
+	rinput = /^(?:color|date|datetime|datetime-local|email|hidden|month|number|password|range|search|tel|text|time|url|week)$/i,
+	// #7653, #8125, #8152: local protocol detection
+	rlocalProtocol = /^(?:about|app|app\-storage|.+\-extension|file|res|widget):$/,
+	rnoContent = /^(?:GET|HEAD)$/,
+	rprotocol = /^\/\//,
 	rquery = /\?/,
-	rts = /(\?|&)_=.*?(&|$)/,
-	rurl = /^(\w+:)?\/\/([^\/?#]+)/,
-	r20 = /%20/g,
+	rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+	rselectTextarea = /^(?:select|textarea)/i,
+	rspacesAjax = /\s+/,
+	rts = /([?&])_=[^&]*/,
+	rurl = /^([\w\+\.\-]+:)(?:\/\/([^\/?#:]*)(?::(\d+))?)?/,
 
 	// Keep a copy of the old load method
-	_load = jQuery.fn.load;
+	_load = jQuery.fn.load,
+
+	/* Prefilters
+	 * 1) They are useful to introduce custom dataTypes (see ajax/jsonp.js for an example)
+	 * 2) These are called:
+	 *    - BEFORE asking for a transport
+	 *    - AFTER param serialization (s.data is a string if s.processData is true)
+	 * 3) key is the dataType
+	 * 4) the catchall symbol "*" can be used
+	 * 5) execution will start with transport dataType and THEN continue down to "*" if needed
+	 */
+	prefilters = {},
+
+	/* Transports bindings
+	 * 1) key is the dataType
+	 * 2) the catchall symbol "*" can be used
+	 * 3) selection will start with transport dataType and THEN go to "*" if needed
+	 */
+	transports = {},
+
+	// Document location
+	ajaxLocation,
+
+	// Document location segments
+	ajaxLocParts,
+	
+	// Avoid comment-prolog char sequence (#10098); must appease lint and evade compression
+	allTypes = ["*/"] + ["*"];
+
+// #8138, IE may throw an exception when accessing
+// a field from window.location if document.domain has been set
+try {
+	ajaxLocation = location.href;
+} catch( e ) {
+	// Use the href attribute of an A element
+	// since IE will modify it given document.location
+	ajaxLocation = document.createElement( "a" );
+	ajaxLocation.href = "";
+	ajaxLocation = ajaxLocation.href;
+}
+
+// Segment location into parts
+ajaxLocParts = rurl.exec( ajaxLocation.toLowerCase() ) || [];
+
+// Base "constructor" for jQuery.ajaxPrefilter and jQuery.ajaxTransport
+function addToPrefiltersOrTransports( structure ) {
+
+	// dataTypeExpression is optional and defaults to "*"
+	return function( dataTypeExpression, func ) {
+
+		if ( typeof dataTypeExpression !== "string" ) {
+			func = dataTypeExpression;
+			dataTypeExpression = "*";
+		}
+
+		if ( jQuery.isFunction( func ) ) {
+			var dataTypes = dataTypeExpression.toLowerCase().split( rspacesAjax ),
+				i = 0,
+				length = dataTypes.length,
+				dataType,
+				list,
+				placeBefore;
+
+			// For each dataType in the dataTypeExpression
+			for(; i < length; i++ ) {
+				dataType = dataTypes[ i ];
+				// We control if we're asked to add before
+				// any existing element
+				placeBefore = /^\+/.test( dataType );
+				if ( placeBefore ) {
+					dataType = dataType.substr( 1 ) || "*";
+				}
+				list = structure[ dataType ] = structure[ dataType ] || [];
+				// then we add to the structure accordingly
+				list[ placeBefore ? "unshift" : "push" ]( func );
+			}
+		}
+	};
+}
+
+// Base inspection function for prefilters and transports
+function inspectPrefiltersOrTransports( structure, options, originalOptions, jqXHR,
+		dataType /* internal */, inspected /* internal */ ) {
+
+	dataType = dataType || options.dataTypes[ 0 ];
+	inspected = inspected || {};
+
+	inspected[ dataType ] = true;
+
+	var list = structure[ dataType ],
+		i = 0,
+		length = list ? list.length : 0,
+		executeOnly = ( structure === prefilters ),
+		selection;
+
+	for(; i < length && ( executeOnly || !selection ); i++ ) {
+		selection = list[ i ]( options, originalOptions, jqXHR );
+		// If we got redirected to another dataType
+		// we try there if executing only and not done already
+		if ( typeof selection === "string" ) {
+			if ( !executeOnly || inspected[ selection ] ) {
+				selection = undefined;
+			} else {
+				options.dataTypes.unshift( selection );
+				selection = inspectPrefiltersOrTransports(
+						structure, options, originalOptions, jqXHR, selection, inspected );
+			}
+		}
+	}
+	// If we're only executing or nothing was selected
+	// we try the catchall dataType if not done already
+	if ( ( executeOnly || !selection ) && !inspected[ "*" ] ) {
+		selection = inspectPrefiltersOrTransports(
+				structure, options, originalOptions, jqXHR, "*", inspected );
+	}
+	// unnecessary when only executing (prefilters)
+	// but it'll be ignored by the caller in that case
+	return selection;
+}
+
+// A special extend for ajax options
+// that takes "flat" options (not to be deep extended)
+// Fixes #9887
+function ajaxExtend( target, src ) {
+	var key, deep,
+		flatOptions = jQuery.ajaxSettings.flatOptions || {};
+	for( key in src ) {
+		if ( src[ key ] !== undefined ) {
+			( flatOptions[ key ] ? target : ( deep || ( deep = {} ) ) )[ key ] = src[ key ];
+		}
+	}
+	if ( deep ) {
+		jQuery.extend( true, target, deep );
+	}
+}
 
 jQuery.fn.extend({
 	load: function( url, params, callback ) {
-		if ( typeof url !== "string" ) {
-			return _load.call( this, url );
+		if ( typeof url !== "string" && _load ) {
+			return _load.apply( this, arguments );
 
 		// Don't do a request if no elements are being requested
 		} else if ( !this.length ) {
 			return this;
 		}
 
-		var off = url.indexOf(" ");
+		var off = url.indexOf( " " );
 		if ( off >= 0 ) {
-			var selector = url.slice(off, url.length);
-			url = url.slice(0, off);
+			var selector = url.slice( off, url.length );
+			url = url.slice( 0, off );
 		}
 
 		// Default to a GET request
@@ -4806,7 +6856,7 @@ jQuery.fn.extend({
 			if ( jQuery.isFunction( params ) ) {
 				// We assume that it's the callback
 				callback = params;
-				params = null;
+				params = undefined;
 
 			// Otherwise, build a param string
 			} else if ( typeof params === "object" ) {
@@ -4823,26 +6873,34 @@ jQuery.fn.extend({
 			type: type,
 			dataType: "html",
 			data: params,
-			complete: function( res, status ) {
+			// Complete callback (responseText is used internally)
+			complete: function( jqXHR, status, responseText ) {
+				// Store the response as specified by the jqXHR object
+				responseText = jqXHR.responseText;
 				// If successful, inject the HTML into all the matched elements
-				if ( status === "success" || status === "notmodified" ) {
+				if ( jqXHR.isResolved() ) {
+					// #4825: Get the actual response in case
+					// a dataFilter is present in ajaxSettings
+					jqXHR.done(function( r ) {
+						responseText = r;
+					});
 					// See if a selector was specified
 					self.html( selector ?
 						// Create a dummy div to hold the results
-						jQuery("<div />")
+						jQuery("<div>")
 							// inject the contents of the document in, removing the scripts
 							// to avoid any 'Permission Denied' errors in IE
-							.append(res.responseText.replace(rscript, ""))
+							.append(responseText.replace(rscript, ""))
 
 							// Locate the specified elements
 							.find(selector) :
 
 						// If not, just inject the full result
-						res.responseText );
+						responseText );
 				}
 
 				if ( callback ) {
-					self.each( callback, [res.responseText, status, res] );
+					self.each( callback, [ responseText, status, jqXHR ] );
 				}
 			}
 		});
@@ -4851,88 +6909,87 @@ jQuery.fn.extend({
 	},
 
 	serialize: function() {
-		return jQuery.param(this.serializeArray());
+		return jQuery.param( this.serializeArray() );
 	},
+
 	serializeArray: function() {
-		return this.map(function() {
-			return this.elements ? jQuery.makeArray(this.elements) : this;
+		return this.map(function(){
+			return this.elements ? jQuery.makeArray( this.elements ) : this;
 		})
-		.filter(function() {
+		.filter(function(){
 			return this.name && !this.disabled &&
-				(this.checked || rselectTextarea.test(this.nodeName) ||
-					rinput.test(this.type));
+				( this.checked || rselectTextarea.test( this.nodeName ) ||
+					rinput.test( this.type ) );
 		})
-		.map(function( i, elem ) {
-			var val = jQuery(this).val();
+		.map(function( i, elem ){
+			var val = jQuery( this ).val();
 
 			return val == null ?
 				null :
-				jQuery.isArray(val) ?
-					jQuery.map( val, function( val, i ) {
-						return { name: elem.name, value: val };
+				jQuery.isArray( val ) ?
+					jQuery.map( val, function( val, i ){
+						return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
 					}) :
-					{ name: elem.name, value: val };
+					{ name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
 		}).get();
 	}
 });
 
 // Attach a bunch of functions for handling common AJAX events
-jQuery.each( "ajaxStart ajaxStop ajaxComplete ajaxError ajaxSuccess ajaxSend".split(" "), function( i, o ) {
-	jQuery.fn[o] = function( f ) {
-		return this.bind(o, f);
+jQuery.each( "ajaxStart ajaxStop ajaxComplete ajaxError ajaxSuccess ajaxSend".split( " " ), function( i, o ){
+	jQuery.fn[ o ] = function( f ){
+		return this.bind( o, f );
+	};
+});
+
+jQuery.each( [ "get", "post" ], function( i, method ) {
+	jQuery[ method ] = function( url, data, callback, type ) {
+		// shift arguments if data argument was omitted
+		if ( jQuery.isFunction( data ) ) {
+			type = type || callback;
+			callback = data;
+			data = undefined;
+		}
+
+		return jQuery.ajax({
+			type: method,
+			url: url,
+			data: data,
+			success: callback,
+			dataType: type
+		});
 	};
 });
 
 jQuery.extend({
 
-	get: function( url, data, callback, type ) {
-		// shift arguments if data argument was omited
-		if ( jQuery.isFunction( data ) ) {
-			type = type || callback;
-			callback = data;
-			data = null;
-		}
-
-		return jQuery.ajax({
-			type: "GET",
-			url: url,
-			data: data,
-			success: callback,
-			dataType: type
-		});
-	},
-
 	getScript: function( url, callback ) {
-		return jQuery.get(url, null, callback, "script");
+		return jQuery.get( url, undefined, callback, "script" );
 	},
 
 	getJSON: function( url, data, callback ) {
-		return jQuery.get(url, data, callback, "json");
+		return jQuery.get( url, data, callback, "json" );
 	},
 
-	post: function( url, data, callback, type ) {
-		// shift arguments if data argument was omited
-		if ( jQuery.isFunction( data ) ) {
-			type = type || callback;
-			callback = data;
-			data = {};
+	// Creates a full fledged settings object into target
+	// with both ajaxSettings and settings fields.
+	// If target is omitted, writes into ajaxSettings.
+	ajaxSetup: function( target, settings ) {
+		if ( settings ) {
+			// Building a settings object
+			ajaxExtend( target, jQuery.ajaxSettings );
+		} else {
+			// Extending ajaxSettings
+			settings = target;
+			target = jQuery.ajaxSettings;
 		}
-
-		return jQuery.ajax({
-			type: "POST",
-			url: url,
-			data: data,
-			success: callback,
-			dataType: type
-		});
-	},
-
-	ajaxSetup: function( settings ) {
-		jQuery.extend( jQuery.ajaxSettings, settings );
+		ajaxExtend( target, settings );
+		return target;
 	},
 
 	ajaxSettings: {
-		url: location.href,
+		url: ajaxLocation,
+		isLocal: rlocalProtocol.test( ajaxLocParts[ 1 ] ),
 		global: true,
 		type: "GET",
 		contentType: "application/x-www-form-urlencoded",
@@ -4941,507 +6998,1075 @@ jQuery.extend({
 		/*
 		timeout: 0,
 		data: null,
+		dataType: null,
 		username: null,
 		password: null,
+		cache: null,
 		traditional: false,
+		headers: {},
 		*/
-		// Create the request object; Microsoft failed to properly
-		// implement the XMLHttpRequest in IE7 (can't request local files),
-		// so we use the ActiveXObject when it is available
-		// This function can be overriden by calling jQuery.ajaxSetup
-		xhr: window.XMLHttpRequest && (window.location.protocol !== "file:" || !window.ActiveXObject) ?
-			function() {
-				return new window.XMLHttpRequest();
-			} :
-			function() {
-				try {
-					return new window.ActiveXObject("Microsoft.XMLHTTP");
-				} catch(e) {}
-			},
+
 		accepts: {
 			xml: "application/xml, text/xml",
 			html: "text/html",
-			script: "text/javascript, application/javascript",
-			json: "application/json, text/javascript",
 			text: "text/plain",
-			_default: "*/*"
+			json: "application/json, text/javascript",
+			"*": allTypes
+		},
+
+		contents: {
+			xml: /xml/,
+			html: /html/,
+			json: /json/
+		},
+
+		responseFields: {
+			xml: "responseXML",
+			text: "responseText"
+		},
+
+		// List of data converters
+		// 1) key format is "source_type destination_type" (a single space in-between)
+		// 2) the catchall symbol "*" can be used for source_type
+		converters: {
+
+			// Convert anything to text
+			"* text": window.String,
+
+			// Text to html (true = no transformation)
+			"text html": true,
+
+			// Evaluate text as a json expression
+			"text json": jQuery.parseJSON,
+
+			// Parse text as xml
+			"text xml": jQuery.parseXML
+		},
+
+		// For options that shouldn't be deep extended:
+		// you can add your own custom options here if
+		// and when you create one that shouldn't be
+		// deep extended (see ajaxExtend)
+		flatOptions: {
+			context: true,
+			url: true
 		}
 	},
 
-	// Last-Modified header cache for next request
-	lastModified: {},
-	etag: {},
+	ajaxPrefilter: addToPrefiltersOrTransports( prefilters ),
+	ajaxTransport: addToPrefiltersOrTransports( transports ),
 
-	ajax: function( origSettings ) {
-		var s = jQuery.extend(true, {}, jQuery.ajaxSettings, origSettings);
-		
-		var jsonp, status, data,
-			callbackContext = origSettings && origSettings.context || s,
-			type = s.type.toUpperCase();
+	// Main method
+	ajax: function( url, options ) {
 
-		// convert data if not already a string
+		// If url is an object, simulate pre-1.5 signature
+		if ( typeof url === "object" ) {
+			options = url;
+			url = undefined;
+		}
+
+		// Force options to be an object
+		options = options || {};
+
+		var // Create the final options object
+			s = jQuery.ajaxSetup( {}, options ),
+			// Callbacks context
+			callbackContext = s.context || s,
+			// Context for global events
+			// It's the callbackContext if one was provided in the options
+			// and if it's a DOM node or a jQuery collection
+			globalEventContext = callbackContext !== s &&
+				( callbackContext.nodeType || callbackContext instanceof jQuery ) ?
+						jQuery( callbackContext ) : jQuery.event,
+			// Deferreds
+			deferred = jQuery.Deferred(),
+			completeDeferred = jQuery._Deferred(),
+			// Status-dependent callbacks
+			statusCode = s.statusCode || {},
+			// ifModified key
+			ifModifiedKey,
+			// Headers (they are sent all at once)
+			requestHeaders = {},
+			requestHeadersNames = {},
+			// Response headers
+			responseHeadersString,
+			responseHeaders,
+			// transport
+			transport,
+			// timeout handle
+			timeoutTimer,
+			// Cross-domain detection vars
+			parts,
+			// The jqXHR state
+			state = 0,
+			// To know if global events are to be dispatched
+			fireGlobals,
+			// Loop variable
+			i,
+			// Fake xhr
+			jqXHR = {
+
+				readyState: 0,
+
+				// Caches the header
+				setRequestHeader: function( name, value ) {
+					if ( !state ) {
+						var lname = name.toLowerCase();
+						name = requestHeadersNames[ lname ] = requestHeadersNames[ lname ] || name;
+						requestHeaders[ name ] = value;
+					}
+					return this;
+				},
+
+				// Raw string
+				getAllResponseHeaders: function() {
+					return state === 2 ? responseHeadersString : null;
+				},
+
+				// Builds headers hashtable if needed
+				getResponseHeader: function( key ) {
+					var match;
+					if ( state === 2 ) {
+						if ( !responseHeaders ) {
+							responseHeaders = {};
+							while( ( match = rheaders.exec( responseHeadersString ) ) ) {
+								responseHeaders[ match[1].toLowerCase() ] = match[ 2 ];
+							}
+						}
+						match = responseHeaders[ key.toLowerCase() ];
+					}
+					return match === undefined ? null : match;
+				},
+
+				// Overrides response content-type header
+				overrideMimeType: function( type ) {
+					if ( !state ) {
+						s.mimeType = type;
+					}
+					return this;
+				},
+
+				// Cancel the request
+				abort: function( statusText ) {
+					statusText = statusText || "abort";
+					if ( transport ) {
+						transport.abort( statusText );
+					}
+					done( 0, statusText );
+					return this;
+				}
+			};
+
+		// Callback for when everything is done
+		// It is defined here because jslint complains if it is declared
+		// at the end of the function (which would be more logical and readable)
+		function done( status, nativeStatusText, responses, headers ) {
+
+			// Called once
+			if ( state === 2 ) {
+				return;
+			}
+
+			// State is "done" now
+			state = 2;
+
+			// Clear timeout if it exists
+			if ( timeoutTimer ) {
+				clearTimeout( timeoutTimer );
+			}
+
+			// Dereference transport for early garbage collection
+			// (no matter how long the jqXHR object will be used)
+			transport = undefined;
+
+			// Cache response headers
+			responseHeadersString = headers || "";
+
+			// Set readyState
+			jqXHR.readyState = status > 0 ? 4 : 0;
+
+			var isSuccess,
+				success,
+				error,
+				statusText = nativeStatusText,
+				response = responses ? ajaxHandleResponses( s, jqXHR, responses ) : undefined,
+				lastModified,
+				etag;
+
+			// If successful, handle type chaining
+			if ( status >= 200 && status < 300 || status === 304 ) {
+
+				// Set the If-Modified-Since and/or If-None-Match header, if in ifModified mode.
+				if ( s.ifModified ) {
+
+					if ( ( lastModified = jqXHR.getResponseHeader( "Last-Modified" ) ) ) {
+						jQuery.lastModified[ ifModifiedKey ] = lastModified;
+					}
+					if ( ( etag = jqXHR.getResponseHeader( "Etag" ) ) ) {
+						jQuery.etag[ ifModifiedKey ] = etag;
+					}
+				}
+
+				// If not modified
+				if ( status === 304 ) {
+
+					statusText = "notmodified";
+					isSuccess = true;
+
+				// If we have data
+				} else {
+
+					try {
+						success = ajaxConvert( s, response );
+						statusText = "success";
+						isSuccess = true;
+					} catch(e) {
+						// We have a parsererror
+						statusText = "parsererror";
+						error = e;
+					}
+				}
+			} else {
+				// We extract error from statusText
+				// then normalize statusText and status for non-aborts
+				error = statusText;
+				if( !statusText || status ) {
+					statusText = "error";
+					if ( status < 0 ) {
+						status = 0;
+					}
+				}
+			}
+
+			// Set data for the fake xhr object
+			jqXHR.status = status;
+			jqXHR.statusText = "" + ( nativeStatusText || statusText );
+
+			// Success/Error
+			if ( isSuccess ) {
+				deferred.resolveWith( callbackContext, [ success, statusText, jqXHR ] );
+			} else {
+				deferred.rejectWith( callbackContext, [ jqXHR, statusText, error ] );
+			}
+
+			// Status-dependent callbacks
+			jqXHR.statusCode( statusCode );
+			statusCode = undefined;
+
+			if ( fireGlobals ) {
+				globalEventContext.trigger( "ajax" + ( isSuccess ? "Success" : "Error" ),
+						[ jqXHR, s, isSuccess ? success : error ] );
+			}
+
+			// Complete
+			completeDeferred.resolveWith( callbackContext, [ jqXHR, statusText ] );
+
+			if ( fireGlobals ) {
+				globalEventContext.trigger( "ajaxComplete", [ jqXHR, s ] );
+				// Handle the global AJAX counter
+				if ( !( --jQuery.active ) ) {
+					jQuery.event.trigger( "ajaxStop" );
+				}
+			}
+		}
+
+		// Attach deferreds
+		deferred.promise( jqXHR );
+		jqXHR.success = jqXHR.done;
+		jqXHR.error = jqXHR.fail;
+		jqXHR.complete = completeDeferred.done;
+
+		// Status-dependent callbacks
+		jqXHR.statusCode = function( map ) {
+			if ( map ) {
+				var tmp;
+				if ( state < 2 ) {
+					for( tmp in map ) {
+						statusCode[ tmp ] = [ statusCode[tmp], map[tmp] ];
+					}
+				} else {
+					tmp = map[ jqXHR.status ];
+					jqXHR.then( tmp, tmp );
+				}
+			}
+			return this;
+		};
+
+		// Remove hash character (#7531: and string promotion)
+		// Add protocol if not provided (#5866: IE7 issue with protocol-less urls)
+		// We also use the url parameter if available
+		s.url = ( ( url || s.url ) + "" ).replace( rhash, "" ).replace( rprotocol, ajaxLocParts[ 1 ] + "//" );
+
+		// Extract dataTypes list
+		s.dataTypes = jQuery.trim( s.dataType || "*" ).toLowerCase().split( rspacesAjax );
+
+		// Determine if a cross-domain request is in order
+		if ( s.crossDomain == null ) {
+			parts = rurl.exec( s.url.toLowerCase() );
+			s.crossDomain = !!( parts &&
+				( parts[ 1 ] != ajaxLocParts[ 1 ] || parts[ 2 ] != ajaxLocParts[ 2 ] ||
+					( parts[ 3 ] || ( parts[ 1 ] === "http:" ? 80 : 443 ) ) !=
+						( ajaxLocParts[ 3 ] || ( ajaxLocParts[ 1 ] === "http:" ? 80 : 443 ) ) )
+			);
+		}
+
+		// Convert data if not already a string
 		if ( s.data && s.processData && typeof s.data !== "string" ) {
 			s.data = jQuery.param( s.data, s.traditional );
 		}
 
-		// Handle JSONP Parameter Callbacks
-		if ( s.dataType === "jsonp" ) {
-			if ( type === "GET" ) {
-				if ( !jsre.test( s.url ) ) {
-					s.url += (rquery.test( s.url ) ? "&" : "?") + (s.jsonp || "callback") + "=?";
-				}
-			} else if ( !s.data || !jsre.test(s.data) ) {
-				s.data = (s.data ? s.data + "&" : "") + (s.jsonp || "callback") + "=?";
-			}
-			s.dataType = "json";
-		}
+		// Apply prefilters
+		inspectPrefiltersOrTransports( prefilters, s, options, jqXHR );
 
-		// Build temporary JSONP function
-		if ( s.dataType === "json" && (s.data && jsre.test(s.data) || jsre.test(s.url)) ) {
-			jsonp = s.jsonpCallback || ("jsonp" + jsc++);
-
-			// Replace the =? sequence both in the query string and the data
-			if ( s.data ) {
-				s.data = (s.data + "").replace(jsre, "=" + jsonp + "$1");
-			}
-
-			s.url = s.url.replace(jsre, "=" + jsonp + "$1");
-
-			// We need to make sure
-			// that a JSONP style response is executed properly
-			s.dataType = "script";
-
-			// Handle JSONP-style loading
-			window[ jsonp ] = window[ jsonp ] || function( tmp ) {
-				data = tmp;
-				success();
-				complete();
-				// Garbage collect
-				window[ jsonp ] = undefined;
-
-				try {
-					delete window[ jsonp ];
-				} catch(e) {}
-
-				if ( head ) {
-					head.removeChild( script );
-				}
-			};
-		}
-
-		if ( s.dataType === "script" && s.cache === null ) {
-			s.cache = false;
-		}
-
-		if ( s.cache === false && type === "GET" ) {
-			var ts = now();
-
-			// try replacing _= if it is there
-			var ret = s.url.replace(rts, "$1_=" + ts + "$2");
-
-			// if nothing was replaced, add timestamp to the end
-			s.url = ret + ((ret === s.url) ? (rquery.test(s.url) ? "&" : "?") + "_=" + ts : "");
-		}
-
-		// If data is available, append data to url for get requests
-		if ( s.data && type === "GET" ) {
-			s.url += (rquery.test(s.url) ? "&" : "?") + s.data;
-		}
-
-		// Watch for a new set of requests
-		if ( s.global && ! jQuery.active++ ) {
-			jQuery.event.trigger( "ajaxStart" );
-		}
-
-		// Matches an absolute URL, and saves the domain
-		var parts = rurl.exec( s.url ),
-			remote = parts && (parts[1] && parts[1] !== location.protocol || parts[2] !== location.host);
-
-		// If we're requesting a remote document
-		// and trying to load JSON or Script with a GET
-		if ( s.dataType === "script" && type === "GET" && remote ) {
-			var head = document.getElementsByTagName("head")[0] || document.documentElement;
-			var script = document.createElement("script");
-			script.src = s.url;
-			if ( s.scriptCharset ) {
-				script.charset = s.scriptCharset;
-			}
-
-			// Handle Script loading
-			if ( !jsonp ) {
-				var done = false;
-
-				// Attach handlers for all browsers
-				script.onload = script.onreadystatechange = function() {
-					if ( !done && (!this.readyState ||
-							this.readyState === "loaded" || this.readyState === "complete") ) {
-						done = true;
-						success();
-						complete();
-
-						// Handle memory leak in IE
-						script.onload = script.onreadystatechange = null;
-						if ( head && script.parentNode ) {
-							head.removeChild( script );
-						}
-					}
-				};
-			}
-
-			// Use insertBefore instead of appendChild  to circumvent an IE6 bug.
-			// This arises when a base node is used (#2709 and #4378).
-			head.insertBefore( script, head.firstChild );
-
-			// We handle everything using the script element injection
-			return undefined;
-		}
-
-		var requestDone = false;
-
-		// Create the request object
-		var xhr = s.xhr();
-
-		if ( !xhr ) {
-			return;
-		}
-
-		// Open the socket
-		// Passing null username, generates a login popup on Opera (#2865)
-		if ( s.username ) {
-			xhr.open(type, s.url, s.async, s.username, s.password);
-		} else {
-			xhr.open(type, s.url, s.async);
-		}
-
-		// Need an extra try/catch for cross domain requests in Firefox 3
-		try {
-			// Set the correct header, if data is being sent
-			if ( s.data || origSettings && origSettings.contentType ) {
-				xhr.setRequestHeader("Content-Type", s.contentType);
-			}
-
-			// Set the If-Modified-Since and/or If-None-Match header, if in ifModified mode.
-			if ( s.ifModified ) {
-				if ( jQuery.lastModified[s.url] ) {
-					xhr.setRequestHeader("If-Modified-Since", jQuery.lastModified[s.url]);
-				}
-
-				if ( jQuery.etag[s.url] ) {
-					xhr.setRequestHeader("If-None-Match", jQuery.etag[s.url]);
-				}
-			}
-
-			// Set header so the called script knows that it's an XMLHttpRequest
-			// Only send the header if it's not a remote XHR
-			if ( !remote ) {
-				xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-			}
-
-			// Set the Accepts header for the server, depending on the dataType
-			xhr.setRequestHeader("Accept", s.dataType && s.accepts[ s.dataType ] ?
-				s.accepts[ s.dataType ] + ", */*" :
-				s.accepts._default );
-		} catch(e) {}
-
-		// Allow custom headers/mimetypes and early abort
-		if ( s.beforeSend && s.beforeSend.call(callbackContext, xhr, s) === false ) {
-			// Handle the global AJAX counter
-			if ( s.global && ! --jQuery.active ) {
-				jQuery.event.trigger( "ajaxStop" );
-			}
-
-			// close opended socket
-			xhr.abort();
+		// If request was aborted inside a prefiler, stop there
+		if ( state === 2 ) {
 			return false;
 		}
 
-		if ( s.global ) {
-			trigger("ajaxSend", [xhr, s]);
+		// We can fire global events as of now if asked to
+		fireGlobals = s.global;
+
+		// Uppercase the type
+		s.type = s.type.toUpperCase();
+
+		// Determine if request has content
+		s.hasContent = !rnoContent.test( s.type );
+
+		// Watch for a new set of requests
+		if ( fireGlobals && jQuery.active++ === 0 ) {
+			jQuery.event.trigger( "ajaxStart" );
 		}
 
-		// Wait for a response to come back
-		var onreadystatechange = xhr.onreadystatechange = function( isTimeout ) {
-			// The request was aborted
-			if ( !xhr || xhr.readyState === 0 || isTimeout === "abort" ) {
-				// Opera doesn't call onreadystatechange before this point
-				// so we simulate the call
-				if ( !requestDone ) {
-					complete();
-				}
+		// More options handling for requests with no content
+		if ( !s.hasContent ) {
 
-				requestDone = true;
-				if ( xhr ) {
-					xhr.onreadystatechange = jQuery.noop;
-				}
+			// If data is available, append data to url
+			if ( s.data ) {
+				s.url += ( rquery.test( s.url ) ? "&" : "?" ) + s.data;
+				// #9682: remove data so that it's not used in an eventual retry
+				delete s.data;
+			}
 
-			// The transfer is complete and the data is available, or the request timed out
-			} else if ( !requestDone && xhr && (xhr.readyState === 4 || isTimeout === "timeout") ) {
-				requestDone = true;
-				xhr.onreadystatechange = jQuery.noop;
+			// Get ifModifiedKey before adding the anti-cache parameter
+			ifModifiedKey = s.url;
 
-				status = isTimeout === "timeout" ?
-					"timeout" :
-					!jQuery.httpSuccess( xhr ) ?
-						"error" :
-						s.ifModified && jQuery.httpNotModified( xhr, s.url ) ?
-							"notmodified" :
-							"success";
+			// Add anti-cache in url if needed
+			if ( s.cache === false ) {
 
-				var errMsg;
+				var ts = jQuery.now(),
+					// try replacing _= if it is there
+					ret = s.url.replace( rts, "$1_=" + ts );
 
-				if ( status === "success" ) {
-					// Watch for, and catch, XML document parse errors
-					try {
-						// process the data (runs the xml through httpData regardless of callback)
-						data = jQuery.httpData( xhr, s.dataType, s );
-					} catch(err) {
-						status = "parsererror";
-						errMsg = err;
-					}
-				}
+				// if nothing was replaced, add timestamp to the end
+				s.url = ret + ( (ret === s.url ) ? ( rquery.test( s.url ) ? "&" : "?" ) + "_=" + ts : "" );
+			}
+		}
 
-				// Make sure that the request was successful or notmodified
-				if ( status === "success" || status === "notmodified" ) {
-					// JSONP handles its own success callback
-					if ( !jsonp ) {
-						success();
-					}
+		// Set the correct header, if data is being sent
+		if ( s.data && s.hasContent && s.contentType !== false || options.contentType ) {
+			jqXHR.setRequestHeader( "Content-Type", s.contentType );
+		}
+
+		// Set the If-Modified-Since and/or If-None-Match header, if in ifModified mode.
+		if ( s.ifModified ) {
+			ifModifiedKey = ifModifiedKey || s.url;
+			if ( jQuery.lastModified[ ifModifiedKey ] ) {
+				jqXHR.setRequestHeader( "If-Modified-Since", jQuery.lastModified[ ifModifiedKey ] );
+			}
+			if ( jQuery.etag[ ifModifiedKey ] ) {
+				jqXHR.setRequestHeader( "If-None-Match", jQuery.etag[ ifModifiedKey ] );
+			}
+		}
+
+		// Set the Accepts header for the server, depending on the dataType
+		jqXHR.setRequestHeader(
+			"Accept",
+			s.dataTypes[ 0 ] && s.accepts[ s.dataTypes[0] ] ?
+				s.accepts[ s.dataTypes[0] ] + ( s.dataTypes[ 0 ] !== "*" ? ", " + allTypes + "; q=0.01" : "" ) :
+				s.accepts[ "*" ]
+		);
+
+		// Check for headers option
+		for ( i in s.headers ) {
+			jqXHR.setRequestHeader( i, s.headers[ i ] );
+		}
+
+		// Allow custom headers/mimetypes and early abort
+		if ( s.beforeSend && ( s.beforeSend.call( callbackContext, jqXHR, s ) === false || state === 2 ) ) {
+				// Abort if not done already
+				jqXHR.abort();
+				return false;
+
+		}
+
+		// Install callbacks on deferreds
+		for ( i in { success: 1, error: 1, complete: 1 } ) {
+			jqXHR[ i ]( s[ i ] );
+		}
+
+		// Get transport
+		transport = inspectPrefiltersOrTransports( transports, s, options, jqXHR );
+
+		// If no transport, we auto-abort
+		if ( !transport ) {
+			done( -1, "No Transport" );
+		} else {
+			jqXHR.readyState = 1;
+			// Send global event
+			if ( fireGlobals ) {
+				globalEventContext.trigger( "ajaxSend", [ jqXHR, s ] );
+			}
+			// Timeout
+			if ( s.async && s.timeout > 0 ) {
+				timeoutTimer = setTimeout( function(){
+					jqXHR.abort( "timeout" );
+				}, s.timeout );
+			}
+
+			try {
+				state = 1;
+				transport.send( requestHeaders, done );
+			} catch (e) {
+				// Propagate exception as error if not done
+				if ( state < 2 ) {
+					done( -1, e );
+				// Simply rethrow otherwise
 				} else {
-					jQuery.handleError(s, xhr, status, errMsg);
-				}
-
-				// Fire the complete handlers
-				complete();
-
-				if ( isTimeout === "timeout" ) {
-					xhr.abort();
-				}
-
-				// Stop memory leaks
-				if ( s.async ) {
-					xhr = null;
+					jQuery.error( e );
 				}
 			}
-		};
-
-		// Override the abort handler, if we can (IE doesn't allow it, but that's OK)
-		// Opera doesn't fire onreadystatechange at all on abort
-		try {
-			var oldAbort = xhr.abort;
-			xhr.abort = function() {
-				if ( xhr ) {
-					oldAbort.call( xhr );
-				}
-
-				onreadystatechange( "abort" );
-			};
-		} catch(e) { }
-
-		// Timeout checker
-		if ( s.async && s.timeout > 0 ) {
-			setTimeout(function() {
-				// Check to see if the request is still happening
-				if ( xhr && !requestDone ) {
-					onreadystatechange( "timeout" );
-				}
-			}, s.timeout);
 		}
 
-		// Send the data
-		try {
-			xhr.send( type === "POST" || type === "PUT" || type === "DELETE" ? s.data : null );
-		} catch(e) {
-			jQuery.handleError(s, xhr, null, e);
-			// Fire the complete handlers
-			complete();
-		}
-
-		// firefox 1.5 doesn't fire statechange for sync requests
-		if ( !s.async ) {
-			onreadystatechange();
-		}
-
-		function success() {
-			// If a local callback was specified, fire it and pass it the data
-			if ( s.success ) {
-				s.success.call( callbackContext, data, status, xhr );
-			}
-
-			// Fire the global callback
-			if ( s.global ) {
-				trigger( "ajaxSuccess", [xhr, s] );
-			}
-		}
-
-		function complete() {
-			// Process result
-			if ( s.complete ) {
-				s.complete.call( callbackContext, xhr, status);
-			}
-
-			// The request was completed
-			if ( s.global ) {
-				trigger( "ajaxComplete", [xhr, s] );
-			}
-
-			// Handle the global AJAX counter
-			if ( s.global && ! --jQuery.active ) {
-				jQuery.event.trigger( "ajaxStop" );
-			}
-		}
-		
-		function trigger(type, args) {
-			(s.context ? jQuery(s.context) : jQuery.event).trigger(type, args);
-		}
-
-		// return XMLHttpRequest to allow aborting the request etc.
-		return xhr;
-	},
-
-	handleError: function( s, xhr, status, e ) {
-		// If a local callback was specified, fire it
-		if ( s.error ) {
-			s.error.call( s.context || s, xhr, status, e );
-		}
-
-		// Fire the global callback
-		if ( s.global ) {
-			(s.context ? jQuery(s.context) : jQuery.event).trigger( "ajaxError", [xhr, s, e] );
-		}
-	},
-
-	// Counter for holding the number of active queries
-	active: 0,
-
-	// Determines if an XMLHttpRequest was successful or not
-	httpSuccess: function( xhr ) {
-		try {
-			// IE error sometimes returns 1223 when it should be 204 so treat it as success, see #1450
-			return !xhr.status && location.protocol === "file:" ||
-				// Opera returns 0 when status is 304
-				( xhr.status >= 200 && xhr.status < 300 ) ||
-				xhr.status === 304 || xhr.status === 1223 || xhr.status === 0;
-		} catch(e) {}
-
-		return false;
-	},
-
-	// Determines if an XMLHttpRequest returns NotModified
-	httpNotModified: function( xhr, url ) {
-		var lastModified = xhr.getResponseHeader("Last-Modified"),
-			etag = xhr.getResponseHeader("Etag");
-
-		if ( lastModified ) {
-			jQuery.lastModified[url] = lastModified;
-		}
-
-		if ( etag ) {
-			jQuery.etag[url] = etag;
-		}
-
-		// Opera returns 0 when status is 304
-		return xhr.status === 304 || xhr.status === 0;
-	},
-
-	httpData: function( xhr, type, s ) {
-		var ct = xhr.getResponseHeader("content-type") || "",
-			xml = type === "xml" || !type && ct.indexOf("xml") >= 0,
-			data = xml ? xhr.responseXML : xhr.responseText;
-
-		if ( xml && data.documentElement.nodeName === "parsererror" ) {
-			jQuery.error( "parsererror" );
-		}
-
-		// Allow a pre-filtering function to sanitize the response
-		// s is checked to keep backwards compatibility
-		if ( s && s.dataFilter ) {
-			data = s.dataFilter( data, type );
-		}
-
-		// The filter can actually parse the response
-		if ( typeof data === "string" ) {
-			// Get the JavaScript object, if JSON is used.
-			if ( type === "json" || !type && ct.indexOf("json") >= 0 ) {
-				data = jQuery.parseJSON( data );
-
-			// If the type is "script", eval it in global context
-			} else if ( type === "script" || !type && ct.indexOf("javascript") >= 0 ) {
-				jQuery.globalEval( data );
-			}
-		}
-
-		return data;
+		return jqXHR;
 	},
 
 	// Serialize an array of form elements or a set of
 	// key/values into a query string
 	param: function( a, traditional ) {
-		var s = [];
-		
+		var s = [],
+			add = function( key, value ) {
+				// If value is a function, invoke it and return its value
+				value = jQuery.isFunction( value ) ? value() : value;
+				s[ s.length ] = encodeURIComponent( key ) + "=" + encodeURIComponent( value );
+			};
+
 		// Set traditional to true for jQuery <= 1.3.2 behavior.
 		if ( traditional === undefined ) {
 			traditional = jQuery.ajaxSettings.traditional;
 		}
-		
+
 		// If an array was passed in, assume that it is an array of form elements.
-		if ( jQuery.isArray(a) || a.jquery ) {
+		if ( jQuery.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
 			// Serialize the form elements
 			jQuery.each( a, function() {
 				add( this.name, this.value );
 			});
-			
+
 		} else {
 			// If traditional, encode the "old" way (the way 1.3.2 or older
 			// did it), otherwise encode params recursively.
 			for ( var prefix in a ) {
-				buildParams( prefix, a[prefix] );
+				buildParams( prefix, a[ prefix ], traditional, add );
 			}
 		}
 
 		// Return the resulting serialization
-		return s.join("&").replace(r20, "+");
+		return s.join( "&" ).replace( r20, "+" );
+	}
+});
 
-		function buildParams( prefix, obj ) {
-			if ( jQuery.isArray(obj) ) {
-				// Serialize array item.
-				jQuery.each( obj, function( i, v ) {
-					if ( traditional || /\[\]$/.test( prefix ) ) {
-						// Treat each array item as a scalar.
-						add( prefix, v );
-					} else {
-						// If array item is non-scalar (array or object), encode its
-						// numeric index to resolve deserialization ambiguity issues.
-						// Note that rack (as of 1.0.0) can't currently deserialize
-						// nested arrays properly, and attempting to do so may cause
-						// a server error. Possible fixes are to modify rack's
-						// deserialization algorithm or to provide an option or flag
-						// to force array serialization to be shallow.
-						buildParams( prefix + "[" + ( typeof v === "object" || jQuery.isArray(v) ? i : "" ) + "]", v );
-					}
-				});
-					
-			} else if ( !traditional && obj != null && typeof obj === "object" ) {
-				// Serialize object item.
-				jQuery.each( obj, function( k, v ) {
-					buildParams( prefix + "[" + k + "]", v );
-				});
-					
+function buildParams( prefix, obj, traditional, add ) {
+	if ( jQuery.isArray( obj ) ) {
+		// Serialize array item.
+		jQuery.each( obj, function( i, v ) {
+			if ( traditional || rbracket.test( prefix ) ) {
+				// Treat each array item as a scalar.
+				add( prefix, v );
+
 			} else {
-				// Serialize scalar item.
-				add( prefix, obj );
+				// If array item is non-scalar (array or object), encode its
+				// numeric index to resolve deserialization ambiguity issues.
+				// Note that rack (as of 1.0.0) can't currently deserialize
+				// nested arrays properly, and attempting to do so may cause
+				// a server error. Possible fixes are to modify rack's
+				// deserialization algorithm or to provide an option or flag
+				// to force array serialization to be shallow.
+				buildParams( prefix + "[" + ( typeof v === "object" || jQuery.isArray(v) ? i : "" ) + "]", v, traditional, add );
+			}
+		});
+
+	} else if ( !traditional && obj != null && typeof obj === "object" ) {
+		// Serialize object item.
+		for ( var name in obj ) {
+			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
+		}
+
+	} else {
+		// Serialize scalar item.
+		add( prefix, obj );
+	}
+}
+
+// This is still on the jQuery object... for now
+// Want to move this to jQuery.ajax some day
+jQuery.extend({
+
+	// Counter for holding the number of active queries
+	active: 0,
+
+	// Last-Modified header cache for next request
+	lastModified: {},
+	etag: {}
+
+});
+
+/* Handles responses to an ajax request:
+ * - sets all responseXXX fields accordingly
+ * - finds the right dataType (mediates between content-type and expected dataType)
+ * - returns the corresponding response
+ */
+function ajaxHandleResponses( s, jqXHR, responses ) {
+
+	var contents = s.contents,
+		dataTypes = s.dataTypes,
+		responseFields = s.responseFields,
+		ct,
+		type,
+		finalDataType,
+		firstDataType;
+
+	// Fill responseXXX fields
+	for( type in responseFields ) {
+		if ( type in responses ) {
+			jqXHR[ responseFields[type] ] = responses[ type ];
+		}
+	}
+
+	// Remove auto dataType and get content-type in the process
+	while( dataTypes[ 0 ] === "*" ) {
+		dataTypes.shift();
+		if ( ct === undefined ) {
+			ct = s.mimeType || jqXHR.getResponseHeader( "content-type" );
+		}
+	}
+
+	// Check if we're dealing with a known content-type
+	if ( ct ) {
+		for ( type in contents ) {
+			if ( contents[ type ] && contents[ type ].test( ct ) ) {
+				dataTypes.unshift( type );
+				break;
+			}
+		}
+	}
+
+	// Check to see if we have a response for the expected dataType
+	if ( dataTypes[ 0 ] in responses ) {
+		finalDataType = dataTypes[ 0 ];
+	} else {
+		// Try convertible dataTypes
+		for ( type in responses ) {
+			if ( !dataTypes[ 0 ] || s.converters[ type + " " + dataTypes[0] ] ) {
+				finalDataType = type;
+				break;
+			}
+			if ( !firstDataType ) {
+				firstDataType = type;
+			}
+		}
+		// Or just use first one
+		finalDataType = finalDataType || firstDataType;
+	}
+
+	// If we found a dataType
+	// We add the dataType to the list if needed
+	// and return the corresponding response
+	if ( finalDataType ) {
+		if ( finalDataType !== dataTypes[ 0 ] ) {
+			dataTypes.unshift( finalDataType );
+		}
+		return responses[ finalDataType ];
+	}
+}
+
+// Chain conversions given the request and the original response
+function ajaxConvert( s, response ) {
+
+	// Apply the dataFilter if provided
+	if ( s.dataFilter ) {
+		response = s.dataFilter( response, s.dataType );
+	}
+
+	var dataTypes = s.dataTypes,
+		converters = {},
+		i,
+		key,
+		length = dataTypes.length,
+		tmp,
+		// Current and previous dataTypes
+		current = dataTypes[ 0 ],
+		prev,
+		// Conversion expression
+		conversion,
+		// Conversion function
+		conv,
+		// Conversion functions (transitive conversion)
+		conv1,
+		conv2;
+
+	// For each dataType in the chain
+	for( i = 1; i < length; i++ ) {
+
+		// Create converters map
+		// with lowercased keys
+		if ( i === 1 ) {
+			for( key in s.converters ) {
+				if( typeof key === "string" ) {
+					converters[ key.toLowerCase() ] = s.converters[ key ];
+				}
 			}
 		}
 
-		function add( key, value ) {
-			// If value is a function, invoke it and return its value
-			value = jQuery.isFunction(value) ? value() : value;
-			s[ s.length ] = encodeURIComponent(key) + "=" + encodeURIComponent(value);
+		// Get the dataTypes
+		prev = current;
+		current = dataTypes[ i ];
+
+		// If current is auto dataType, update it to prev
+		if( current === "*" ) {
+			current = prev;
+		// If no auto and dataTypes are actually different
+		} else if ( prev !== "*" && prev !== current ) {
+
+			// Get the converter
+			conversion = prev + " " + current;
+			conv = converters[ conversion ] || converters[ "* " + current ];
+
+			// If there is no direct converter, search transitively
+			if ( !conv ) {
+				conv2 = undefined;
+				for( conv1 in converters ) {
+					tmp = conv1.split( " " );
+					if ( tmp[ 0 ] === prev || tmp[ 0 ] === "*" ) {
+						conv2 = converters[ tmp[1] + " " + current ];
+						if ( conv2 ) {
+							conv1 = converters[ conv1 ];
+							if ( conv1 === true ) {
+								conv = conv2;
+							} else if ( conv2 === true ) {
+								conv = conv1;
+							}
+							break;
+						}
+					}
+				}
+			}
+			// If we found no converter, dispatch an error
+			if ( !( conv || conv2 ) ) {
+				jQuery.error( "No conversion from " + conversion.replace(" "," to ") );
+			}
+			// If found converter is not an equivalence
+			if ( conv !== true ) {
+				// Convert with 1 or 2 converters accordingly
+				response = conv ? conv( response ) : conv2( conv1(response) );
+			}
+		}
+	}
+	return response;
+}
+
+
+
+
+var jsc = jQuery.now(),
+	jsre = /(\=)\?(&|$)|\?\?/i;
+
+// Default jsonp settings
+jQuery.ajaxSetup({
+	jsonp: "callback",
+	jsonpCallback: function() {
+		return jQuery.expando + "_" + ( jsc++ );
+	}
+});
+
+// Detect, normalize options and install callbacks for jsonp requests
+jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
+
+	var inspectData = s.contentType === "application/x-www-form-urlencoded" &&
+		( typeof s.data === "string" );
+
+	if ( s.dataTypes[ 0 ] === "jsonp" ||
+		s.jsonp !== false && ( jsre.test( s.url ) ||
+				inspectData && jsre.test( s.data ) ) ) {
+
+		var responseContainer,
+			jsonpCallback = s.jsonpCallback =
+				jQuery.isFunction( s.jsonpCallback ) ? s.jsonpCallback() : s.jsonpCallback,
+			previous = window[ jsonpCallback ],
+			url = s.url,
+			data = s.data,
+			replace = "$1" + jsonpCallback + "$2";
+
+		if ( s.jsonp !== false ) {
+			url = url.replace( jsre, replace );
+			if ( s.url === url ) {
+				if ( inspectData ) {
+					data = data.replace( jsre, replace );
+				}
+				if ( s.data === data ) {
+					// Add callback manually
+					url += (/\?/.test( url ) ? "&" : "?") + s.jsonp + "=" + jsonpCallback;
+				}
+			}
+		}
+
+		s.url = url;
+		s.data = data;
+
+		// Install callback
+		window[ jsonpCallback ] = function( response ) {
+			responseContainer = [ response ];
+		};
+
+		// Clean-up function
+		jqXHR.always(function() {
+			// Set callback back to previous value
+			window[ jsonpCallback ] = previous;
+			// Call if it was a function and we have a response
+			if ( responseContainer && jQuery.isFunction( previous ) ) {
+				window[ jsonpCallback ]( responseContainer[ 0 ] );
+			}
+		});
+
+		// Use data converter to retrieve json after script execution
+		s.converters["script json"] = function() {
+			if ( !responseContainer ) {
+				jQuery.error( jsonpCallback + " was not called" );
+			}
+			return responseContainer[ 0 ];
+		};
+
+		// force json dataType
+		s.dataTypes[ 0 ] = "json";
+
+		// Delegate to script
+		return "script";
+	}
+});
+
+
+
+
+// Install script dataType
+jQuery.ajaxSetup({
+	accepts: {
+		script: "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript"
+	},
+	contents: {
+		script: /javascript|ecmascript/
+	},
+	converters: {
+		"text script": function( text ) {
+			jQuery.globalEval( text );
+			return text;
 		}
 	}
 });
+
+// Handle cache's special case and global
+jQuery.ajaxPrefilter( "script", function( s ) {
+	if ( s.cache === undefined ) {
+		s.cache = false;
+	}
+	if ( s.crossDomain ) {
+		s.type = "GET";
+		s.global = false;
+	}
+});
+
+// Bind script tag hack transport
+jQuery.ajaxTransport( "script", function(s) {
+
+	// This transport only deals with cross domain requests
+	if ( s.crossDomain ) {
+
+		var script,
+			head = document.head || document.getElementsByTagName( "head" )[0] || document.documentElement;
+
+		return {
+
+			send: function( _, callback ) {
+
+				script = document.createElement( "script" );
+
+				script.async = "async";
+
+				if ( s.scriptCharset ) {
+					script.charset = s.scriptCharset;
+				}
+
+				script.src = s.url;
+
+				// Attach handlers for all browsers
+				script.onload = script.onreadystatechange = function( _, isAbort ) {
+
+					if ( isAbort || !script.readyState || /loaded|complete/.test( script.readyState ) ) {
+
+						// Handle memory leak in IE
+						script.onload = script.onreadystatechange = null;
+
+						// Remove the script
+						if ( head && script.parentNode ) {
+							head.removeChild( script );
+						}
+
+						// Dereference the script
+						script = undefined;
+
+						// Callback if not abort
+						if ( !isAbort ) {
+							callback( 200, "success" );
+						}
+					}
+				};
+				// Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+				// This arises when a base node is used (#2709 and #4378).
+				head.insertBefore( script, head.firstChild );
+			},
+
+			abort: function() {
+				if ( script ) {
+					script.onload( 0, 1 );
+				}
+			}
+		};
+	}
+});
+
+
+
+
+var // #5280: Internet Explorer will keep connections alive if we don't abort on unload
+	xhrOnUnloadAbort = window.ActiveXObject ? function() {
+		// Abort all pending requests
+		for ( var key in xhrCallbacks ) {
+			xhrCallbacks[ key ]( 0, 1 );
+		}
+	} : false,
+	xhrId = 0,
+	xhrCallbacks;
+
+// Functions to create xhrs
+function createStandardXHR() {
+	try {
+		return new window.XMLHttpRequest();
+	} catch( e ) {}
+}
+
+function createActiveXHR() {
+	try {
+		return new window.ActiveXObject( "Microsoft.XMLHTTP" );
+	} catch( e ) {}
+}
+
+// Create the request object
+// (This is still attached to ajaxSettings for backward compatibility)
+jQuery.ajaxSettings.xhr = window.ActiveXObject ?
+	/* Microsoft failed to properly
+	 * implement the XMLHttpRequest in IE7 (can't request local files),
+	 * so we use the ActiveXObject when it is available
+	 * Additionally XMLHttpRequest can be disabled in IE7/IE8 so
+	 * we need a fallback.
+	 */
+	function() {
+		return !this.isLocal && createStandardXHR() || createActiveXHR();
+	} :
+	// For all other browsers, use the standard XMLHttpRequest object
+	createStandardXHR;
+
+// Determine support properties
+(function( xhr ) {
+	jQuery.extend( jQuery.support, {
+		ajax: !!xhr,
+		cors: !!xhr && ( "withCredentials" in xhr )
+	});
+})( jQuery.ajaxSettings.xhr() );
+
+// Create transport if the browser can provide an xhr
+if ( jQuery.support.ajax ) {
+
+	jQuery.ajaxTransport(function( s ) {
+		// Cross domain only allowed if supported through XMLHttpRequest
+		if ( !s.crossDomain || jQuery.support.cors ) {
+
+			var callback;
+
+			return {
+				send: function( headers, complete ) {
+
+					// Get a new xhr
+					var xhr = s.xhr(),
+						handle,
+						i;
+
+					// Open the socket
+					// Passing null username, generates a login popup on Opera (#2865)
+					if ( s.username ) {
+						xhr.open( s.type, s.url, s.async, s.username, s.password );
+					} else {
+						xhr.open( s.type, s.url, s.async );
+					}
+
+					// Apply custom fields if provided
+					if ( s.xhrFields ) {
+						for ( i in s.xhrFields ) {
+							xhr[ i ] = s.xhrFields[ i ];
+						}
+					}
+
+					// Override mime type if needed
+					if ( s.mimeType && xhr.overrideMimeType ) {
+						xhr.overrideMimeType( s.mimeType );
+					}
+
+					// X-Requested-With header
+					// For cross-domain requests, seeing as conditions for a preflight are
+					// akin to a jigsaw puzzle, we simply never set it to be sure.
+					// (it can always be set on a per-request basis or even using ajaxSetup)
+					// For same-domain requests, won't change header if already provided.
+					if ( !s.crossDomain && !headers["X-Requested-With"] ) {
+						headers[ "X-Requested-With" ] = "XMLHttpRequest";
+					}
+
+					// Need an extra try/catch for cross domain requests in Firefox 3
+					try {
+						for ( i in headers ) {
+							xhr.setRequestHeader( i, headers[ i ] );
+						}
+					} catch( _ ) {}
+
+					// Do send the request
+					// This may raise an exception which is actually
+					// handled in jQuery.ajax (so no try/catch here)
+					xhr.send( ( s.hasContent && s.data ) || null );
+
+					// Listener
+					callback = function( _, isAbort ) {
+
+						var status,
+							statusText,
+							responseHeaders,
+							responses,
+							xml;
+
+						// Firefox throws exceptions when accessing properties
+						// of an xhr when a network error occured
+						// http://helpful.knobs-dials.com/index.php/Component_returned_failure_code:_0x80040111_(NS_ERROR_NOT_AVAILABLE)
+						try {
+
+							// Was never called and is aborted or complete
+							if ( callback && ( isAbort || xhr.readyState === 4 ) ) {
+
+								// Only called once
+								callback = undefined;
+
+								// Do not keep as active anymore
+								if ( handle ) {
+									xhr.onreadystatechange = jQuery.noop;
+									if ( xhrOnUnloadAbort ) {
+										delete xhrCallbacks[ handle ];
+									}
+								}
+
+								// If it's an abort
+								if ( isAbort ) {
+									// Abort it manually if needed
+									if ( xhr.readyState !== 4 ) {
+										xhr.abort();
+									}
+								} else {
+									status = xhr.status;
+									responseHeaders = xhr.getAllResponseHeaders();
+									responses = {};
+									xml = xhr.responseXML;
+
+									// Construct response list
+									if ( xml && xml.documentElement /* #4958 */ ) {
+										responses.xml = xml;
+									}
+									responses.text = xhr.responseText;
+
+									// Firefox throws an exception when accessing
+									// statusText for faulty cross-domain requests
+									try {
+										statusText = xhr.statusText;
+									} catch( e ) {
+										// We normalize with Webkit giving an empty statusText
+										statusText = "";
+									}
+
+									// Filter status for non standard behaviors
+
+									// If the request is local and we have data: assume a success
+									// (success with no data won't get notified, that's the best we
+									// can do given current implementations)
+									if ( !status && s.isLocal && !s.crossDomain ) {
+										status = responses.text ? 200 : 404;
+									// IE - #1450: sometimes returns 1223 when it should be 204
+									} else if ( status === 1223 ) {
+										status = 204;
+									}
+								}
+							}
+						} catch( firefoxAccessException ) {
+							if ( !isAbort ) {
+								complete( -1, firefoxAccessException );
+							}
+						}
+
+						// Call complete if needed
+						if ( responses ) {
+							complete( status, statusText, responses, responseHeaders );
+						}
+					};
+
+					// if we're in sync mode or it's in cache
+					// and has been retrieved directly (IE6 & IE7)
+					// we need to manually fire the callback
+					if ( !s.async || xhr.readyState === 4 ) {
+						callback();
+					} else {
+						handle = ++xhrId;
+						if ( xhrOnUnloadAbort ) {
+							// Create the active xhrs callbacks list if needed
+							// and attach the unload handler
+							if ( !xhrCallbacks ) {
+								xhrCallbacks = {};
+								jQuery( window ).unload( xhrOnUnloadAbort );
+							}
+							// Add to list of active xhrs callbacks
+							xhrCallbacks[ handle ] = callback;
+						}
+						xhr.onreadystatechange = callback;
+					}
+				},
+
+				abort: function() {
+					if ( callback ) {
+						callback(0,1);
+					}
+				}
+			};
+		}
+	});
+}
+
+
+
+
 var elemdisplay = {},
-	rfxtypes = /toggle|show|hide/,
-	rfxnum = /^([+-]=)?([\d+-.]+)(.*)$/,
+	iframe, iframeDoc,
+	rfxtypes = /^(?:toggle|show|hide)$/,
+	rfxnum = /^([+\-]=)?([\d+.\-]+)([a-z%]*)$/i,
 	timerId,
 	fxAttrs = [
 		// height animations
@@ -5450,69 +8075,77 @@ var elemdisplay = {},
 		[ "width", "marginLeft", "marginRight", "paddingLeft", "paddingRight" ],
 		// opacity animations
 		[ "opacity" ]
-	];
+	],
+	fxNow;
 
 jQuery.fn.extend({
-	show: function( speed, callback ) {
-		if ( speed || speed === 0) {
-			return this.animate( genFx("show", 3), speed, callback);
+	show: function( speed, easing, callback ) {
+		var elem, display;
+
+		if ( speed || speed === 0 ) {
+			return this.animate( genFx("show", 3), speed, easing, callback);
 
 		} else {
-			for ( var i = 0, l = this.length; i < l; i++ ) {
-				var old = jQuery.data(this[i], "olddisplay");
+			for ( var i = 0, j = this.length; i < j; i++ ) {
+				elem = this[i];
 
-				this[i].style.display = old || "";
+				if ( elem.style ) {
+					display = elem.style.display;
 
-				if ( jQuery.css(this[i], "display") === "none" ) {
-					var nodeName = this[i].nodeName, display;
-
-					if ( elemdisplay[ nodeName ] ) {
-						display = elemdisplay[ nodeName ];
-
-					} else {
-						var elem = jQuery("<" + nodeName + " />").appendTo("body");
-
-						display = elem.css("display");
-
-						if ( display === "none" ) {
-							display = "block";
-						}
-
-						elem.remove();
-
-						elemdisplay[ nodeName ] = display;
+					// Reset the inline display of this element to learn if it is
+					// being hidden by cascaded rules or not
+					if ( !jQuery._data(elem, "olddisplay") && display === "none" ) {
+						display = elem.style.display = "";
 					}
 
-					jQuery.data(this[i], "olddisplay", display);
+					// Set elements which have been overridden with display: none
+					// in a stylesheet to whatever the default browser style is
+					// for such an element
+					if ( display === "" && jQuery.css( elem, "display" ) === "none" ) {
+						jQuery._data(elem, "olddisplay", defaultDisplay(elem.nodeName));
+					}
 				}
 			}
 
-			// Set the display of the elements in a second loop
+			// Set the display of most of the elements in a second loop
 			// to avoid the constant reflow
-			for ( var j = 0, k = this.length; j < k; j++ ) {
-				this[j].style.display = jQuery.data(this[j], "olddisplay") || "";
+			for ( i = 0; i < j; i++ ) {
+				elem = this[i];
+
+				if ( elem.style ) {
+					display = elem.style.display;
+
+					if ( display === "" || display === "none" ) {
+						elem.style.display = jQuery._data(elem, "olddisplay") || "";
+					}
+				}
 			}
 
 			return this;
 		}
 	},
 
-	hide: function( speed, callback ) {
+	hide: function( speed, easing, callback ) {
 		if ( speed || speed === 0 ) {
-			return this.animate( genFx("hide", 3), speed, callback);
+			return this.animate( genFx("hide", 3), speed, easing, callback);
 
 		} else {
-			for ( var i = 0, l = this.length; i < l; i++ ) {
-				var old = jQuery.data(this[i], "olddisplay");
-				if ( !old && old !== "none" ) {
-					jQuery.data(this[i], "olddisplay", jQuery.css(this[i], "display"));
+			for ( var i = 0, j = this.length; i < j; i++ ) {
+				if ( this[i].style ) {
+					var display = jQuery.css( this[i], "display" );
+
+					if ( display !== "none" && !jQuery._data( this[i], "olddisplay" ) ) {
+						jQuery._data( this[i], "olddisplay", display );
+					}
 				}
 			}
 
 			// Set the display of the elements in a second loop
 			// to avoid the constant reflow
-			for ( var j = 0, k = this.length; j < k; j++ ) {
-				this[j].style.display = "none";
+			for ( i = 0; i < j; i++ ) {
+				if ( this[i].style ) {
+					this[i].style.display = "none";
+				}
 			}
 
 			return this;
@@ -5522,7 +8155,7 @@ jQuery.fn.extend({
 	// Save the old toggle function
 	_toggle: jQuery.fn.toggle,
 
-	toggle: function( fn, fn2 ) {
+	toggle: function( fn, fn2, callback ) {
 		var bool = typeof fn === "boolean";
 
 		if ( jQuery.isFunction(fn) && jQuery.isFunction(fn2) ) {
@@ -5535,54 +8168,97 @@ jQuery.fn.extend({
 			});
 
 		} else {
-			this.animate(genFx("toggle", 3), fn, fn2);
+			this.animate(genFx("toggle", 3), fn, fn2, callback);
 		}
 
 		return this;
 	},
 
-	fadeTo: function( speed, to, callback ) {
+	fadeTo: function( speed, to, easing, callback ) {
 		return this.filter(":hidden").css("opacity", 0).show().end()
-					.animate({opacity: to}, speed, callback);
+					.animate({opacity: to}, speed, easing, callback);
 	},
 
 	animate: function( prop, speed, easing, callback ) {
 		var optall = jQuery.speed(speed, easing, callback);
 
 		if ( jQuery.isEmptyObject( prop ) ) {
-			return this.each( optall.complete );
+			return this.each( optall.complete, [ false ] );
 		}
 
+		// Do not change referenced properties as per-property easing will be lost
+		prop = jQuery.extend( {}, prop );
+
 		return this[ optall.queue === false ? "each" : "queue" ](function() {
-			var opt = jQuery.extend({}, optall), p,
-				hidden = this.nodeType === 1 && jQuery(this).is(":hidden"),
-				self = this;
+			// XXX 'this' does not always have a nodeName when running the
+			// test suite
+
+			if ( optall.queue === false ) {
+				jQuery._mark( this );
+			}
+
+			var opt = jQuery.extend( {}, optall ),
+				isElement = this.nodeType === 1,
+				hidden = isElement && jQuery(this).is(":hidden"),
+				name, val, p,
+				display, e,
+				parts, start, end, unit;
+
+			// will store per property easing and be used to determine when an animation is complete
+			opt.animatedProperties = {};
 
 			for ( p in prop ) {
-				var name = p.replace(rdashAlpha, fcamelCase);
 
+				// property name normalization
+				name = jQuery.camelCase( p );
 				if ( p !== name ) {
 					prop[ name ] = prop[ p ];
 					delete prop[ p ];
-					p = name;
 				}
 
-				if ( prop[p] === "hide" && hidden || prop[p] === "show" && !hidden ) {
-					return opt.complete.call(this);
+				val = prop[ name ];
+
+				// easing resolution: per property > opt.specialEasing > opt.easing > 'swing' (default)
+				if ( jQuery.isArray( val ) ) {
+					opt.animatedProperties[ name ] = val[ 1 ];
+					val = prop[ name ] = val[ 0 ];
+				} else {
+					opt.animatedProperties[ name ] = opt.specialEasing && opt.specialEasing[ name ] || opt.easing || 'swing';
 				}
 
-				if ( ( p === "height" || p === "width" ) && this.style ) {
-					// Store display property
-					opt.display = jQuery.css(this, "display");
+				if ( val === "hide" && hidden || val === "show" && !hidden ) {
+					return opt.complete.call( this );
+				}
 
+				if ( isElement && ( name === "height" || name === "width" ) ) {
 					// Make sure that nothing sneaks out
-					opt.overflow = this.style.overflow;
-				}
+					// Record all 3 overflow attributes because IE does not
+					// change the overflow attribute when overflowX and
+					// overflowY are set to the same value
+					opt.overflow = [ this.style.overflow, this.style.overflowX, this.style.overflowY ];
 
-				if ( jQuery.isArray( prop[p] ) ) {
-					// Create (if needed) and add to specialEasing
-					(opt.specialEasing = opt.specialEasing || {})[p] = prop[p][1];
-					prop[p] = prop[p][0];
+					// Set display property to inline-block for height/width
+					// animations on inline elements that are having width/height
+					// animated
+					if ( jQuery.css( this, "display" ) === "inline" &&
+							jQuery.css( this, "float" ) === "none" ) {
+						if ( !jQuery.support.inlineBlockNeedsLayout ) {
+							this.style.display = "inline-block";
+
+						} else {
+							display = defaultDisplay( this.nodeName );
+
+							// inline-level elements accept inline-block;
+							// block-level elements need to be inline with layout
+							if ( display === "inline" ) {
+								this.style.display = "inline-block";
+
+							} else {
+								this.style.display = "inline";
+								this.style.zoom = 1;
+							}
+						}
+					}
 				}
 			}
 
@@ -5590,32 +8266,31 @@ jQuery.fn.extend({
 				this.style.overflow = "hidden";
 			}
 
-			opt.curAnim = jQuery.extend({}, prop);
-
-			jQuery.each( prop, function( name, val ) {
-				var e = new jQuery.fx( self, opt, name );
+			for ( p in prop ) {
+				e = new jQuery.fx( this, opt, p );
+				val = prop[ p ];
 
 				if ( rfxtypes.test(val) ) {
-					e[ val === "toggle" ? hidden ? "show" : "hide" : val ]( prop );
+					e[ val === "toggle" ? hidden ? "show" : "hide" : val ]();
 
 				} else {
-					var parts = rfxnum.exec(val),
-						start = e.cur(true) || 0;
+					parts = rfxnum.exec( val );
+					start = e.cur();
 
 					if ( parts ) {
-						var end = parseFloat( parts[2] ),
-							unit = parts[3] || "px";
+						end = parseFloat( parts[2] );
+						unit = parts[3] || ( jQuery.cssNumber[ p ] ? "" : "px" );
 
 						// We need to compute starting value
 						if ( unit !== "px" ) {
-							self.style[ name ] = (end || 1) + unit;
-							start = ((end || 1) / e.cur(true)) * start;
-							self.style[ name ] = start + unit;
+							jQuery.style( this, p, (end || 1) + unit);
+							start = ((end || 1) / e.cur()) * start;
+							jQuery.style( this, p, start + unit);
 						}
 
 						// If a +=/-= token was provided, we're doing a relative animation
 						if ( parts[1] ) {
-							end = ((parts[1] === "-=" ? -1 : 1) * end) + start;
+							end = ( (parts[ 1 ] === "-=" ? -1 : 1) * end ) + start;
 						}
 
 						e.custom( start, end, unit );
@@ -5624,7 +8299,7 @@ jQuery.fn.extend({
 						e.custom( start, val, "" );
 					}
 				}
-			});
+			}
 
 			// For JS strict compliance
 			return true;
@@ -5632,15 +8307,18 @@ jQuery.fn.extend({
 	},
 
 	stop: function( clearQueue, gotoEnd ) {
-		var timers = jQuery.timers;
-
 		if ( clearQueue ) {
 			this.queue([]);
 		}
 
 		this.each(function() {
-			// go in reverse order so anything added to the queue during the loop is ignored
-			for ( var i = timers.length - 1; i >= 0; i-- ) {
+			var timers = jQuery.timers,
+				i = timers.length;
+			// clear marker counters if we know they won't be
+			if ( !gotoEnd ) {
+				jQuery._unmark( true, this );
+			}
+			while ( i-- ) {
 				if ( timers[i].elem === this ) {
 					if (gotoEnd) {
 						// force the next step to be the last
@@ -5662,22 +8340,44 @@ jQuery.fn.extend({
 
 });
 
+// Animations created synchronously will run synchronously
+function createFxNow() {
+	setTimeout( clearFxNow, 0 );
+	return ( fxNow = jQuery.now() );
+}
+
+function clearFxNow() {
+	fxNow = undefined;
+}
+
+// Generate parameters to create a standard animation
+function genFx( type, num ) {
+	var obj = {};
+
+	jQuery.each( fxAttrs.concat.apply([], fxAttrs.slice(0,num)), function() {
+		obj[ this ] = type;
+	});
+
+	return obj;
+}
+
 // Generate shortcuts for custom animations
 jQuery.each({
 	slideDown: genFx("show", 1),
 	slideUp: genFx("hide", 1),
 	slideToggle: genFx("toggle", 1),
 	fadeIn: { opacity: "show" },
-	fadeOut: { opacity: "hide" }
+	fadeOut: { opacity: "hide" },
+	fadeToggle: { opacity: "toggle" }
 }, function( name, props ) {
-	jQuery.fn[ name ] = function( speed, callback ) {
-		return this.animate( props, speed, callback );
+	jQuery.fn[ name ] = function( speed, easing, callback ) {
+		return this.animate( props, speed, easing, callback );
 	};
 });
 
 jQuery.extend({
 	speed: function( speed, easing, fn ) {
-		var opt = speed && typeof speed === "object" ? speed : {
+		var opt = speed && typeof speed === "object" ? jQuery.extend({}, speed) : {
 			complete: fn || !fn && easing ||
 				jQuery.isFunction( speed ) && speed,
 			duration: speed,
@@ -5685,16 +8385,19 @@ jQuery.extend({
 		};
 
 		opt.duration = jQuery.fx.off ? 0 : typeof opt.duration === "number" ? opt.duration :
-			jQuery.fx.speeds[opt.duration] || jQuery.fx.speeds._default;
+			opt.duration in jQuery.fx.speeds ? jQuery.fx.speeds[opt.duration] : jQuery.fx.speeds._default;
 
 		// Queueing
 		opt.old = opt.complete;
-		opt.complete = function() {
-			if ( opt.queue !== false ) {
-				jQuery(this).dequeue();
-			}
+		opt.complete = function( noUnmark ) {
 			if ( jQuery.isFunction( opt.old ) ) {
 				opt.old.call( this );
+			}
+
+			if ( opt.queue !== false ) {
+				jQuery.dequeue( this );
+			} else if ( noUnmark !== false ) {
+				jQuery._unmark( this );
 			}
 		};
 
@@ -5717,9 +8420,7 @@ jQuery.extend({
 		this.elem = elem;
 		this.prop = prop;
 
-		if ( !options.orig ) {
-			options.orig = {};
-		}
+		options.orig = options.orig || {};
 	}
 
 });
@@ -5732,33 +8433,34 @@ jQuery.fx.prototype = {
 		}
 
 		(jQuery.fx.step[this.prop] || jQuery.fx.step._default)( this );
-
-		// Set display property to block for height/width animations
-		if ( ( this.prop === "height" || this.prop === "width" ) && this.elem.style ) {
-			this.elem.style.display = "block";
-		}
 	},
 
 	// Get the current size
-	cur: function( force ) {
+	cur: function() {
 		if ( this.elem[this.prop] != null && (!this.elem.style || this.elem.style[this.prop] == null) ) {
 			return this.elem[ this.prop ];
 		}
 
-		var r = parseFloat(jQuery.css(this.elem, this.prop, force));
-		return r && r > -10000 ? r : parseFloat(jQuery.curCSS(this.elem, this.prop)) || 0;
+		var parsed,
+			r = jQuery.css( this.elem, this.prop );
+		// Empty strings, null, undefined and "auto" are converted to 0,
+		// complex values such as "rotate(1rad)" are returned as is,
+		// simple values such as "10px" are parsed to Float.
+		return isNaN( parsed = parseFloat( r ) ) ? !r || r === "auto" ? 0 : r : parsed;
 	},
 
 	// Start an animation from one number to another
 	custom: function( from, to, unit ) {
-		this.startTime = now();
+		var self = this,
+			fx = jQuery.fx;
+
+		this.startTime = fxNow || createFxNow();
 		this.start = from;
 		this.end = to;
-		this.unit = unit || this.unit || "px";
+		this.unit = unit || this.unit || ( jQuery.cssNumber[ this.prop ] ? "" : "px" );
 		this.now = this.start;
 		this.pos = this.state = 0;
 
-		var self = this;
 		function t( gotoEnd ) {
 			return self.step(gotoEnd);
 		}
@@ -5766,7 +8468,7 @@ jQuery.fx.prototype = {
 		t.elem = this.elem;
 
 		if ( t() && jQuery.timers.push(t) && !timerId ) {
-			timerId = setInterval(jQuery.fx.tick, 13);
+			timerId = setInterval( fx.tick, fx.interval );
 		}
 	},
 
@@ -5797,63 +8499,64 @@ jQuery.fx.prototype = {
 
 	// Each step of an animation
 	step: function( gotoEnd ) {
-		var t = now(), done = true;
+		var t = fxNow || createFxNow(),
+			done = true,
+			elem = this.elem,
+			options = this.options,
+			i, n;
 
-		if ( gotoEnd || t >= this.options.duration + this.startTime ) {
+		if ( gotoEnd || t >= options.duration + this.startTime ) {
 			this.now = this.end;
 			this.pos = this.state = 1;
 			this.update();
 
-			this.options.curAnim[ this.prop ] = true;
+			options.animatedProperties[ this.prop ] = true;
 
-			for ( var i in this.options.curAnim ) {
-				if ( this.options.curAnim[i] !== true ) {
+			for ( i in options.animatedProperties ) {
+				if ( options.animatedProperties[i] !== true ) {
 					done = false;
 				}
 			}
 
 			if ( done ) {
-				if ( this.options.display != null ) {
-					// Reset the overflow
-					this.elem.style.overflow = this.options.overflow;
+				// Reset the overflow
+				if ( options.overflow != null && !jQuery.support.shrinkWrapBlocks ) {
 
-					// Reset the display
-					var old = jQuery.data(this.elem, "olddisplay");
-					this.elem.style.display = old ? old : this.options.display;
-
-					if ( jQuery.css(this.elem, "display") === "none" ) {
-						this.elem.style.display = "block";
-					}
+					jQuery.each( [ "", "X", "Y" ], function (index, value) {
+						elem.style[ "overflow" + value ] = options.overflow[index];
+					});
 				}
 
 				// Hide the element if the "hide" operation was done
-				if ( this.options.hide ) {
-					jQuery(this.elem).hide();
+				if ( options.hide ) {
+					jQuery(elem).hide();
 				}
 
 				// Reset the properties, if the item has been hidden or shown
-				if ( this.options.hide || this.options.show ) {
-					for ( var p in this.options.curAnim ) {
-						jQuery.style(this.elem, p, this.options.orig[p]);
+				if ( options.hide || options.show ) {
+					for ( var p in options.animatedProperties ) {
+						jQuery.style( elem, p, options.orig[p] );
 					}
 				}
 
 				// Execute the complete function
-				this.options.complete.call( this.elem );
+				options.complete.call( elem );
 			}
 
 			return false;
 
 		} else {
-			var n = t - this.startTime;
-			this.state = n / this.options.duration;
+			// classical easing cannot be used with an Infinity duration
+			if ( options.duration == Infinity ) {
+				this.now = t;
+			} else {
+				n = t - this.startTime;
+				this.state = n / options.duration;
 
-			// Perform the easing function, defaults to swing
-			var specialEasing = this.options.specialEasing && this.options.specialEasing[this.prop];
-			var defaultEasing = this.options.easing || (jQuery.easing.swing ? "swing" : "linear");
-			this.pos = jQuery.easing[specialEasing || defaultEasing](this.state, n, 0, 1, this.options.duration);
-			this.now = this.start + ((this.end - this.start) * this.pos);
-
+				// Perform the easing function, defaults to swing
+				this.pos = jQuery.easing[ options.animatedProperties[ this.prop ] ]( this.state, n, 0, 1, options.duration );
+				this.now = this.start + ((this.end - this.start) * this.pos);
+			}
 			// Perform the next step of the animation
 			this.update();
 		}
@@ -5864,9 +8567,7 @@ jQuery.fx.prototype = {
 
 jQuery.extend( jQuery.fx, {
 	tick: function() {
-		var timers = jQuery.timers;
-
-		for ( var i = 0; i < timers.length; i++ ) {
+		for ( var timers = jQuery.timers, i = 0 ; i < timers.length ; ++i ) {
 			if ( !timers[i]() ) {
 				timers.splice(i--, 1);
 			}
@@ -5876,22 +8577,24 @@ jQuery.extend( jQuery.fx, {
 			jQuery.fx.stop();
 		}
 	},
-		
+
+	interval: 13,
+
 	stop: function() {
 		clearInterval( timerId );
 		timerId = null;
 	},
-	
+
 	speeds: {
 		slow: 600,
- 		fast: 200,
- 		// Default speed
- 		_default: 400
+		fast: 200,
+		// Default speed
+		_default: 400
 	},
 
 	step: {
 		opacity: function( fx ) {
-			jQuery.style(fx.elem, "opacity", fx.now);
+			jQuery.style( fx.elem, "opacity", fx.now );
 		},
 
 		_default: function( fx ) {
@@ -5912,20 +8615,64 @@ if ( jQuery.expr && jQuery.expr.filters ) {
 	};
 }
 
-function genFx( type, num ) {
-	var obj = {};
+// Try to restore the default display value of an element
+function defaultDisplay( nodeName ) {
 
-	jQuery.each( fxAttrs.concat.apply([], fxAttrs.slice(0,num)), function() {
-		obj[ this ] = type;
-	});
+	if ( !elemdisplay[ nodeName ] ) {
 
-	return obj;
+		var body = document.body,
+			elem = jQuery( "<" + nodeName + ">" ).appendTo( body ),
+			display = elem.css( "display" );
+
+		elem.remove();
+
+		// If the simple way fails,
+		// get element's real default display by attaching it to a temp iframe
+		if ( display === "none" || display === "" ) {
+			// No iframe to use yet, so create it
+			if ( !iframe ) {
+				iframe = document.createElement( "iframe" );
+				iframe.frameBorder = iframe.width = iframe.height = 0;
+			}
+
+			body.appendChild( iframe );
+
+			// Create a cacheable copy of the iframe document on first call.
+			// IE and Opera will allow us to reuse the iframeDoc without re-writing the fake HTML
+			// document to it; WebKit & Firefox won't allow reusing the iframe document.
+			if ( !iframeDoc || !iframe.createElement ) {
+				iframeDoc = ( iframe.contentWindow || iframe.contentDocument ).document;
+				iframeDoc.write( ( document.compatMode === "CSS1Compat" ? "<!doctype html>" : "" ) + "<html><body>" );
+				iframeDoc.close();
+			}
+
+			elem = iframeDoc.createElement( nodeName );
+
+			iframeDoc.body.appendChild( elem );
+
+			display = jQuery.css( elem, "display" );
+
+			body.removeChild( iframe );
+		}
+
+		// Store the correct default display
+		elemdisplay[ nodeName ] = display;
+	}
+
+	return elemdisplay[ nodeName ];
 }
+
+
+
+
+var rtable = /^t(?:able|d|h)$/i,
+	rroot = /^(?:body|html)$/i;
+
 if ( "getBoundingClientRect" in document.documentElement ) {
 	jQuery.fn.offset = function( options ) {
-		var elem = this[0];
+		var elem = this[0], box;
 
-		if ( options ) { 
+		if ( options ) {
 			return this.each(function( i ) {
 				jQuery.offset.setOffset( this, options, i );
 			});
@@ -5939,10 +8686,26 @@ if ( "getBoundingClientRect" in document.documentElement ) {
 			return jQuery.offset.bodyOffset( elem );
 		}
 
-		var box = elem.getBoundingClientRect(), doc = elem.ownerDocument, body = doc.body, docElem = doc.documentElement,
-			clientTop = docElem.clientTop || body.clientTop || 0, clientLeft = docElem.clientLeft || body.clientLeft || 0,
-			top  = box.top  + (self.pageYOffset || jQuery.support.boxModel && docElem.scrollTop  || body.scrollTop ) - clientTop,
-			left = box.left + (self.pageXOffset || jQuery.support.boxModel && docElem.scrollLeft || body.scrollLeft) - clientLeft;
+		try {
+			box = elem.getBoundingClientRect();
+		} catch(e) {}
+
+		var doc = elem.ownerDocument,
+			docElem = doc.documentElement;
+
+		// Make sure we're not dealing with a disconnected DOM node
+		if ( !box || !jQuery.contains( docElem, elem ) ) {
+			return box ? { top: box.top, left: box.left } : { top: 0, left: 0 };
+		}
+
+		var body = doc.body,
+			win = getWindow(doc),
+			clientTop  = docElem.clientTop  || body.clientTop  || 0,
+			clientLeft = docElem.clientLeft || body.clientLeft || 0,
+			scrollTop  = win.pageYOffset || jQuery.support.boxModel && docElem.scrollTop  || body.scrollTop,
+			scrollLeft = win.pageXOffset || jQuery.support.boxModel && docElem.scrollLeft || body.scrollLeft,
+			top  = box.top  + scrollTop  - clientTop,
+			left = box.left + scrollLeft - clientLeft;
 
 		return { top: top, left: left };
 	};
@@ -5951,7 +8714,7 @@ if ( "getBoundingClientRect" in document.documentElement ) {
 	jQuery.fn.offset = function( options ) {
 		var elem = this[0];
 
-		if ( options ) { 
+		if ( options ) {
 			return this.each(function( i ) {
 				jQuery.offset.setOffset( this, options, i );
 			});
@@ -5967,11 +8730,16 @@ if ( "getBoundingClientRect" in document.documentElement ) {
 
 		jQuery.offset.initialize();
 
-		var offsetParent = elem.offsetParent, prevOffsetParent = elem,
-			doc = elem.ownerDocument, computedStyle, docElem = doc.documentElement,
-			body = doc.body, defaultView = doc.defaultView,
+		var computedStyle,
+			offsetParent = elem.offsetParent,
+			prevOffsetParent = elem,
+			doc = elem.ownerDocument,
+			docElem = doc.documentElement,
+			body = doc.body,
+			defaultView = doc.defaultView,
 			prevComputedStyle = defaultView ? defaultView.getComputedStyle( elem, null ) : elem.currentStyle,
-			top = elem.offsetTop, left = elem.offsetLeft;
+			top = elem.offsetTop,
+			left = elem.offsetLeft;
 
 		while ( (elem = elem.parentNode) && elem !== body && elem !== docElem ) {
 			if ( jQuery.offset.supportsFixedPosition && prevComputedStyle.position === "fixed" ) {
@@ -5986,12 +8754,13 @@ if ( "getBoundingClientRect" in document.documentElement ) {
 				top  += elem.offsetTop;
 				left += elem.offsetLeft;
 
-				if ( jQuery.offset.doesNotAddBorder && !(jQuery.offset.doesAddBorderForTableAndCells && /^t(able|d|h)$/i.test(elem.nodeName)) ) {
+				if ( jQuery.offset.doesNotAddBorder && !(jQuery.offset.doesAddBorderForTableAndCells && rtable.test(elem.nodeName)) ) {
 					top  += parseFloat( computedStyle.borderTopWidth  ) || 0;
 					left += parseFloat( computedStyle.borderLeftWidth ) || 0;
 				}
 
-				prevOffsetParent = offsetParent, offsetParent = elem.offsetParent;
+				prevOffsetParent = offsetParent;
+				offsetParent = elem.offsetParent;
 			}
 
 			if ( jQuery.offset.subtractsBorderForOverflowNotVisible && computedStyle.overflow !== "visible" ) {
@@ -6018,7 +8787,7 @@ if ( "getBoundingClientRect" in document.documentElement ) {
 
 jQuery.offset = {
 	initialize: function() {
-		var body = document.body, container = document.createElement("div"), innerDiv, checkDiv, table, td, bodyMarginTop = parseFloat( jQuery.curCSS(body, "marginTop", true) ) || 0,
+		var body = document.body, container = document.createElement("div"), innerDiv, checkDiv, table, td, bodyMarginTop = parseFloat( jQuery.css(body, "marginTop") ) || 0,
 			html = "<div style='position:absolute;top:0;left:0;margin:0;border:5px solid #000;padding:0;width:1px;height:1px;'><div></div></div><table style='position:absolute;top:0;left:0;margin:0;border:5px solid #000;padding:0;width:1px;height:1px;' cellpadding='0' cellspacing='0'><tr><td></td></tr></table>";
 
 		jQuery.extend( container.style, { position: "absolute", top: 0, left: 0, margin: 0, border: 0, width: "1px", height: "1px", visibility: "hidden" } );
@@ -6032,53 +8801,74 @@ jQuery.offset = {
 		this.doesNotAddBorder = (checkDiv.offsetTop !== 5);
 		this.doesAddBorderForTableAndCells = (td.offsetTop === 5);
 
-		checkDiv.style.position = "fixed", checkDiv.style.top = "20px";
+		checkDiv.style.position = "fixed";
+		checkDiv.style.top = "20px";
+
 		// safari subtracts parent border width here which is 5px
 		this.supportsFixedPosition = (checkDiv.offsetTop === 20 || checkDiv.offsetTop === 15);
 		checkDiv.style.position = checkDiv.style.top = "";
 
-		innerDiv.style.overflow = "hidden", innerDiv.style.position = "relative";
+		innerDiv.style.overflow = "hidden";
+		innerDiv.style.position = "relative";
+
 		this.subtractsBorderForOverflowNotVisible = (checkDiv.offsetTop === -5);
 
 		this.doesNotIncludeMarginInBodyOffset = (body.offsetTop !== bodyMarginTop);
 
 		body.removeChild( container );
-		body = container = innerDiv = checkDiv = table = td = null;
 		jQuery.offset.initialize = jQuery.noop;
 	},
 
 	bodyOffset: function( body ) {
-		var top = body.offsetTop, left = body.offsetLeft;
+		var top = body.offsetTop,
+			left = body.offsetLeft;
 
 		jQuery.offset.initialize();
 
 		if ( jQuery.offset.doesNotIncludeMarginInBodyOffset ) {
-			top  += parseFloat( jQuery.curCSS(body, "marginTop",  true) ) || 0;
-			left += parseFloat( jQuery.curCSS(body, "marginLeft", true) ) || 0;
+			top  += parseFloat( jQuery.css(body, "marginTop") ) || 0;
+			left += parseFloat( jQuery.css(body, "marginLeft") ) || 0;
 		}
 
 		return { top: top, left: left };
 	},
-	
+
 	setOffset: function( elem, options, i ) {
+		var position = jQuery.css( elem, "position" );
+
 		// set position first, in-case top/left are set even on static elem
-		if ( /static/.test( jQuery.curCSS( elem, "position" ) ) ) {
+		if ( position === "static" ) {
 			elem.style.position = "relative";
 		}
-		var curElem   = jQuery( elem ),
+
+		var curElem = jQuery( elem ),
 			curOffset = curElem.offset(),
-			curTop    = parseInt( jQuery.curCSS( elem, "top",  true ), 10 ) || 0,
-			curLeft   = parseInt( jQuery.curCSS( elem, "left", true ), 10 ) || 0;
+			curCSSTop = jQuery.css( elem, "top" ),
+			curCSSLeft = jQuery.css( elem, "left" ),
+			calculatePosition = (position === "absolute" || position === "fixed") && jQuery.inArray("auto", [curCSSTop, curCSSLeft]) > -1,
+			props = {}, curPosition = {}, curTop, curLeft;
+
+		// need to be able to calculate position if either top or left is auto and position is either absolute or fixed
+		if ( calculatePosition ) {
+			curPosition = curElem.position();
+			curTop = curPosition.top;
+			curLeft = curPosition.left;
+		} else {
+			curTop = parseFloat( curCSSTop ) || 0;
+			curLeft = parseFloat( curCSSLeft ) || 0;
+		}
 
 		if ( jQuery.isFunction( options ) ) {
 			options = options.call( elem, i, curOffset );
 		}
 
-		var props = {
-			top:  (options.top  - curOffset.top)  + curTop,
-			left: (options.left - curOffset.left) + curLeft
-		};
-		
+		if (options.top != null) {
+			props.top = (options.top - curOffset.top) + curTop;
+		}
+		if (options.left != null) {
+			props.left = (options.left - curOffset.left) + curLeft;
+		}
+
 		if ( "using" in options ) {
 			options.using.call( elem, props );
 		} else {
@@ -6101,17 +8891,17 @@ jQuery.fn.extend({
 
 		// Get correct offsets
 		offset       = this.offset(),
-		parentOffset = /^body|html$/i.test(offsetParent[0].nodeName) ? { top: 0, left: 0 } : offsetParent.offset();
+		parentOffset = rroot.test(offsetParent[0].nodeName) ? { top: 0, left: 0 } : offsetParent.offset();
 
 		// Subtract element margins
 		// note: when an element has margin: auto the offsetLeft and marginLeft
 		// are the same in Safari causing offset.left to incorrectly be 0
-		offset.top  -= parseFloat( jQuery.curCSS(elem, "marginTop",  true) ) || 0;
-		offset.left -= parseFloat( jQuery.curCSS(elem, "marginLeft", true) ) || 0;
+		offset.top  -= parseFloat( jQuery.css(elem, "marginTop") ) || 0;
+		offset.left -= parseFloat( jQuery.css(elem, "marginLeft") ) || 0;
 
 		// Add offsetParent borders
-		parentOffset.top  += parseFloat( jQuery.curCSS(offsetParent[0], "borderTopWidth",  true) ) || 0;
-		parentOffset.left += parseFloat( jQuery.curCSS(offsetParent[0], "borderLeftWidth", true) ) || 0;
+		parentOffset.top  += parseFloat( jQuery.css(offsetParent[0], "borderTopWidth") ) || 0;
+		parentOffset.left += parseFloat( jQuery.css(offsetParent[0], "borderLeftWidth") ) || 0;
 
 		// Subtract the two offsets
 		return {
@@ -6123,7 +8913,7 @@ jQuery.fn.extend({
 	offsetParent: function() {
 		return this.map(function() {
 			var offsetParent = this.offsetParent || document.body;
-			while ( offsetParent && (!/^body|html$/i.test(offsetParent.nodeName) && jQuery.css(offsetParent, "position") === "static") ) {
+			while ( offsetParent && (!rroot.test(offsetParent.nodeName) && jQuery.css(offsetParent, "position") === "static") ) {
 				offsetParent = offsetParent.offsetParent;
 			}
 			return offsetParent;
@@ -6136,29 +8926,16 @@ jQuery.fn.extend({
 jQuery.each( ["Left", "Top"], function( i, name ) {
 	var method = "scroll" + name;
 
-	jQuery.fn[ method ] = function(val) {
-		var elem = this[0], win;
-		
-		if ( !elem ) {
-			return null;
-		}
+	jQuery.fn[ method ] = function( val ) {
+		var elem, win;
 
-		if ( val !== undefined ) {
-			// Set the scroll offset
-			return this.each(function() {
-				win = getWindow( this );
+		if ( val === undefined ) {
+			elem = this[ 0 ];
 
-				if ( win ) {
-					win.scrollTo(
-						!i ? val : jQuery(win).scrollLeft(),
-						 i ? val : jQuery(win).scrollTop()
-					);
+			if ( !elem ) {
+				return null;
+			}
 
-				} else {
-					this[ method ] = val;
-				}
-			});
-		} else {
 			win = getWindow( elem );
 
 			// Return the scroll offset
@@ -6167,32 +8944,53 @@ jQuery.each( ["Left", "Top"], function( i, name ) {
 					win.document.body[ method ] :
 				elem[ method ];
 		}
+
+		// Set the scroll offset
+		return this.each(function() {
+			win = getWindow( this );
+
+			if ( win ) {
+				win.scrollTo(
+					!i ? val : jQuery( win ).scrollLeft(),
+					 i ? val : jQuery( win ).scrollTop()
+				);
+
+			} else {
+				this[ method ] = val;
+			}
+		});
 	};
 });
 
 function getWindow( elem ) {
-	return ("scrollTo" in elem && elem.document) ?
+	return jQuery.isWindow( elem ) ?
 		elem :
 		elem.nodeType === 9 ?
 			elem.defaultView || elem.parentWindow :
 			false;
 }
-// Create innerHeight, innerWidth, outerHeight and outerWidth methods
+
+
+
+
+// Create width, height, innerHeight, innerWidth, outerHeight and outerWidth methods
 jQuery.each([ "Height", "Width" ], function( i, name ) {
 
 	var type = name.toLowerCase();
 
 	// innerHeight and innerWidth
-	jQuery.fn["inner" + name] = function() {
-		return this[0] ?
-			jQuery.css( this[0], type, false, "padding" ) :
+	jQuery.fn[ "inner" + name ] = function() {
+		var elem = this[0];
+		return elem && elem.style ?
+			parseFloat( jQuery.css( elem, type, "padding" ) ) :
 			null;
 	};
 
 	// outerHeight and outerWidth
-	jQuery.fn["outer" + name] = function( margin ) {
-		return this[0] ?
-			jQuery.css( this[0], type, false, margin ? "margin" : "border" ) :
+	jQuery.fn[ "outer" + name ] = function( margin ) {
+		var elem = this[0];
+		return elem && elem.style ?
+			parseFloat( jQuery.css( elem, type, margin ? "margin" : "border" ) ) :
 			null;
 	};
 
@@ -6202,7 +9000,7 @@ jQuery.each([ "Height", "Width" ], function( i, name ) {
 		if ( !elem ) {
 			return size == null ? null : this;
 		}
-		
+
 		if ( jQuery.isFunction( size ) ) {
 			return this.each(function( i ) {
 				var self = jQuery( this );
@@ -6210,36 +9008,44 @@ jQuery.each([ "Height", "Width" ], function( i, name ) {
 			});
 		}
 
-		return ("scrollTo" in elem && elem.document) ? // does it walk and quack like a window?
+		if ( jQuery.isWindow( elem ) ) {
 			// Everyone else use document.documentElement or document.body depending on Quirks vs Standards mode
-			elem.document.compatMode === "CSS1Compat" && elem.document.documentElement[ "client" + name ] ||
-			elem.document.body[ "client" + name ] :
+			// 3rd condition allows Nokia support, as it supports the docElem prop but not CSS1Compat
+			var docElemProp = elem.document.documentElement[ "client" + name ],
+				body = elem.document.body;
+			return elem.document.compatMode === "CSS1Compat" && docElemProp ||
+				body && body[ "client" + name ] || docElemProp;
 
-			// Get document width or height
-			(elem.nodeType === 9) ? // is it a document
-				// Either scroll[Width/Height] or offset[Width/Height], whichever is greater
-				Math.max(
-					elem.documentElement["client" + name],
-					elem.body["scroll" + name], elem.documentElement["scroll" + name],
-					elem.body["offset" + name], elem.documentElement["offset" + name]
-				) :
+		// Get document width or height
+		} else if ( elem.nodeType === 9 ) {
+			// Either scroll[Width/Height] or offset[Width/Height], whichever is greater
+			return Math.max(
+				elem.documentElement["client" + name],
+				elem.body["scroll" + name], elem.documentElement["scroll" + name],
+				elem.body["offset" + name], elem.documentElement["offset" + name]
+			);
 
-				// Get or set width or height on the element
-				size === undefined ?
-					// Get width or height on the element
-					jQuery.css( elem, type ) :
+		// Get or set width or height on the element
+		} else if ( size === undefined ) {
+			var orig = jQuery.css( elem, type ),
+				ret = parseFloat( orig );
 
-					// Set the width or height on the element (default to pixels if value is unitless)
-					this.css( type, typeof size === "string" ? size : size + "px" );
+			return jQuery.isNaN( ret ) ? orig : ret;
+
+		// Set the width or height on the element (default to pixels if value is unitless)
+		} else {
+			return this.css( type, typeof size === "string" ? size : size + "px" );
+		}
 	};
 
 });
+
+
 // Expose jQuery to the global object
 window.jQuery = window.$ = jQuery;
-
 })(window);
 /**
- * @license AngularJS v0.10.0
+ * @license AngularJS v0.10.5
  * (c) 2010-2011 AngularJS http://angularjs.org
  * License: MIT
  */
@@ -6261,7 +9067,7 @@ if (typeof document.getAttribute == $undefined)
  * @param {string} string String to be converted to lowercase.
  * @returns {string} Lowercased string.
  */
-var lowercase = function (string){ return isString(string) ? string.toLowerCase() : string; };
+var lowercase = function(string){return isString(string) ? string.toLowerCase() : string;};
 
 
 /**
@@ -6273,17 +9079,17 @@ var lowercase = function (string){ return isString(string) ? string.toLowerCase(
  * @param {string} string String to be converted to uppercase.
  * @returns {string} Uppercased string.
  */
-var uppercase = function (string){ return isString(string) ? string.toUpperCase() : string; };
+var uppercase = function(string){return isString(string) ? string.toUpperCase() : string;};
 
 
-var manualLowercase = function (s) {
+var manualLowercase = function(s) {
   return isString(s)
-      ? s.replace(/[A-Z]/g, function (ch) {return fromCharCode(ch.charCodeAt(0) | 32); })
+      ? s.replace(/[A-Z]/g, function(ch) {return fromCharCode(ch.charCodeAt(0) | 32);})
       : s;
 };
-var manualUppercase = function (s) {
+var manualUppercase = function(s) {
   return isString(s)
-      ? s.replace(/[a-z]/g, function (ch) {return fromCharCode(ch.charCodeAt(0) & ~32); })
+      ? s.replace(/[a-z]/g, function(ch) {return fromCharCode(ch.charCodeAt(0) & ~32);})
       : s;
 };
 
@@ -6296,13 +9102,28 @@ if ('i' !== 'I'.toLowerCase()) {
   uppercase = manualUppercase;
 }
 
-function fromCharCode(code) { return String.fromCharCode(code); }
+function fromCharCode(code) {return String.fromCharCode(code);}
 
+/**
+ * Creates the element for IE8 and below to allow styling of widgets
+ * (http://ejohn.org/blog/html5-shiv/). This hack works only if angular is
+ * included synchronously at the top of the document before IE sees any
+ * unknown elements. See regression/issue-584.html.
+ *
+ * @param {string} elementName Name of the widget.
+ * @returns {string} Lowercased string.
+ */
+function shivForIE(elementName) {
+  elementName = lowercase(elementName);
+  if (msie < 9 && elementName.charAt(0) != '@') { // ignore attr-widgets
+    document.createElement(elementName);
+  }
+  return elementName;
+}
 
 var _undefined        = undefined,
     _null             = null,
     $$scope           = '$scope',
-    $$validate        = '$validate',
     $angular          = 'angular',
     $array            = 'array',
     $boolean          = 'boolean',
@@ -6318,8 +9139,6 @@ var _undefined        = undefined,
     $value            = 'value',
     $selected         = 'selected',
     $undefined        = 'undefined',
-    NG_EXCEPTION      = 'ng-exception',
-    NG_VALIDATION_ERROR = 'ng-validation-error',
     NOOP              = 'noop',
     Error             = window.Error,
     /** holds major version number for IE or NaN for real browsers */
@@ -6341,18 +9160,15 @@ var _undefined        = undefined,
     /** @name angular.directive */
     angularDirective  = extensionMap(angular, 'directive'),
     /** @name angular.widget */
-    angularWidget     = extensionMap(angular, 'widget', lowercase),
-    /** @name angular.validator */
-    angularValidator  = extensionMap(angular, 'validator'),
-    /** @name angular.fileter */
+    angularWidget     = extensionMap(angular, 'widget', shivForIE),
+    /** @name angular.filter */
     angularFilter     = extensionMap(angular, 'filter'),
-    /** @name angular.formatter */
-    angularFormatter  = extensionMap(angular, 'formatter'),
+    /** @name angular.service */
+    angularInputType  = extensionMap(angular, 'inputType', lowercase),
     /** @name angular.service */
     angularService    = extensionMap(angular, 'service'),
     angularCallbacks  = extensionMap(angular, 'callbacks'),
     nodeName_,
-    rngScript         = /^(|.*\/)angular(-.*?)?(\.min)?.js(\?[^#]*)?(#(.*))?$/,
     uid               = ['0', '0', '0'],
     DATE_ISOSTRING_LN = 24;
 
@@ -6405,10 +9221,18 @@ function forEach(obj, iterator, context) {
   return obj;
 }
 
-function forEachSorted(obj, iterator, context) {
+function sortedKeys(obj) {
   var keys = [];
-  for (var key in obj) keys.push(key);
-  keys.sort();
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+  return keys.sort();
+}
+
+function forEachSorted(obj, iterator, context) {
+  var keys = sortedKeys(obj)
   for ( var i = 0; i < keys.length; i++) {
     iterator.call(context, obj[keys[i]], keys[i]);
   }
@@ -6429,7 +9253,6 @@ function formatError(arg) {
 }
 
 /**
- * @description
  * A consistent way of creating unique IDs in angular. The ID is a sequence of alpha numeric
  * characters such as '012ABC'. The reason why we are not using simply a number counter is that
  * the number string gets longer over time, and it can also overflow, where as the the nextId
@@ -6484,7 +9307,7 @@ function extend(dst) {
 
 
 function inherit(parent, extra) {
-  return extend(new (extend(function(){}, {prototype:parent}))(), extra);
+  return extend(new (extend(function() {}, {prototype:parent}))(), extra);
 }
 
 
@@ -6524,11 +9347,11 @@ function noop() {}
 function identity($) {return $;}
 
 
-function valueFn(value) {return function(){ return value; };}
+function valueFn(value) {return function() {return value;};}
 
 function extensionMap(angular, name, transform) {
   var extPoint;
-  return angular[name] || (extPoint = angular[name] = function (name, fn, prop){
+  return angular[name] || (extPoint = angular[name] = function(name, fn, prop){
     name = (transform || identity)(name);
     if (isDefined(fn)) {
       extPoint[name] = extend(fn, prop || {});
@@ -6548,7 +9371,7 @@ function extensionMap(angular, name, transform) {
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is undefined.
  */
-function isUndefined(value){ return typeof value == $undefined; }
+function isUndefined(value){return typeof value == $undefined;}
 
 
 /**
@@ -6562,7 +9385,7 @@ function isUndefined(value){ return typeof value == $undefined; }
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is defined.
  */
-function isDefined(value){ return typeof value != $undefined; }
+function isDefined(value){return typeof value != $undefined;}
 
 
 /**
@@ -6577,7 +9400,7 @@ function isDefined(value){ return typeof value != $undefined; }
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is an `Object` but not `null`.
  */
-function isObject(value){ return value!=null && typeof value == $object;}
+function isObject(value){return value!=null && typeof value == $object;}
 
 
 /**
@@ -6591,7 +9414,7 @@ function isObject(value){ return value!=null && typeof value == $object;}
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is a `String`.
  */
-function isString(value){ return typeof value == $string;}
+function isString(value){return typeof value == $string;}
 
 
 /**
@@ -6605,7 +9428,7 @@ function isString(value){ return typeof value == $string;}
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is a `Number`.
  */
-function isNumber(value){ return typeof value == $number;}
+function isNumber(value){return typeof value == $number;}
 
 
 /**
@@ -6619,7 +9442,7 @@ function isNumber(value){ return typeof value == $number;}
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is a `Date`.
  */
-function isDate(value){ return value instanceof Date; }
+function isDate(value){return value instanceof Date;}
 
 
 /**
@@ -6633,7 +9456,7 @@ function isDate(value){ return value instanceof Date; }
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is an `Array`.
  */
-function isArray(value) { return value instanceof Array; }
+function isArray(value) {return value instanceof Array;}
 
 
 /**
@@ -6647,7 +9470,7 @@ function isArray(value) { return value instanceof Array; }
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is a `Function`.
  */
-function isFunction(value){ return typeof value == 'function';}
+function isFunction(value){return typeof value == 'function';}
 
 
 /**
@@ -6661,8 +9484,8 @@ function isWindow(obj) {
   return obj && obj.document && obj.location && obj.alert && obj.setInterval;
 }
 
-function isBoolean(value) { return typeof value == $boolean; }
-function isTextNode(node) { return nodeName_(node) == '#text'; }
+function isBoolean(value) {return typeof value == $boolean;}
+function isTextNode(node) {return nodeName_(node) == '#text';}
 
 function trim(value) {
   return isString(value) ? value.replace(/^\s*/, '').replace(/\s*$/, '') : value;
@@ -6848,20 +9671,33 @@ function isLeafNode (node) {
  * @example
  * <doc:example>
  *  <doc:source>
-     Salutation: <input type="text" name="master.salutation" value="Hello" /><br/>
-     Name: <input type="text" name="master.name" value="world"/><br/>
-     <button ng:click="form = master.$copy()">copy</button>
-     <hr/>
+     <script>
+       function Ctrl() {
+         this.master = {
+           salutation: 'Hello',
+           name: 'world'
+         };
+         this.copy = function() {
+           this.form = angular.copy(this.master);
+         }
+       }
+     </script>
+     <div ng:controller="Ctrl">
+       Salutation: <input type="text" ng:model="master.salutation" ><br/>
+       Name: <input type="text" ng:model="master.name"><br/>
+       <button ng:click="copy()">copy</button>
+       <hr/>
 
-     The master object is <span ng:hide="master.$equals(form)">NOT</span> equal to the form object.
+       The master object is <span ng:hide="master.$equals(form)">NOT</span> equal to the form object.
 
-     <pre>master={{master}}</pre>
-     <pre>form={{form}}</pre>
+       <pre>master={{master}}</pre>
+       <pre>form={{form}}</pre>
+     </div>
  *  </doc:source>
  *  <doc:scenario>
    it('should print that initialy the form object is NOT equal to master', function() {
-     expect(element('.doc-example-live input[name=master.salutation]').val()).toBe('Hello');
-     expect(element('.doc-example-live input[name=master.name]').val()).toBe('world');
+     expect(element('.doc-example-live input[ng\\:model="master.salutation"]').val()).toBe('Hello');
+     expect(element('.doc-example-live input[ng\\:model="master.name"]').val()).toBe('world');
      expect(element('.doc-example-live span').css('display')).toBe('inline');
    });
 
@@ -6940,20 +9776,31 @@ function copy(source, destination){
  * @example
  * <doc:example>
  *  <doc:source>
-     Salutation: <input type="text" name="greeting.salutation" value="Hello" /><br/>
-     Name: <input type="text" name="greeting.name" value="world"/><br/>
-     <hr/>
+     <script>
+       function Ctrl() {
+         this.master = {
+           salutation: 'Hello',
+           name: 'world'
+         };
+         this.greeting = angular.copy(this.master);
+       }
+     </script>
+     <div ng:controller="Ctrl">
+       Salutation: <input type="text" ng:model="greeting.salutation"><br/>
+       Name: <input type="text" ng:model="greeting.name"><br/>
+       <hr/>
 
-     The <code>greeting</code> object is
-     <span ng:hide="greeting.$equals({salutation:'Hello', name:'world'})">NOT</span> equal to
-     <code>{salutation:'Hello', name:'world'}</code>.
+       The <code>greeting</code> object is
+       <span ng:hide="greeting.$equals(master)">NOT</span> equal to
+       <code>{salutation:'Hello', name:'world'}</code>.
 
-     <pre>greeting={{greeting}}</pre>
+       <pre>greeting={{greeting}}</pre>
+     </div>
  *  </doc:source>
  *  <doc:scenario>
      it('should print that initialy greeting is equal to the hardcoded value object', function() {
-       expect(element('.doc-example-live input[name=greeting.salutation]').val()).toBe('Hello');
-       expect(element('.doc-example-live input[name=greeting.name]').val()).toBe('world');
+       expect(element('.doc-example-live input[ng\\:model="greeting.salutation"]').val()).toBe('Hello');
+       expect(element('.doc-example-live input[ng\\:model="greeting.name"]').val()).toBe('world');
        expect(element('.doc-example-live span').css('display')).toBe('none');
      });
 
@@ -7002,36 +9849,6 @@ function setHtml(node, html) {
     }
   } else {
     node.innerHTML = html;
-  }
-}
-
-function isRenderableElement(element) {
-  var name = element && element[0] && element[0].nodeName;
-  return name && name.charAt(0) != '#' &&
-    !includes(['TR', 'COL', 'COLGROUP', 'TBODY', 'THEAD', 'TFOOT'], name);
-}
-
-function elementError(element, type, error) {
-  var parent;
-
-  while (!isRenderableElement(element)) {
-    parent = element.parent();
-    if (parent.length) {
-      element = element.parent();
-    } else {
-      return;
-    }
-  }
-
-  if (element[0]['$NG_ERROR'] !== error) {
-    element[0]['$NG_ERROR'] = error;
-    if (error) {
-      element.addClass(type);
-      element.attr(type, error.message || error);
-    } else {
-      element.removeClass(type);
-      element.removeAttr(type);
-    }
   }
 }
 
@@ -7106,8 +9923,8 @@ function parseKeyValue(/**string*/keyValue) {
   forEach((keyValue || "").split('&'), function(keyValue){
     if (keyValue) {
       key_value = keyValue.split('=');
-      key = unescape(key_value[0]);
-      obj[key] = isDefined(key_value[1]) ? unescape(key_value[1]) : true;
+      key = decodeURIComponent(key_value[0]);
+      obj[key] = isDefined(key_value[1]) ? decodeURIComponent(key_value[1]) : true;
     }
   });
   return obj;
@@ -7116,7 +9933,7 @@ function parseKeyValue(/**string*/keyValue) {
 function toKeyValue(obj) {
   var parts = [];
   forEach(obj, function(value, key) {
-    parts.push(escape(key) + (value === true ? '' : '=' + escape(value)));
+    parts.push(encodeUriQuery(key, true) + (value === true ? '' : '=' + encodeUriQuery(value, true)));
   });
   return parts.length ? parts.join('&') : '';
 }
@@ -7188,52 +10005,46 @@ function angularInit(config, document){
   var autobind = config.autobind;
 
   if (autobind) {
-    var element = isString(autobind) ? document.getElementById(autobind) : document,
-        scope = compile(element)(createScope()),
-        $browser = scope.$service('$browser');
-
-    if (config.css)
-      $browser.addCss(config.base_url + config.css);
-    else if(msie<8)
-      $browser.addJs(config.ie_compat, config.ie_compat_id);
-    scope.$apply();
+    var element = isString(autobind) ? document.getElementById(autobind) : document;
+    compile(element)().$apply();
   }
 }
 
-function angularJsConfig(document, config) {
+function angularJsConfig(document) {
   bindJQuery();
-  var scripts = document.getElementsByTagName("script"),
-      match;
-  config = extend({
-    ie_compat_id: 'ng-ie-compat'
-  }, config);
-  for(var j = 0; j < scripts.length; j++) {
-    match = (scripts[j].src || "").match(rngScript);
-    if (match) {
-      config.base_url = match[1];
-      config.ie_compat = match[1] + 'angular-ie-compat' + (match[2] || '') + '.js';
-      extend(config, parseKeyValue(match[6]));
-      eachAttribute(jqLite(scripts[j]), function(value, name){
-        if (/^ng:/.exec(name)) {
-          name = name.substring(3).replace(/-/g, '_');
-          value = value || true;
-          config[name] = value;
-        }
-      });
+  var scripts = document.getElementsByTagName('script'),
+      script = scripts[scripts.length-1],
+      scriptSrc = script.src,
+      config = {},
+      hashPos;
+
+  hashPos = scriptSrc.indexOf('#');
+  if (hashPos != -1) extend(config, parseKeyValue(scriptSrc.substr(hashPos+1)));
+
+  eachAttribute(jqLite(script), function(value, name){
+    if (/^ng:/.exec(name)) {
+      name = name.substring(3).replace(/-/g, '_');
+      value = value || true;
+      config[name] = value;
     }
-  }
+  });
+
   return config;
 }
 
-function bindJQuery(){
+function bindJQuery() {
   // bind to jQuery if present;
   jQuery = window.jQuery;
   // reset to jQuery or default to us.
   if (jQuery) {
     jqLite = jQuery;
     extend(jQuery.fn, {
-      scope: JQLitePrototype.scope
+      scope: JQLitePrototype.scope,
+      inheritedData: JQLitePrototype.inheritedData
     });
+    JQLitePatchJQueryRemove('remove', true);
+    JQLitePatchJQueryRemove('empty');
+    JQLitePatchJQueryRemove('html');
   } else {
     jqLite = jqLiteWrap;
   }
@@ -7249,11 +10060,13 @@ function assertArg(arg, name, reason) {
         (reason || "required"));
     throw error;
   }
+  return arg;
 }
 
 function assertArgFn(arg, name) {
-  assertArg(isFunction(arg), name, 'not a function, got  ' +
+  assertArg(isFunction(arg), name, 'not a function, got ' +
       (typeof arg == 'object' ? arg.constructor.name : typeof arg));
+  return arg;
 }
 
 
@@ -7271,7 +10084,7 @@ function assertArgFn(arg, name) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '0.10.0',    // all of these placeholder strings will be replaced by rake's
+  full: '0.10.5',    // all of these placeholder strings will be replaced by rake's
   major: "NG_VERSION_MAJOR",    // compile task
   minor: "NG_VERSION_MINOR",
   dot: "NG_VERSION_DOT",
@@ -7405,7 +10218,7 @@ function toJsonArray(buf, obj, pretty, stack) {
       var childPretty = pretty ? pretty + "  " : false;
       var keys = [];
       for(var k in obj) {
-        if (obj.hasOwnProperty(k) && obj[k] !== undefined) {
+        if (k!='this' && k!='$parent' && k.substring(0,2) != '$$' && obj.hasOwnProperty(k) && obj[k] !== undefined) {
           keys.push(k);
         }
       }
@@ -7466,15 +10279,20 @@ Template.prototype = {
         paths = this.paths,
         length = paths.length;
     for (i = 0; i < length; i++) {
-      children[i].link(jqLite(childNodes[paths[i]]), childScope);
+      // sometimes `element` can be modified by one of the linker functions in `this.linkFns`
+      // and childNodes may be added or removed
+      // TODO: element structure needs to be re-evaluated if new children added
+      // if the childNode still exists
+      if (childNodes[paths[i]])
+        children[i].link(jqLite(childNodes[paths[i]]), childScope);
+      else
+        delete paths[i]; // if child no longer available, delete path
     }
   },
 
 
   addLinkFn:function(linkingFn) {
     if (linkingFn) {
-      if (!linkingFn.$inject)
-        linkingFn.$inject = [];
       this.linkFns.push(linkingFn);
     }
   },
@@ -7497,7 +10315,6 @@ Template.prototype = {
 //////////////////////////////////
 
 /**
- * @workInProgress
  * @ngdoc function
  * @name angular.compile
  * @function
@@ -7547,6 +10364,15 @@ Template.prototype = {
  * Calling the template function returns the scope to which the element is bound to. It is either
  * the same scope as the one passed into the template function, or if none were provided it's the
  * newly create scope.
+ *
+ * It is important to understand that the returned scope is "linked" to the view DOM, but no linking
+ * (instance) functions registered by {@link angular.directive directives} or
+ * {@link angular.widget widgets} found in the template have been executed yet. This means that the
+ * view is likely empty and doesn't contain any values that result from evaluation on the scope. To
+ * bring the view to life, the scope needs to run through a $digest phase which typically is done by
+ * Angular automatically, except for the case when an application is being
+ * {@link guide/dev_guide.bootstrap.manual_bootstrap} manually bootstrapped, in which case the
+ * $digest phase must be invoked by calling {@link angular.scope.$apply}.
  *
  * If you need access to the bound view, there are two ways to do it:
  *
@@ -7799,7 +10625,7 @@ function createScope(providers, instanceCache) {
 
        expect(scope.greeting).toEqual(undefined);
 
-       scope.$watch('name', function(){
+       scope.$watch('name', function() {
          this.greeting = this.salutation + ' ' + this.name + '!';
        }); // initialize the watch
 
@@ -8009,7 +10835,8 @@ Scope.prototype = {
         watcher = {
           fn: listenFn,
           last: Number.NaN, // NaN !== NaN. We used this to force $watch to fire on first run.
-          get: get
+          get: get,
+          exp: watchExp
         };
 
     if (!array) {
@@ -8074,7 +10901,8 @@ Scope.prototype = {
         asyncQueue,
         length,
         dirty, ttl = 100,
-        next, current, target = this;
+        next, current, target = this,
+        watchLog = [];
 
     if (target.$$phase) {
       throw Error(target.$$phase + ' already in progress');
@@ -8103,7 +10931,16 @@ Scope.prototype = {
               // circuit it with === operator, only when === fails do we use .equals
               if ((value = watch.get(current)) !== (last = watch.last) && !equals(value, last)) {
                 dirty = true;
-                watch.fn(current, watch.last = copy(value), last);
+                watch.last = copy(value);
+                watch.fn(current, value, last);
+                if (ttl < 5) {
+                  if (!watchLog[4-ttl]) watchLog[4-ttl] = [];
+                  if (isFunction(watch.exp)) {
+                    watchLog[4-ttl].push('fn: ' + (watch.exp.name || watch.exp.toString()));
+                  } else {
+                    watchLog[4-ttl].push(watch.exp);
+                  }
+                }
               }
             } catch (e) {
               current.$service('$exceptionHandler')(e);
@@ -8124,7 +10961,8 @@ Scope.prototype = {
       } while ((current = next));
 
       if(!(ttl--)) {
-        throw Error('100 $digest() iterations reached. Aborting!');
+        throw Error('100 $digest() iterations reached. Aborting!\n' +
+            'Watchers fired in the last 5 iterations: ' + toJson(watchLog));
       }
     } while (dirty);
   },
@@ -8332,7 +11170,7 @@ Scope.prototype = {
         event = {
           name: name,
           targetScope: scope,
-          cancel: function(){canceled = true;}
+          cancel: function() {canceled = true;}
         },
         listenerArgs = concat([event], arguments, 1),
         i, length;
@@ -8460,7 +11298,7 @@ function createInjector(factoryScope, factories, instanceCache) {
   factoryScope = factoryScope || {};
   injector.invoke = invoke;
 
-  injector.eager = function(){
+  injector.eager = function() {
     forEach(factories, function(factory, name){
       if (factory.$eager)
         injector(name);
@@ -8476,6 +11314,7 @@ function createInjector(factoryScope, factories, instanceCache) {
     if (!(value in instanceCache)) {
       var factory = factories[value];
       if (!factory) throw Error("Unknown provider for '"+value+"'.");
+      inferInjectionArgs(factory);
       instanceCache[value] = invoke(factoryScope, factory);
     }
     return instanceCache[value];
@@ -8483,7 +11322,7 @@ function createInjector(factoryScope, factories, instanceCache) {
 
   function invoke(self, fn, args){
     args = args || [];
-    var injectNames = injectionArgs(fn);
+    var injectNames = fn.$inject || [];
     var i = injectNames.length;
     while(i--) {
       args.unshift(injector(injectNames[i]));
@@ -8549,7 +11388,7 @@ var FN_ARGS = /^function\s*[^\(]*\(([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(.+?)\s*$/;
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-function injectionArgs(fn) {
+function inferInjectionArgs(fn) {
   assertArgFn(fn);
   if (!fn.$inject) {
     var args = fn.$inject = [];
@@ -8570,25 +11409,25 @@ var OPERATORS = {
     'true':function(self){return true;},
     'false':function(self){return false;},
     $undefined:noop,
-    '+':function(self, a,b){return (isDefined(a)?a:0)+(isDefined(b)?b:0);},
-    '-':function(self, a,b){return (isDefined(a)?a:0)-(isDefined(b)?b:0);},
-    '*':function(self, a,b){return a*b;},
-    '/':function(self, a,b){return a/b;},
-    '%':function(self, a,b){return a%b;},
-    '^':function(self, a,b){return a^b;},
+    '+':function(self, a,b){a=a(self); b=b(self); return (isDefined(a)?a:0)+(isDefined(b)?b:0);},
+    '-':function(self, a,b){a=a(self); b=b(self); return (isDefined(a)?a:0)-(isDefined(b)?b:0);},
+    '*':function(self, a,b){return a(self)*b(self);},
+    '/':function(self, a,b){return a(self)/b(self);},
+    '%':function(self, a,b){return a(self)%b(self);},
+    '^':function(self, a,b){return a(self)^b(self);},
     '=':noop,
-    '==':function(self, a,b){return a==b;},
-    '!=':function(self, a,b){return a!=b;},
-    '<':function(self, a,b){return a<b;},
-    '>':function(self, a,b){return a>b;},
-    '<=':function(self, a,b){return a<=b;},
-    '>=':function(self, a,b){return a>=b;},
-    '&&':function(self, a,b){return a&&b;},
-    '||':function(self, a,b){return a||b;},
-    '&':function(self, a,b){return a&b;},
+    '==':function(self, a,b){return a(self)==b(self);},
+    '!=':function(self, a,b){return a(self)!=b(self);},
+    '<':function(self, a,b){return a(self)<b(self);},
+    '>':function(self, a,b){return a(self)>b(self);},
+    '<=':function(self, a,b){return a(self)<=b(self);},
+    '>=':function(self, a,b){return a(self)>=b(self);},
+    '&&':function(self, a,b){return a(self)&&b(self);},
+    '||':function(self, a,b){return a(self)||b(self);},
+    '&':function(self, a,b){return a(self)&b(self);},
 //    '|':function(self, a,b){return a|b;},
-    '|':function(self, a,b){return b(self, a);},
-    '!':function(self, a){return !a;}
+    '|':function(self, a,b){return b(self)(self, a(self));},
+    '!':function(self, a){return !a(self);}
 };
 var ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
@@ -8707,7 +11546,7 @@ function lex(text, parseStringsForObjects){
     }
     number = 1 * number;
     tokens.push({index:start, text:number, json:true,
-      fn:function(){return number;}});
+      fn:function() {return number;}});
   }
   function readIdent() {
     var ident = "";
@@ -8765,7 +11604,7 @@ function lex(text, parseStringsForObjects){
       } else if (ch == quote) {
         index++;
         tokens.push({index:start, text:rawString, string:string, json:true,
-          fn:function(){
+          fn:function() {
             return (string.length == dateParseLength)
               ? angular['String']['toDate'](string)
               : string;
@@ -8804,7 +11643,7 @@ function parser(text, json){
       filterChain =
       functionIdent =
       pipeFunction =
-        function (){ throwError("is not valid json", {text:text, index:0}); };
+        function() { throwError("is not valid json", {text:text, index:0}); };
   }
   //TODO: Shouldn't all of the public methods have assertAllConsumed?
   //TODO: I think these should be public as part of the parser api instead of scope.$eval().
@@ -8812,13 +11651,11 @@ function parser(text, json){
       assignable: assertConsumed(assignable),
       primary: assertConsumed(primary),
       statements: assertConsumed(statements),
-      validator: assertConsumed(validator),
-      formatter: assertConsumed(formatter),
       filter: assertConsumed(filter)
   };
 
   function assertConsumed(fn) {
-    return function(){
+    return function() {
       var value = fn();
       if (tokens.length !== 0) {
         throwError("is an unexpected token", tokens[0]);
@@ -8873,13 +11710,13 @@ function parser(text, json){
 
   function unaryFn(fn, right) {
     return function(self) {
-      return fn(self, right(self));
+      return fn(self, right);
     };
   }
 
   function binaryFn(left, fn, right) {
     return function(self) {
-      return fn(self, left(self), right(self));
+      return fn(self, left, right);
     };
   }
 
@@ -8887,7 +11724,7 @@ function parser(text, json){
     return tokens.length > 0;
   }
 
-  function statements(){
+  function statements() {
     var statements = [];
     while(true) {
       if (tokens.length > 0 && !peek('}', ')', ';', ']'))
@@ -8897,7 +11734,7 @@ function parser(text, json){
         // TODO(size): maybe we should not support multiple statements?
         return statements.length == 1
           ? statements[0]
-          : function (self){
+          : function(self){
             var value;
             for ( var i = 0; i < statements.length; i++) {
               var statement = statements[i];
@@ -8910,7 +11747,7 @@ function parser(text, json){
     }
   }
 
-  function _filterChain(){
+  function _filterChain() {
     var left = expression();
     var token;
     while(true) {
@@ -8922,38 +11759,8 @@ function parser(text, json){
     }
   }
 
-  function filter(){
+  function filter() {
     return pipeFunction(angularFilter);
-  }
-
-  function validator(){
-    return pipeFunction(angularValidator);
-  }
-
-  function formatter(){
-    var token = expect();
-    var formatter = angularFormatter[token.text];
-    var argFns = [];
-    if (!formatter) throwError('is not a valid formatter.', token);
-    while(true) {
-      if ((token = expect(':'))) {
-        argFns.push(expression());
-      } else {
-        return valueFn({
-          format:invokeFn(formatter.format),
-          parse:invokeFn(formatter.parse)
-        });
-      }
-    }
-    function invokeFn(fn){
-      return function(self, input){
-        var args = [input];
-        for ( var i = 0; i < argFns.length; i++) {
-          args.push(argFns[i](self));
-        }
-        return fn.apply(self, args);
-      };
-    }
   }
 
   function _pipeFunction(fnScope){
@@ -8971,18 +11778,18 @@ function parser(text, json){
           }
           return fn.apply(self, args);
         };
-        return function(){
+        return function() {
           return fnInvoke;
         };
       }
     }
   }
 
-  function expression(){
+  function expression() {
     return assignment();
   }
 
-  function _assignment(){
+  function _assignment() {
     var left = logicalOR();
     var right;
     var token;
@@ -9000,7 +11807,7 @@ function parser(text, json){
     }
   }
 
-  function logicalOR(){
+  function logicalOR() {
     var left = logicalAND();
     var token;
     while(true) {
@@ -9012,7 +11819,7 @@ function parser(text, json){
     }
   }
 
-  function logicalAND(){
+  function logicalAND() {
     var left = equality();
     var token;
     if ((token = expect('&&'))) {
@@ -9021,7 +11828,7 @@ function parser(text, json){
     return left;
   }
 
-  function equality(){
+  function equality() {
     var left = relational();
     var token;
     if ((token = expect('==','!='))) {
@@ -9030,7 +11837,7 @@ function parser(text, json){
     return left;
   }
 
-  function relational(){
+  function relational() {
     var left = additive();
     var token;
     if ((token = expect('<', '>', '<=', '>='))) {
@@ -9039,7 +11846,7 @@ function parser(text, json){
     return left;
   }
 
-  function additive(){
+  function additive() {
     var left = multiplicative();
     var token;
     while ((token = expect('+','-'))) {
@@ -9048,7 +11855,7 @@ function parser(text, json){
     return left;
   }
 
-  function multiplicative(){
+  function multiplicative() {
     var left = unary();
     var token;
     while ((token = expect('*','/','%'))) {
@@ -9057,7 +11864,7 @@ function parser(text, json){
     return left;
   }
 
-  function unary(){
+  function unary() {
     var token;
     if (expect('+')) {
       return primary();
@@ -9121,7 +11928,7 @@ function parser(text, json){
   function _fieldAccess(object) {
     var field = expect().text;
     var getter = getterFn(field);
-    return extend(function (self){
+    return extend(function(self){
       return getter(object(self));
     }, {
       assign:function(self, value){
@@ -9134,7 +11941,7 @@ function parser(text, json){
     var indexFn = expression();
     consume(']');
     return extend(
-      function (self){
+      function(self){
         var o = obj(self);
         var i = indexFn(self);
         return (o) ? o[i] : undefined;
@@ -9153,7 +11960,7 @@ function parser(text, json){
       } while (expect(','));
     }
     consume(')');
-    return function (self){
+    return function(self){
       var args = [];
       for ( var i = 0; i < argsFn.length; i++) {
         args.push(argsFn[i](self));
@@ -9175,7 +11982,7 @@ function parser(text, json){
       } while (expect(','));
     }
     consume(']');
-    return function (self){
+    return function(self){
       var array = [];
       for ( var i = 0; i < elementFns.length; i++) {
         array.push(elementFns[i](self));
@@ -9196,7 +12003,7 @@ function parser(text, json){
       } while (expect(','));
     }
     consume('}');
-    return function (self){
+    return function(self){
       var object = {};
       for ( var i = 0; i < keyValues.length; i++) {
         var keyValue = keyValues[i];
@@ -9300,22 +12107,25 @@ function getterFn(path) {
     code += 'if(!s) return s;\n' +
             'l=s;\n' +
             's=s' + key + ';\n' +
-            'if(typeof s=="function" && !(s instanceof RegExp)) s = function(){ return l' +
-              key + '.apply(l, arguments); };\n';
+            'if(typeof s=="function" && !(s instanceof RegExp)) {\n' +
+              ' fn=function(){ return l' + key + '.apply(l, arguments); };\n' +
+              ' fn.$unboundFn=s;\n' +
+              ' s=fn;\n' +
+            '}\n';
     if (key.charAt(1) == '$') {
       // special code for super-imposed functions
       var name = key.substr(2);
       code += 'if(!s) {\n' +
               ' t = angular.Global.typeOf(l);\n' +
               ' fn = (angular[t.charAt(0).toUpperCase() + t.substring(1)]||{})["' + name + '"];\n' +
-              ' if (fn) s = function(){ return fn.apply(l, ' +
-                   '[l].concat(Array.prototype.slice.call(arguments, 0))); };\n' +
+              ' if (fn) ' +
+                 's = function(){ return fn.apply(l, [l].concat(Array.prototype.slice.call(arguments, 0))); };\n' +
               '}\n';
     }
   });
   code += 'return s;';
   fn = Function('s', code);
-  fn["toString"] = function(){ return code; };
+  fn["toString"] = function() { return code; };
 
   return getterFnCache[path] = fn;
 }
@@ -9406,7 +12216,7 @@ ResourceFactory.prototype = {
 
     forEach(actions, function(action, name){
       var isPostOrPut = action.method == 'POST' || action.method == 'PUT';
-      Resource[name] = function (a1, a2, a3, a4) {
+      Resource[name] = function(a1, a2, a3, a4) {
         var params = {};
         var data;
         var success = noop;
@@ -9448,7 +12258,7 @@ ResourceFactory.prototype = {
         var value = this instanceof Resource ? this : (action.isArray ? [] : new Resource(data));
         self.xhr(
           action.method,
-          route.url(extend({}, action.params || {}, extractParams(data), params)),
+          route.url(extend({}, extractParams(data), action.params || {}, params)),
           data,
           function(status, response) {
             if (response) {
@@ -9505,7 +12315,7 @@ ResourceFactory.prototype = {
 //////////////////////////////
 // Browser
 //////////////////////////////
-var XHR = window.XMLHttpRequest || function () {
+var XHR = window.XMLHttpRequest || function() {
   try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e1) {}
   try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (e2) {}
   try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (e3) {}
@@ -9536,15 +12346,16 @@ var XHR = window.XMLHttpRequest || function () {
  * @param {object} body jQuery wrapped document.body.
  * @param {function()} XHR XMLHttpRequest constructor.
  * @param {object} $log console.log or an object with the same interface.
+ * @param {object} $sniffer $sniffer service
  */
-function Browser(window, document, body, XHR, $log) {
+function Browser(window, document, body, XHR, $log, $sniffer) {
   var self = this,
       rawDocument = document[0],
       location = window.location,
+      history = window.history,
       setTimeout = window.setTimeout,
       clearTimeout = window.clearTimeout,
-      pendingDeferIds = {},
-      lastLocationUrl;
+      pendingDeferIds = {};
 
   self.isMock = false;
 
@@ -9557,7 +12368,7 @@ function Browser(window, document, body, XHR, $log) {
 
 
   /**
-   * Executes the `fn` function (supports currying) and decrements the `outstandingRequestCallbacks`
+   * Executes the `fn` function(supports currying) and decrements the `outstandingRequestCallbacks`
    * counter. If the counter reaches 0, all the `outstandingRequestCallbacks` are executed.
    */
   function completeOutstandingRequest(fn) {
@@ -9578,7 +12389,6 @@ function Browser(window, document, body, XHR, $log) {
   }
 
   /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#xhr
    * @methodOf angular.service.$browser
@@ -9606,7 +12416,7 @@ function Browser(window, document, body, XHR, $log) {
         window[callbackId].data = data;
       };
 
-      var script = self.addJs(url.replace('JSON_CALLBACK', callbackId), null, function() {
+      var script = self.addJs(url.replace('JSON_CALLBACK', callbackId), function() {
         if (window[callbackId].data) {
           completeOutstandingRequest(callback, 200, window[callbackId].data);
         } else {
@@ -9624,7 +12434,7 @@ function Browser(window, document, body, XHR, $log) {
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           // normalize IE bug (http://bugs.jquery.com/ticket/1450)
-          var status = xhr.status == 1223 ? 204 : xhr.status || 200;
+          var status = xhr.status == 1223 ? 204 : xhr.status;
           completeOutstandingRequest(callback, status, xhr.responseText);
         }
       };
@@ -9658,7 +12468,6 @@ function Browser(window, document, body, XHR, $log) {
       pollTimeout;
 
   /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#addPollFn
    * @methodOf angular.service.$browser
@@ -9696,78 +12505,101 @@ function Browser(window, document, body, XHR, $log) {
   // URL API
   //////////////////////////////////////////////////////////////
 
+  var lastBrowserUrl = location.href;
+
   /**
-   * @workInProgress
    * @ngdoc method
-   * @name angular.service.$browser#setUrl
+   * @name angular.service.$browser#url
    * @methodOf angular.service.$browser
    *
-   * @param {string} url New url
-   *
    * @description
-   * Sets browser's url
+   * GETTER:
+   * Without any argument, this method just returns current value of location.href.
+   *
+   * SETTER:
+   * With at least one argument, this method sets url to new value.
+   * If html5 history api supported, pushState/replaceState is used, otherwise
+   * location.href/location.replace is used.
+   * Returns its own instance to allow chaining
+   *
+   * NOTE: this api is intended for use only by the $location service. Please use the
+   * {@link angular.service.$location $location service} to change url.
+   *
+   * @param {string} url New url (when used as setter)
+   * @param {boolean=} replace Should new url replace current history record ?
    */
-  self.setUrl = function(url) {
-
-    var existingURL = lastLocationUrl;
-    if (!existingURL.match(/#/)) existingURL += '#';
-    if (!url.match(/#/)) url += '#';
-    if (existingURL != url) {
-      location.href = url;
+  self.url = function(url, replace) {
+    // setter
+    if (url) {
+      lastBrowserUrl = url;
+      if ($sniffer.history) {
+        if (replace) history.replaceState(null, '', url);
+        else history.pushState(null, '', url);
+      } else {
+        if (replace) location.replace(url);
+        else location.href = url;
+      }
+      return self;
+    // getter
+    } else {
+      return location.href;
     }
-   };
-
-  /**
-   * @workInProgress
-   * @ngdoc method
-   * @name angular.service.$browser#getUrl
-   * @methodOf angular.service.$browser
-   *
-   * @description
-   * Get current browser's url
-   *
-   * @returns {string} Browser's url
-   */
-  self.getUrl = function() {
-    return lastLocationUrl = location.href;
   };
 
+  var urlChangeListeners = [],
+      urlChangeInit = false;
+
+  function fireUrlChange() {
+    if (lastBrowserUrl == self.url()) return;
+
+    lastBrowserUrl = self.url();
+    forEach(urlChangeListeners, function(listener) {
+      listener(self.url());
+    });
+  }
 
   /**
-   * @workInProgress
    * @ngdoc method
-   * @name angular.service.$browser#onHashChange
+   * @name angular.service.$browser#onUrlChange
    * @methodOf angular.service.$browser
+   * @TODO(vojta): refactor to use node's syntax for events
    *
    * @description
-   * Detects if browser support onhashchange events and register a listener otherwise registers
-   * $browser poller. The `listener` will then get called when the hash changes.
+   * Register callback function that will be called, when url changes.
    *
-   * The listener gets called with either HashChangeEvent object or simple object that also contains
-   * `oldURL` and `newURL` properties.
+   * It's only called when the url is changed by outside of angular:
+   * - user types different url into address bar
+   * - user clicks on history (forward/back) button
+   * - user clicks on a link
    *
-   * Note: this api is intended for use only by the $location service. Please use the
-   * {@link angular.service.$location $location service} to monitor hash changes in angular apps.
+   * It's not called when url is changed by $browser.url() method
    *
-   * @param {function(event)} listener Listener function to be called when url hash changes.
-   * @return {function()} Returns the registered listener fn - handy if the fn is anonymous.
+   * The listener gets called with new url as parameter.
+   *
+   * NOTE: this api is intended for use only by the $location service. Please use the
+   * {@link angular.service.$location $location service} to monitor url changes in angular apps.
+   *
+   * @param {function(string)} listener Listener function to be called when url changes.
+   * @return {function(string)} Returns the registered listener fn - handy if the fn is anonymous.
    */
-  self.onHashChange = function(listener) {
-    // IE8 comp mode returns true, but doesn't support hashchange event
-    var dm = window.document.documentMode;
-    if ('onhashchange' in window && (isUndefined(dm) || dm >= 8)) {
-      jqLite(window).bind('hashchange', listener);
-    } else {
-      var lastBrowserUrl = self.getUrl();
+  self.onUrlChange = function(callback) {
+    if (!urlChangeInit) {
+      // We listen on both (hashchange/popstate) when available, as some browsers (e.g. Opera)
+      // don't fire popstate when user change the address bar and don't fire hashchange when url
+      // changed by push/replaceState
 
-      self.addPollFn(function() {
-        if (lastBrowserUrl != self.getUrl()) {
-          listener();
-          lastBrowserUrl = self.getUrl();
-        }
-      });
+      // html5 history api - popstate event
+      if ($sniffer.history) jqLite(window).bind('popstate', fireUrlChange);
+      // hashchange event
+      if ($sniffer.hashchange) jqLite(window).bind('hashchange', fireUrlChange);
+      // polling
+      else self.addPollFn(fireUrlChange);
+
+      urlChangeInit = true;
     }
-    return listener;
+
+    urlChangeListeners.push(callback);
+    return callback;
   };
 
   //////////////////////////////////////////////////////////////
@@ -9777,7 +12609,6 @@ function Browser(window, document, body, XHR, $log) {
   var lastCookieString = '';
 
   /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#cookies
    * @methodOf angular.service.$browser
@@ -9798,7 +12629,7 @@ function Browser(window, document, body, XHR, $log) {
    *
    * @returns {Object} Hash of all cookies (if called without any parameter)
    */
-  self.cookies = function (name, value) {
+  self.cookies = function(name, value) {
     var cookieLength, cookieArray, cookie, i, keyValue, index;
 
     if (name) {
@@ -9839,7 +12670,6 @@ function Browser(window, document, body, XHR, $log) {
 
 
   /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#defer
    * @methodOf angular.service.$browser
@@ -9872,12 +12702,13 @@ function Browser(window, document, body, XHR, $log) {
    *
    * @name angular.service.$browser#defer.cancel
    * @methodOf angular.service.$browser.defer
-   * @returns {boolean} Returns `true` if the task hasn't executed yet and was successfuly canceled.
    *
    * @description
    * Cancels a defered task identified with `deferId`.
+   *
+   * @param {*} deferId Token returned by the `$browser.defer` function.
+   * @returns {boolean} Returns `true` if the task hasn't executed yet and was successfuly canceled.
    */
-
   self.defer.cancel = function(deferId) {
     if (pendingDeferIds[deferId]) {
       delete pendingDeferIds[deferId];
@@ -9885,51 +12716,15 @@ function Browser(window, document, body, XHR, $log) {
       completeOutstandingRequest(noop);
       return true;
     }
+    return false;
   };
 
 
   //////////////////////////////////////////////////////////////
   // Misc API
   //////////////////////////////////////////////////////////////
-  var hoverListener = noop;
 
   /**
-   * @workInProgress
-   * @ngdoc method
-   * @name angular.service.$browser#hover
-   * @methodOf angular.service.$browser
-   *
-   * @description
-   * Set hover listener.
-   *
-   * @param {function(Object, boolean)} listener Function that will be called when a hover event
-   *    occurs.
-   */
-  self.hover = function(listener) { hoverListener = listener; };
-
-  /**
-   * @workInProgress
-   * @ngdoc method
-   * @name angular.service.$browser#bind
-   * @methodOf angular.service.$browser
-   *
-   * @description
-   * Register hover function to real browser
-   */
-  self.bind = function() {
-    document.bind("mouseover", function(event){
-      hoverListener(jqLite(msie ? event.srcElement : event.target), true);
-      return true;
-    });
-    document.bind("mouseleave mouseout click dblclick keypress keyup", function(event){
-      hoverListener(jqLite(event.target), false);
-      return true;
-    });
-  };
-
-
-  /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#addCss
    * @methodOf angular.service.$browser
@@ -9948,30 +12743,23 @@ function Browser(window, document, body, XHR, $log) {
 
 
   /**
-   * @workInProgress
    * @ngdoc method
    * @name angular.service.$browser#addJs
    * @methodOf angular.service.$browser
    *
    * @param {string} url Url to js file
-   * @param {string=} domId Optional id for the script tag
    *
    * @description
    * Adds a script tag to the head.
    */
-  self.addJs = function(url, domId, done) {
+  self.addJs = function(url, done) {
     // we can't use jQuery/jqLite here because jQuery does crazy shit with script elements, e.g.:
     // - fetches local scripts via XHR and evals them
     // - adds and immediately removes script elements from the document
-    //
-    // We need addJs to be able to add angular-ie-compat.js which is very special and must remain
-    // part of the DOM so that the embedded images can reference it. jQuery's append implementation
-    // (v1.4.2) fubars it.
     var script = rawDocument.createElement('script');
 
     script.type = 'text/javascript';
     script.src = url;
-    if (domId) script.id = domId;
 
     if (msie) {
       script.onreadystatechange = function() {
@@ -9984,6 +12772,17 @@ function Browser(window, document, body, XHR, $log) {
     body[0].appendChild(script);
 
     return script;
+  };
+
+  /**
+   * Returns current <base href>
+   * (always relative - without domain)
+   *
+   * @returns {string=}
+   */
+  self.baseHref = function() {
+    var href = document.find('base').attr('href');
+    return href ? href.replace(/^https?\:\/\/[^\/]*/, '') : href;
   };
 }
 'use strict';
@@ -10015,25 +12814,39 @@ var START_TAG_REGEXP = /^<\s*([\w:-]+)((?:\s+[\w:-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:
   URI_REGEXP = /^((ftp|https?):\/\/|mailto:|#)/,
   NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g; // Match everything outside of normal chars and " (quote character)
 
-// Empty Elements - HTML 4.01
-var emptyElements = makeMap("area,br,col,hr,img");
 
-// Block Elements - HTML 4.01
-var blockElements = makeMap("address,blockquote,center,dd,del,dir,div,dl,dt,"+
-    "hr,ins,li,map,menu,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul");
+// Good source of info about elements and attributes
+// http://dev.w3.org/html5/spec/Overview.html#semantics
+// http://simon.html5.org/html-elements
 
-// Inline Elements - HTML 4.01
-var inlineElements = makeMap("a,abbr,acronym,b,bdo,big,br,cite,code,del,dfn,em,font,i,img,"+
-    "ins,kbd,label,map,q,s,samp,small,span,strike,strong,sub,sup,tt,u,var");
-// Elements that you can, intentionally, leave open
-// (and which close themselves)
-var closeSelfElements = makeMap("colgroup,dd,dt,li,p,td,tfoot,th,thead,tr");
+// Safe Void Elements - HTML5
+// http://dev.w3.org/html5/spec/Overview.html#void-elements
+var voidElements = makeMap("area,br,col,hr,img,wbr");
+
+// Elements that you can, intentionally, leave open (and which close themselves)
+// http://dev.w3.org/html5/spec/Overview.html#optional-tags
+var optionalEndTagBlockElements = makeMap("colgroup,dd,dt,li,p,tbody,td,tfoot,th,thead,tr"),
+    optionalEndTagInlineElements = makeMap("rp,rt"),
+    optionalEndTagElements = extend({}, optionalEndTagInlineElements, optionalEndTagBlockElements);
+
+// Safe Block Elements - HTML5
+var blockElements = extend({}, optionalEndTagBlockElements, makeMap("address,article,aside," +
+        "blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5,h6," +
+        "header,hgroup,hr,ins,map,menu,nav,ol,pre,script,section,table,ul"));
+
+// Inline Elements - HTML5
+var inlineElements = extend({}, optionalEndTagInlineElements, makeMap("a,abbr,acronym,b,bdi,bdo," +
+        "big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s,samp,small," +
+        "span,strike,strong,sub,sup,time,tt,u,var"));
+
+
 // Special Elements (can contain anything)
 var specialElements = makeMap("script,style");
-var validElements = extend({}, emptyElements, blockElements, inlineElements, closeSelfElements);
+
+var validElements = extend({}, voidElements, blockElements, inlineElements, optionalEndTagElements);
 
 //Attributes that have href and hence need to be sanitized
-var uriAttrs = makeMap("background,href,longdesc,src,usemap");
+var uriAttrs = makeMap("background,cite,href,longdesc,src,usemap");
 var validAttrs = extend({}, uriAttrs, makeMap(
     'abbr,align,alt,axis,bgcolor,border,cellpadding,cellspacing,class,clear,'+
     'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,'+
@@ -10055,7 +12868,7 @@ var validAttrs = extend({}, uriAttrs, makeMap(
  */
 function htmlParser( html, handler ) {
   var index, chars, match, stack = [], last = html;
-  stack.last = function(){ return stack[ stack.length - 1 ]; };
+  stack.last = function() { return stack[ stack.length - 1 ]; };
 
   while ( html ) {
     chars = true;
@@ -10134,11 +12947,11 @@ function htmlParser( html, handler ) {
       }
     }
 
-    if ( closeSelfElements[ tagName ] && stack.last() == tagName ) {
+    if ( optionalEndTagElements[ tagName ] && stack.last() == tagName ) {
       parseEndTag( "", tagName );
     }
 
-    unary = emptyElements[ tagName ] || !!unary;
+    unary = voidElements[ tagName ] || !!unary;
 
     if ( !unary )
       stack.push( tagName );
@@ -10296,20 +13109,30 @@ function htmlSanitizeWriter(buf){
  * - [clone()](http://api.jquery.com/clone/)
  * - [css()](http://api.jquery.com/css/)
  * - [data()](http://api.jquery.com/data/)
+ * - [eq()](http://api.jquery.com/eq/)
+ * - [find()](http://api.jquery.com/find/) - Limited to lookups by tag name.
  * - [hasClass()](http://api.jquery.com/hasClass/)
+ * - [html()](http://api.jquery.com/html/)
+ * - [next()](http://api.jquery.com/next/)
  * - [parent()](http://api.jquery.com/parent/)
+ * - [prepend()](http://api.jquery.com/prepend/)
+ * - [prop()](http://api.jquery.com/prop/)
+ * - [ready()](http://api.jquery.com/ready/)
  * - [remove()](http://api.jquery.com/remove/)
  * - [removeAttr()](http://api.jquery.com/removeAttr/)
  * - [removeClass()](http://api.jquery.com/removeClass/)
  * - [removeData()](http://api.jquery.com/removeData/)
  * - [replaceWith()](http://api.jquery.com/replaceWith/)
  * - [text()](http://api.jquery.com/text/)
- * - [trigger()](http://api.jquery.com/trigger/)
- * - [eq()](http://api.jquery.com/eq/)
+ * - [toggleClass()](http://api.jquery.com/toggleClass/)
+ * - [unbind()](http://api.jquery.com/unbind/)
+ * - [val()](http://api.jquery.com/val/)
  *
  * ## In addtion to the above, Angular privides an additional method to both jQuery and jQuery lite:
  *
  * - `scope()` - retrieves the current Angular scope of the element.
+ * - `inheritedData()` - same as `data()`, but walks up the DOM until a value is found or the top
+ *   parent element is reached.
  *
  * @param {string|DOMElement} element HTML string or DOMElement to be wrapped into jQuery.
  * @returns {Object} jQuery object.
@@ -10343,6 +13166,62 @@ function getStyle(element) {
     }
   }
   return current;
+}
+
+
+/**
+ * Converts dash-separated names to camelCase. Useful for dealing with css properties.
+ */
+function camelCase(name) {
+  return name.replace(/\-(\w)/g, function(all, letter, offset){
+    return (offset == 0 && letter == 'w') ? 'w' : letter.toUpperCase();
+  });
+}
+
+/////////////////////////////////////////////
+// jQuery mutation patch
+//
+//  In conjunction with bindJQuery intercepts all jQuery's DOM destruction apis and fires a
+// $destroy event on all DOM nodes being removed.
+//
+/////////////////////////////////////////////
+
+function JQLitePatchJQueryRemove(name, dispatchThis) {
+  var originalJqFn = jQuery.fn[name];
+  originalJqFn = originalJqFn.$original || originalJqFn;
+  removePatch.$original = originalJqFn;
+  jQuery.fn[name] = removePatch;
+
+  function removePatch() {
+    var list = [this],
+        fireEvent = dispatchThis,
+        set, setIndex, setLength,
+        element, childIndex, childLength, children,
+        fns, data;
+
+    while(list.length) {
+      set = list.shift();
+      for(setIndex = 0, setLength = set.length; setIndex < setLength; setIndex++) {
+        element = jqLite(set[setIndex]);
+        if (fireEvent) {
+          data = element.data('events');
+          if ( (fns = data && data.$destroy) ) {
+            forEach(fns, function(fn){
+              fn.handler();
+            });
+          }
+        } else {
+          fireEvent = !fireEvent;
+        }
+        for(childIndex = 0, childLength = (children = element.children()).length;
+            childIndex < childLength;
+            childIndex++) {
+          list.push(jQuery(children[childIndex]));
+        }
+      }
+    }
+    return originalJqFn.apply(this, arguments);
+  }
 }
 
 /////////////////////////////////////////////
@@ -10384,9 +13263,15 @@ function JQLiteRemoveData(element) {
   var cacheId = element[jqName],
   cache = jqCache[cacheId];
   if (cache) {
-    forEach(cache.bind || {}, function(fn, type){
-      removeEventListenerFn(element, type, fn);
-    });
+    if (cache.bind) {
+      forEach(cache.bind, function(fn, type){
+        if (type == '$destroy') {
+          fn({});
+        } else {
+          removeEventListenerFn(element, type, fn);
+        }
+      });
+    }
     delete jqCache[cacheId];
     element[jqName] = undefined; // ie does not allow deletion of attributes on elements.
   }
@@ -10409,8 +13294,8 @@ function JQLiteData(element, key, value) {
 function JQLiteHasClass(element, selector, _) {
   // the argument '_' is important, since it makes the function have 3 arguments, which
   // is needed for delegate function to realize the this is a getter.
-  var className = " " + selector + " ";
-  return ((" " + element.className + " ").replace(/[\n\t]/g, " ").indexOf( className ) > -1);
+  return ((" " + element.className + " ").replace(/[\n\t]/g, " ").
+      indexOf( " " + selector + " " ) > -1);
 }
 
 function JQLiteRemoveClass(element, selector) {
@@ -10484,17 +13369,23 @@ var JQLitePrototype = JQLite.prototype = {
 // these functions return self on setter and
 // value on get.
 //////////////////////////////////////////
-var SPECIAL_ATTR = makeMap("multiple,selected,checked,disabled,readonly");
+var BOOLEAN_ATTR = {};
+forEach('multiple,selected,checked,disabled,readOnly,required'.split(','), function(value) {
+  BOOLEAN_ATTR[lowercase(value)] = value;
+});
 
 forEach({
   data: JQLiteData,
+  inheritedData: function(element, name, value) {
+    element = jqLite(element);
+    while (element.length) {
+      if (value = element.data(name)) return value;
+      element = element.parent();
+    }
+  },
 
   scope: function(element) {
-    var scope;
-    while (element && !(scope = jqLite(element).data($$scope))) {
-      element = element.parentNode;
-    }
-    return scope;
+    return jqLite(element).inheritedData($$scope);
   },
 
   removeAttr: function(element,name) {
@@ -10504,25 +13395,47 @@ forEach({
   hasClass: JQLiteHasClass,
 
   css: function(element, name, value) {
+    name = camelCase(name);
+
     if (isDefined(value)) {
       element.style[name] = value;
     } else {
-      return element.style[name];
+      var val;
+
+      if (msie <= 8) {
+        // this is some IE specific weirdness that jQuery 1.6.4 does not sure why
+        val = element.currentStyle && element.currentStyle[name];
+        if (val === '') val = 'auto';
+      }
+
+      val = val || element.style[name];
+
+      if (msie <= 8) {
+        // jquery weirdness :-/
+        val = (val === '') ? undefined : val;
+      }
+
+      return  val;
     }
   },
 
   attr: function(element, name, value){
-    if (name === 'class') {
-      if(isDefined(value)) {
-        element.className = value;
-      } else {
-        return element.className;
-      }
-    } else if (SPECIAL_ATTR[name]) {
+    var lowercasedName = lowercase(name);
+    if (BOOLEAN_ATTR[lowercasedName]) {
       if (isDefined(value)) {
-        element[name] = !!value;
+        if (!!value) {
+          element[name] = true;
+          element.setAttribute(name, lowercasedName);
+        } else {
+          element[name] = false;
+          element.removeAttribute(lowercasedName);
+        }
       } else {
-        return element[name];
+        return (element[name] ||
+                 element.getAttribute(name) !== null &&
+                 (msie < 9 ? element.getAttribute(name) !== '' : true))
+               ? lowercasedName
+               : undefined;
       }
     } else if (isDefined(value)) {
       element.setAttribute(name, value);
@@ -10532,6 +13445,14 @@ forEach({
       var ret = element.getAttribute(name, 2);
       // normalize non-existing attributes to undefined (as jQuery)
       return ret === null ? undefined : ret;
+    }
+  },
+
+  prop: function(element, name, value) {
+    if (isDefined(value)) {
+      element[name] = value;
+    } else {
+      return element[name];
     }
   },
 
@@ -10623,7 +13544,7 @@ forEach({
       if (!eventHandler) {
         bind[type] = eventHandler = function(event) {
           if (!event.preventDefault) {
-            event.preventDefault = function(){
+            event.preventDefault = function() {
               event.returnValue = false; //ie
             };
           }
@@ -10635,6 +13556,20 @@ forEach({
           if (!event.target) {
             event.target = event.srcElement || document;
           }
+
+          if (isUndefined(event.defaultPrevented)) {
+            var prevent = event.preventDefault;
+            event.preventDefault = function() {
+              event.defaultPrevented = true;
+              prevent.call(event);
+            };
+            event.defaultPrevented = false;
+          }
+
+          event.isDefaultPrevented = function() {
+            return event.defaultPrevented;
+          };
+
           forEach(eventHandler.fns, function(fn){
             fn.call(element, event);
           });
@@ -10644,6 +13579,25 @@ forEach({
       }
       eventHandler.fns.push(fn);
     });
+  },
+
+  unbind: function(element, type, fn) {
+    var bind = JQLiteData(element, 'bind');
+    if (!bind) return; //no listeners registered
+
+    if (isUndefined(type)) {
+      forEach(bind, function(eventHandler, type) {
+        removeEventListenerFn(element, type, eventHandler);
+        delete bind[type];
+      });
+    } else {
+      if (isUndefined(fn)) {
+        removeEventListenerFn(element, type, bind[type]);
+        delete bind[type];
+      } else {
+        angularArray.remove(bind[type].fns, fn);
+      }
+    }
   },
 
   replaceWith: function(element, replaceNode) {
@@ -10852,9 +13806,16 @@ var angularArray = {
    * @example
       <doc:example>
         <doc:source>
-         <div ng:init="books = ['Moby Dick', 'Great Gatsby', 'Romeo and Juliet']"></div>
-         <input name='bookName' value='Romeo and Juliet'> <br>
-         Index of '{{bookName}}' in the list {{books}} is <em>{{books.$indexOf(bookName)}}</em>.
+         <script>
+           function Ctrl() {
+             this.books = ['Moby Dick', 'Great Gatsby', 'Romeo and Juliet'];
+             this.bookName = 'Romeo and Juliet';
+           }
+         </script>
+         <div ng:controller="Ctrl">
+           <input ng:model='bookName'> <br>
+           Index of '{{bookName}}' in the list {{books}} is <em>{{books.$indexOf(bookName)}}</em>.
+         </div>
         </doc:source>
         <doc:scenario>
          it('should correctly calculate the initial index', function() {
@@ -10895,17 +13856,29 @@ var angularArray = {
    * @example
       <doc:example>
        <doc:source>
-        <table ng:init="invoice= {items:[{qty:10, description:'gadget', cost:9.95}]}">
+        <script>
+          function Ctrl() {
+            this.invoice = {
+              items:[ {
+                   qty:10,
+                   description:'gadget',
+                   cost:9.95
+                 }
+              ]
+            };
+          }
+        </script>
+        <table class="invoice" ng:controller="Ctrl">
          <tr><th>Qty</th><th>Description</th><th>Cost</th><th>Total</th><th></th></tr>
          <tr ng:repeat="item in invoice.items">
-           <td><input name="item.qty" value="1" size="4" ng:required ng:validate="integer"></td>
-           <td><input name="item.description"></td>
-           <td><input name="item.cost" value="0.00" ng:required ng:validate="number" size="6"></td>
+           <td><input type="integer" ng:model="item.qty" size="4" required></td>
+           <td><input type="text" ng:model="item.description"></td>
+           <td><input type="number" ng:model="item.cost" required size="6"></td>
            <td>{{item.qty * item.cost | currency}}</td>
            <td>[<a href ng:click="invoice.items.$remove(item)">X</a>]</td>
          </tr>
          <tr>
-           <td><a href ng:click="invoice.items.$add()">add item</a></td>
+           <td><a href ng:click="invoice.items.$add({qty:1, cost:0})">add item</a></td>
            <td></td>
            <td>Total:</td>
            <td>{{invoice.items.$sum('qty*cost') | currency}}</td>
@@ -10915,8 +13888,8 @@ var angularArray = {
        <doc:scenario>
          //TODO: these specs are lame because I had to work around issues #164 and #167
          it('should initialize and calculate the totals', function() {
-           expect(repeater('.doc-example-live table tr', 'item in invoice.items').count()).toBe(3);
-           expect(repeater('.doc-example-live table tr', 'item in invoice.items').row(1)).
+           expect(repeater('table.invoice tr', 'item in invoice.items').count()).toBe(3);
+           expect(repeater('table.invoice tr', 'item in invoice.items').row(1)).
              toEqual(['$99.50']);
            expect(binding("invoice.items.$sum('qty*cost')")).toBe('$99.50');
            expect(binding("invoice.items.$sum('qty*cost')")).toBe('$99.50');
@@ -10927,7 +13900,7 @@ var angularArray = {
            using('.doc-example-live tr:nth-child(3)').input('item.qty').enter('20');
            using('.doc-example-live tr:nth-child(3)').input('item.cost').enter('100');
 
-           expect(repeater('.doc-example-live table tr', 'item in invoice.items').row(2)).
+           expect(repeater('table.invoice tr', 'item in invoice.items').row(2)).
              toEqual(['$2,000.00']);
            expect(binding("invoice.items.$sum('qty*cost')")).toBe('$2,099.50');
          });
@@ -11046,7 +14019,7 @@ var angularArray = {
                                   {name:'Adam', phone:'555-5678'},
                                   {name:'Julie', phone:'555-8765'}]"></div>
 
-         Search: <input name="searchText"/>
+         Search: <input ng:model="searchText"/>
          <table id="searchTextResults">
            <tr><th>Name</th><th>Phone</th><tr>
            <tr ng:repeat="friend in friends.$filter(searchText)">
@@ -11055,9 +14028,9 @@ var angularArray = {
            <tr>
          </table>
          <hr>
-         Any: <input name="search.$"/> <br>
-         Name only <input name="search.name"/><br>
-         Phone only <input name="search.phone"/><br>
+         Any: <input ng:model="search.$"/> <br>
+         Name only <input ng:model="search.name"/><br>
+         Phone only <input ng:model="search.phone"/><br>
          <table id="searchObjResults">
            <tr><th>Name</th><th>Phone</th><tr>
            <tr ng:repeat="friend in friends.$filter(search)">
@@ -11130,7 +14103,7 @@ var angularArray = {
       case "object":
         for (var key in expression) {
           if (key == '$') {
-            (function(){
+            (function() {
               var text = (''+expression[key]).toLowerCase();
               if (!text) return;
               predicates.push(function(value) {
@@ -11138,7 +14111,7 @@ var angularArray = {
               });
             })();
           } else {
-            (function(){
+            (function() {
               var path = key;
               var text = (''+expression[key]).toLowerCase();
               if (!text) return;
@@ -11191,22 +14164,29 @@ var angularArray = {
    * with objects created from user input.
      <doc:example>
        <doc:source>
-         [<a href="" ng:click="people.$add()">add empty</a>]
-         [<a href="" ng:click="people.$add({name:'John', sex:'male'})">add 'John'</a>]
-         [<a href="" ng:click="people.$add({name:'Mary', sex:'female'})">add 'Mary'</a>]
+         <script>
+           function Ctrl() {
+             this.people = [];
+           }
+         </script>
+         <div ng:controller="Ctrl">
+           [<a href="" ng:click="people.$add()">add empty</a>]
+           [<a href="" ng:click="people.$add({name:'John', sex:'male'})">add 'John'</a>]
+           [<a href="" ng:click="people.$add({name:'Mary', sex:'female'})">add 'Mary'</a>]
 
-         <ul ng:init="people=[]">
-           <li ng:repeat="person in people">
-             <input name="person.name">
-             <select name="person.sex">
-               <option value="">--chose one--</option>
-               <option>male</option>
-               <option>female</option>
-             </select>
-             [<a href="" ng:click="people.$remove(person)">X</a>]
-           </li>
-         </ul>
-         <pre>people = {{people}}</pre>
+           <ul>
+             <li ng:repeat="person in people">
+               <input ng:model="person.name">
+               <select ng:model="person.sex">
+                 <option value="">--chose one--</option>
+                 <option>male</option>
+                 <option>female</option>
+               </select>
+               [<a href="" ng:click="people.$remove(person)">X</a>]
+             </li>
+           </ul>
+           <pre>people = {{people}}</pre>
+         </div>
        </doc:source>
        <doc:scenario>
          beforeEach(function() {
@@ -11215,7 +14195,7 @@ var angularArray = {
 
          it('should create an empty record when "add empty" is clicked', function() {
            element('.doc-example-live a:contains("add empty")').click();
-           expect(binding('people')).toBe('people = [{\n  "name":"",\n  "sex":null}]');
+           expect(binding('people')).toBe('people = [{\n  }]');
          });
 
          it('should create a "John" record when "add \'John\'" is clicked', function() {
@@ -11270,7 +14250,7 @@ var angularArray = {
          <ul>
            <li ng:repeat="item in items">
               {{item.name}}: points=
-              <input type="text" name="item.points"/> <!-- id="item{{$index}} -->
+              <input type="text" ng:model="item.points"/> <!-- id="item{{$index}} -->
            </li>
          </ul>
          <p>Number of items which have one point: <em>{{ items.$count('points==1') }}</em></p>
@@ -11334,49 +14314,56 @@ var angularArray = {
    * @example
      <doc:example>
        <doc:source>
-         <div ng:init="friends = [{name:'John', phone:'555-1212', age:10},
-                                  {name:'Mary', phone:'555-9876', age:19},
-                                  {name:'Mike', phone:'555-4321', age:21},
-                                  {name:'Adam', phone:'555-5678', age:35},
-                                  {name:'Julie', phone:'555-8765', age:29}]"></div>
-
-         <pre>Sorting predicate = {{predicate}}; reverse = {{reverse}}</pre>
-         <hr/>
-         [ <a href="" ng:click="predicate=''">unsorted</a> ]
-         <table ng:init="predicate='-age'">
-           <tr>
-             <th><a href="" ng:click="predicate = 'name'; reverse=false">Name</a>
-                 (<a href ng:click="predicate = '-name'; reverse=false">^</a>)</th>
-             <th><a href="" ng:click="predicate = 'phone'; reverse=!reverse">Phone Number</a></th>
-             <th><a href="" ng:click="predicate = 'age'; reverse=!reverse">Age</a></th>
-           <tr>
-           <tr ng:repeat="friend in friends.$orderBy(predicate, reverse)">
-             <td>{{friend.name}}</td>
-             <td>{{friend.phone}}</td>
-             <td>{{friend.age}}</td>
-           <tr>
-         </table>
+         <script>
+           function Ctrl() {
+             this.friends =
+                 [{name:'John', phone:'555-1212', age:10},
+                  {name:'Mary', phone:'555-9876', age:19},
+                  {name:'Mike', phone:'555-4321', age:21},
+                  {name:'Adam', phone:'555-5678', age:35},
+                  {name:'Julie', phone:'555-8765', age:29}]
+             this.predicate = '-age';
+           }
+         </script>
+         <div ng:controller="Ctrl">
+           <pre>Sorting predicate = {{predicate}}; reverse = {{reverse}}</pre>
+           <hr/>
+           [ <a href="" ng:click="predicate=''">unsorted</a> ]
+           <table class="friend">
+             <tr>
+               <th><a href="" ng:click="predicate = 'name'; reverse=false">Name</a>
+                   (<a href ng:click="predicate = '-name'; reverse=false">^</a>)</th>
+               <th><a href="" ng:click="predicate = 'phone'; reverse=!reverse">Phone Number</a></th>
+               <th><a href="" ng:click="predicate = 'age'; reverse=!reverse">Age</a></th>
+             <tr>
+             <tr ng:repeat="friend in friends.$orderBy(predicate, reverse)">
+               <td>{{friend.name}}</td>
+               <td>{{friend.phone}}</td>
+               <td>{{friend.age}}</td>
+             <tr>
+           </table>
+         </div>
        </doc:source>
        <doc:scenario>
          it('should be reverse ordered by aged', function() {
            expect(binding('predicate')).toBe('Sorting predicate = -age; reverse = ');
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.age')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.age')).
              toEqual(['35', '29', '21', '19', '10']);
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.name')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.name')).
              toEqual(['Adam', 'Julie', 'Mike', 'Mary', 'John']);
          });
 
          it('should reorder the table when user selects different predicate', function() {
            element('.doc-example-live a:contains("Name")').click();
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.name')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.name')).
              toEqual(['Adam', 'John', 'Julie', 'Mary', 'Mike']);
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.age')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.age')).
              toEqual(['35', '10', '29', '19', '21']);
 
            element('.doc-example-live a:contains("Phone")').click();
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.phone')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.phone')).
              toEqual(['555-9876', '555-8765', '555-5678', '555-4321', '555-1212']);
-           expect(repeater('.doc-example-live table', 'friend in friends').column('friend.name')).
+           expect(repeater('table.friend', 'friend in friends').column('friend.name')).
              toEqual(['Mary', 'Julie', 'Adam', 'Mike', 'John']);
          });
        </doc:scenario>
@@ -11446,26 +14433,38 @@ var angularArray = {
    * @param {string|Number} limit The length of the returned array. If the `limit` number is
    *     positive, `limit` number of items from the beginning of the source array are copied.
    *     If the number is negative, `limit` number  of items from the end of the source array are
-   *     copied.
-   * @returns {Array} A new sub-array of length `limit`.
+   *     copied. The `limit` will be trimmed if it exceeds `array.length`
+   * @returns {Array} A new sub-array of length `limit` or less if input array had less than `limit`
+   *     elements.
    *
    * @example
      <doc:example>
        <doc:source>
-         <div ng:init="numbers = [1,2,3,4,5,6,7,8,9]">
-           Limit [1,2,3,4,5,6,7,8,9] to: <input name="limit" value="3"/>
+         <script>
+           function Ctrl() {
+             this.numbers = [1,2,3,4,5,6,7,8,9];
+             this.limit = 3;
+           }
+         </script>
+         <div ng:controller="Ctrl">
+           Limit {{numbers}} to: <input type="integer" ng:model="limit"/>
            <p>Output: {{ numbers.$limitTo(limit) | json }}</p>
          </div>
        </doc:source>
        <doc:scenario>
          it('should limit the numer array to first three items', function() {
-           expect(element('.doc-example-live input[name=limit]').val()).toBe('3');
+           expect(element('.doc-example-live input[ng\\:model=limit]').val()).toBe('3');
            expect(binding('numbers.$limitTo(limit) | json')).toEqual('[1,2,3]');
          });
 
          it('should update the output when -3 is entered', function() {
            input('limit').enter(-3);
            expect(binding('numbers.$limitTo(limit) | json')).toEqual('[7,8,9]');
+         });
+
+         it('should not exceed the maximum size of input array', function() {
+           input('limit').enter(100);
+           expect(binding('numbers.$limitTo(limit) | json')).toEqual('[1,2,3,4,5,6,7,8,9]');
          });
        </doc:scenario>
      </doc:example>
@@ -11474,6 +14473,16 @@ var angularArray = {
     limit = parseInt(limit, 10);
     var out = [],
         i, n;
+
+    // check that array is iterable
+    if (!array || !(array instanceof Array))
+      return out;
+
+    // if abs(limit) exceeds maximum length, trim it
+    if (limit > array.length)
+      limit = array.length;
+    else if (limit < -array.length)
+      limit = -array.length;
 
     if (limit > 0) {
       i = 0;
@@ -11573,20 +14582,22 @@ var angularFunction = {
  * Hash of a:
  *  string is string
  *  number is number as string
- *  object is either call $hashKey function on object or assign unique hashKey id.
+ *  object is either result of calling $$hashKey function on the object or uniquely generated id,
+ *         that is also assigned to the $$hashKey property of the object.
  *
  * @param obj
- * @returns {String} hash string such that the same input will have the same hash string
+ * @returns {String} hash string such that the same input will have the same hash string.
+ *         The resulting string key is in 'type:hashKey' format.
  */
 function hashKey(obj) {
   var objType = typeof obj;
   var key = obj;
   if (objType == 'object') {
-    if (typeof (key = obj.$hashKey) == 'function') {
+    if (typeof (key = obj.$$hashKey) == 'function') {
       // must invoke on object to keep the right this
-      key = obj.$hashKey();
+      key = obj.$$hashKey();
     } else if (key === undefined) {
-      key = obj.$hashKey = nextUid();
+      key = obj.$$hashKey = nextUid();
     }
   }
   return objType + ':' + key;
@@ -11595,19 +14606,17 @@ function hashKey(obj) {
 /**
  * HashMap which can use objects as keys
  */
-function HashMap(){}
+function HashMap(array){
+  forEach(array, this.put, this);
+}
 HashMap.prototype = {
   /**
    * Store key value pair
    * @param key key to store can be any type
    * @param value value to store can be any type
-   * @returns old value if any
    */
   put: function(key, value) {
-    var _key = hashKey(key);
-    var oldValue = this[_key];
-    this[_key] = value;
-    return oldValue;
+    this[hashKey(key)] = value;
   },
 
   /**
@@ -11621,13 +14630,45 @@ HashMap.prototype = {
   /**
    * Remove the key/value pair
    * @param key
-   * @returns value associated with key before it was removed
    */
   remove: function(key) {
-    var _key = hashKey(key);
-    var value = this[_key];
-    delete this[_key];
+    var value = this[key = hashKey(key)];
+    delete this[key];
     return value;
+  }
+};
+
+/**
+ * A map where multiple values can be added to the same key such that they form a queue.
+ * @returns {HashQueueMap}
+ */
+function HashQueueMap() {}
+HashQueueMap.prototype = {
+  /**
+   * Same as array push, but using an array as the value for the hash
+   */
+  push: function(key, value) {
+    var array = this[key = hashKey(key)];
+    if (!array) {
+      this[key] = [value];
+    } else {
+      array.push(value);
+    }
+  },
+
+  /**
+   * Same as array shift, but using an array as the value for the hash
+   */
+  shift: function(key) {
+    var array = this[key = hashKey(key)];
+    if (array) {
+      if (array.length == 1) {
+        delete this[key];
+        return array[0];
+      } else {
+        return array.shift();
+      }
+    }
   }
 };
 
@@ -11649,7 +14690,6 @@ defineApi('Function', [angularGlobal, angularCollection, angularFunction]);
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc overview
  * @name angular.filter
  * @description
@@ -11677,7 +14717,6 @@ defineApi('Function', [angularGlobal, angularCollection, angularFunction]);
  */
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.currency
  * @function
@@ -11696,20 +14735,27 @@ defineApi('Function', [angularGlobal, angularCollection, angularFunction]);
  * @example
    <doc:example>
      <doc:source>
-       <input type="text" name="amount" value="1234.56"/> <br/>
-       default currency symbol ($): {{amount | currency}}<br/>
-       custom currency identifier (USD$): {{amount | currency:"USD$"}}
+       <script>
+         function Ctrl() {
+           this.amount = 1234.56;
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <input type="number" ng:model="amount"/> <br/>
+         default currency symbol ($): {{amount | currency}}<br/>
+         custom currency identifier (USD$): {{amount | currency:"USD$"}}
+       </div>
      </doc:source>
      <doc:scenario>
-       it('should init with 1234.56', function(){
+       it('should init with 1234.56', function() {
          expect(binding('amount | currency')).toBe('$1,234.56');
          expect(binding('amount | currency:"USD$"')).toBe('USD$1,234.56');
        });
-       it('should update', function(){
+       it('should update', function() {
          input('amount').enter('-1234');
          expect(binding('amount | currency')).toBe('($1,234.00)');
          expect(binding('amount | currency:"USD$"')).toBe('(USD$1,234.00)');
-         expect(element('.doc-example-live .ng-binding').attr('className')).
+         expect(element('.doc-example-live .ng-binding').prop('className')).
            toMatch(/ng-format-negative/);
        });
      </doc:scenario>
@@ -11719,12 +14765,11 @@ angularFilter.currency = function(amount, currencySymbol){
   var formats = this.$service('$locale').NUMBER_FORMATS;
   this.$element.toggleClass('ng-format-negative', amount < 0);
   if (isUndefined(currencySymbol)) currencySymbol = formats.CURRENCY_SYM;
-  return formatNumber(amount, formats.PATTERNS[1], formats.GROUP_SEP, formats.DECIMAL_SEP, 2)
-                                                         .replace(/\u00A4/g, currencySymbol);
+  return formatNumber(amount, formats.PATTERNS[1], formats.GROUP_SEP, formats.DECIMAL_SEP, 2).
+              replace(/\u00A4/g, currencySymbol);
 };
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.number
  * @function
@@ -11741,19 +14786,26 @@ angularFilter.currency = function(amount, currencySymbol){
  * @example
    <doc:example>
      <doc:source>
-       Enter number: <input name='val' value='1234.56789' /><br/>
-       Default formatting: {{val | number}}<br/>
-       No fractions: {{val | number:0}}<br/>
-       Negative number: {{-val | number:4}}
+       <script>
+         function Ctrl() {
+           this.val = 1234.56789;
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         Enter number: <input ng:model='val'><br/>
+         Default formatting: {{val | number}}<br/>
+         No fractions: {{val | number:0}}<br/>
+         Negative number: {{-val | number:4}}
+       </div>
      </doc:source>
      <doc:scenario>
-       it('should format numbers', function(){
+       it('should format numbers', function() {
          expect(binding('val | number')).toBe('1,234.568');
          expect(binding('val | number:0')).toBe('1,235');
          expect(binding('-val | number:4')).toBe('-1,234.5679');
        });
 
-       it('should update', function(){
+       it('should update', function() {
          input('val').enter('3374.333');
          expect(binding('val | number')).toBe('3,374.333');
          expect(binding('val | number:0')).toBe('3,374');
@@ -11766,16 +14818,17 @@ angularFilter.currency = function(amount, currencySymbol){
 var DECIMAL_SEP = '.';
 
 angularFilter.number = function(number, fractionSize) {
-  if (isNaN(number) || !isFinite(number)) return '';
   var formats = this.$service('$locale').NUMBER_FORMATS;
   return formatNumber(number, formats.PATTERNS[0], formats.GROUP_SEP,
                                                   formats.DECIMAL_SEP, fractionSize);
-}
+};
 
 function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
+  if (isNaN(number) || !isFinite(number)) return '';
+
   var isNegative = number < 0;
   number = Math.abs(number);
-  var numStr =  number + '',
+  var numStr = number + '',
       formatedText = '',
       parts = [];
 
@@ -11784,7 +14837,7 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
   } else {
     var fractionLen = (numStr.split(DECIMAL_SEP)[1] || '').length;
 
-    //determine fractionSize if it is not specified
+    // determine fractionSize if it is not specified
     if (isUndefined(fractionSize)) {
       fractionSize = Math.min(Math.max(pattern.minFrac, fractionLen), pattern.maxFrac);
     }
@@ -11896,14 +14949,12 @@ var DATE_FORMATS = {
      Z: timeZoneGetter
 };
 
-var GET_TIME_ZONE = /[A-Z]{3}(?![+\-])/;
-var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZE']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z))(.*)/
-var OPERA_TOSTRING_PATTERN = /^[\d].*Z$/;
-var NUMBER_STRING = /^\d+$/;
-
+var GET_TIME_ZONE = /[A-Z]{3}(?![+\-])/,
+    DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZE']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z))(.*)/,
+    OPERA_TOSTRING_PATTERN = /^[\d].*Z$/,
+    NUMBER_STRING = /^\d+$/;
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.date
  * @function
@@ -11956,7 +15007,7 @@ var NUMBER_STRING = /^\d+$/;
  * @param {(Date|number|string)} date Date to format either as Date object, milliseconds (string or
  *    number) or ISO 8601 extended datetime string (yyyy-MM-ddTHH:mm:ss.SSSZ).
  * @param {string=} format Formatting rules (see Description). If not specified,
- *    Date#toLocaleDateString is used.
+ *    `mediumDate` is used.
  * @returns {string} Formatted string or the input if input is not recognized as date/millis.
  *
  * @example
@@ -11970,7 +15021,7 @@ var NUMBER_STRING = /^\d+$/;
           {{'1288323623006' | date:'MM/dd/yyyy @ h:mma'}}<br/>
      </doc:source>
      <doc:scenario>
-       it('should format date', function(){
+       it('should format date', function() {
          expect(binding("1288323623006 | date:'medium'")).
             toMatch(/Oct 2\d, 2010 \d{1,2}:\d{2}:\d{2} (AM|PM)/);
          expect(binding("1288323623006 | date:'yyyy-MM-dd HH:mm:ss Z'")).
@@ -11982,7 +15033,12 @@ var NUMBER_STRING = /^\d+$/;
    </doc:example>
  */
 angularFilter.date = function(date, format) {
-  var $locale = this.$service('$locale');
+  var $locale = this.$service('$locale'),
+      text = '',
+      parts = [],
+      fn, match;
+
+  format = format || 'mediumDate'
   format = $locale.DATETIME_FORMATS[format] || format;
   if (isString(date)) {
     if (NUMBER_STRING.test(date)) {
@@ -12000,32 +15056,28 @@ angularFilter.date = function(date, format) {
     return date;
   }
 
-  var text = date.toLocaleDateString(), fn;
-  if (format && isString(format)) {
-    text = '';
-    var parts = [], match;
-    while(format) {
-      match = DATE_FORMATS_SPLIT.exec(format);
-      if (match) {
-        parts = concat(parts, match, 1);
-        format = parts.pop();
-      } else {
-        parts.push(format);
-        format = null;
-      }
+  while(format) {
+    match = DATE_FORMATS_SPLIT.exec(format);
+    if (match) {
+      parts = concat(parts, match, 1);
+      format = parts.pop();
+    } else {
+      parts.push(format);
+      format = null;
     }
-    forEach(parts, function(value){
-      fn = DATE_FORMATS[value];
-      text += fn ? fn(date, $locale.DATETIME_FORMATS)
-                 : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
-    });
   }
+
+  forEach(parts, function(value){
+    fn = DATE_FORMATS[value];
+    text += fn ? fn(date, $locale.DATETIME_FORMATS)
+               : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
+  });
+
   return text;
 };
 
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.json
  * @function
@@ -12056,12 +15108,11 @@ angularFilter.date = function(date, format) {
  */
 angularFilter.json = function(object) {
   this.$element.addClass("ng-monospace");
-  return toJson(object, true);
+  return toJson(object, true, /^(\$|this$)/);
 };
 
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.lowercase
  * @function
@@ -12072,7 +15123,6 @@ angularFilter.lowercase = lowercase;
 
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.uppercase
  * @function
@@ -12083,7 +15133,6 @@ angularFilter.uppercase = uppercase;
 
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.html
  * @function
@@ -12110,39 +15159,46 @@ angularFilter.uppercase = uppercase;
  * @example
    <doc:example>
      <doc:source>
-      Snippet: <textarea name="snippet" cols="60" rows="3">
-     &lt;p style="color:blue"&gt;an html
-     &lt;em onmouseover="this.textContent='PWN3D!'"&gt;click here&lt;/em&gt;
-     snippet&lt;/p&gt;</textarea>
-       <table>
-         <tr>
-           <td>Filter</td>
-           <td>Source</td>
-           <td>Rendered</td>
-         </tr>
-         <tr id="html-filter">
-           <td>html filter</td>
-           <td>
-             <pre>&lt;div ng:bind="snippet | html"&gt;<br/>&lt;/div&gt;</pre>
-           </td>
-           <td>
-             <div ng:bind="snippet | html"></div>
-           </td>
-         </tr>
-         <tr id="escaped-html">
-           <td>no filter</td>
-           <td><pre>&lt;div ng:bind="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
-           <td><div ng:bind="snippet"></div></td>
-         </tr>
-         <tr id="html-unsafe-filter">
-           <td>unsafe html filter</td>
-           <td><pre>&lt;div ng:bind="snippet | html:'unsafe'"&gt;<br/>&lt;/div&gt;</pre></td>
-           <td><div ng:bind="snippet | html:'unsafe'"></div></td>
-         </tr>
-       </table>
+       <script>
+         function Ctrl() {
+           this.snippet =
+             '<p style="color:blue">an html\n' +
+             '<em onmouseover="this.textContent=\'PWN3D!\'">click here</em>\n' +
+             'snippet</p>';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+          Snippet: <textarea ng:model="snippet" cols="60" rows="3"></textarea>
+           <table>
+             <tr>
+               <td>Filter</td>
+               <td>Source</td>
+               <td>Rendered</td>
+             </tr>
+             <tr id="html-filter">
+               <td>html filter</td>
+               <td>
+                 <pre>&lt;div ng:bind="snippet | html"&gt;<br/>&lt;/div&gt;</pre>
+               </td>
+               <td>
+                 <div ng:bind="snippet | html"></div>
+               </td>
+             </tr>
+             <tr id="escaped-html">
+               <td>no filter</td>
+               <td><pre>&lt;div ng:bind="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
+               <td><div ng:bind="snippet"></div></td>
+             </tr>
+             <tr id="html-unsafe-filter">
+               <td>unsafe html filter</td>
+               <td><pre>&lt;div ng:bind="snippet | html:'unsafe'"&gt;<br/>&lt;/div&gt;</pre></td>
+               <td><div ng:bind="snippet | html:'unsafe'"></div></td>
+             </tr>
+           </table>
+         </div>
      </doc:source>
      <doc:scenario>
-       it('should sanitize the html snippet ', function(){
+       it('should sanitize the html snippet ', function() {
          expect(using('#html-filter').binding('snippet | html')).
            toBe('<p>an html\n<em>click here</em>\nsnippet</p>');
        });
@@ -12161,7 +15217,7 @@ angularFilter.uppercase = uppercase;
                 "snippet</p>");
        });
 
-       it('should update', function(){
+       it('should update', function() {
          input('snippet').enter('new <b>text</b>');
          expect(using('#html-filter').binding('snippet | html')).toBe('new <b>text</b>');
          expect(using('#escaped-html').binding('snippet')).toBe("new &lt;b&gt;text&lt;/b&gt;");
@@ -12176,7 +15232,6 @@ angularFilter.html =  function(html, option){
 
 
 /**
- * @workInProgress
  * @ngdoc filter
  * @name angular.filter.linky
  * @function
@@ -12191,12 +15246,18 @@ angularFilter.html =  function(html, option){
  * @example
    <doc:example>
      <doc:source>
-       Snippet: <textarea name="snippet" cols="60" rows="3">
-  Pretty text with some links:
-  http://angularjs.org/,
-  mailto:us@somewhere.org,
-  another@somewhere.org,
-  and one more: ftp://127.0.0.1/.</textarea>
+       <script>
+         function Ctrl() {
+           this.snippet =
+             'Pretty text with some links:\n'+
+             'http://angularjs.org/,\n'+
+             'mailto:us@somewhere.org,\n'+
+             'another@somewhere.org,\n'+
+             'and one more: ftp://127.0.0.1/.';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+       Snippet: <textarea ng:model="snippet" cols="60" rows="3"></textarea>
        <table>
          <tr>
            <td>Filter</td>
@@ -12220,7 +15281,7 @@ angularFilter.html =  function(html, option){
        </table>
      </doc:source>
      <doc:scenario>
-       it('should linkify the snippet with urls', function(){
+       it('should linkify the snippet with urls', function() {
          expect(using('#linky-filter').binding('snippet | linky')).
            toBe('Pretty text with some links:\n' +
                 '<a href="http://angularjs.org/">http://angularjs.org/</a>,\n' +
@@ -12238,7 +15299,7 @@ angularFilter.html =  function(html, option){
                 "and one more: ftp://127.0.0.1/.");
        });
 
-       it('should update', function(){
+       it('should update', function() {
          input('snippet').enter('new http://link.');
          expect(using('#linky-filter').binding('snippet | linky')).
            toBe('new <a href="http://link">http://link</a>.');
@@ -12276,691 +15337,6 @@ angularFilter.linky = function(text) {
 'use strict';
 
 /**
- * @workInProgress
- * @ngdoc overview
- * @name angular.formatter
- * @description
- *
- * Formatters are used for translating data formats between those used for display and those used
- * for storage.
- *
- * Following is the list of built-in angular formatters:
- *
- * * {@link angular.formatter.boolean boolean} - Formats user input in boolean format
- * * {@link angular.formatter.json json} - Formats user input in JSON format
- * * {@link angular.formatter.list list} - Formats user input string as an array
- * * {@link angular.formatter.number number} - Formats user input strings as a number
- * * {@link angular.formatter.trim trim} - Trims extras spaces from end of user input
- *
- * For more information about how angular formatters work, and how to create your own formatters,
- * see {@link guide/dev_guide.templates.formatters Understanding Angular Formatters} in the angular
- * Developer Guide.
- */
-
-function formatter(format, parse) {return {'format':format, 'parse':parse || format};}
-function toString(obj) {
-  return (isDefined(obj) && obj !== null) ? "" + obj : obj;
-}
-
-var NUMBER = /^\s*[-+]?\d*(\.\d*)?\s*$/;
-
-angularFormatter.noop = formatter(identity, identity);
-
-/**
- * @workInProgress
- * @ngdoc formatter
- * @name angular.formatter.json
- *
- * @description
- *   Formats the user input as JSON text.
- *
- * @returns {?string} A JSON string representation of the model.
- *
- * @example
-   <doc:example>
-     <doc:source>
-      <div ng:init="data={name:'misko', project:'angular'}">
-        <input type="text" size='50' name="data" ng:format="json"/>
-        <pre>data={{data}}</pre>
-      </div>
-     </doc:source>
-     <doc:scenario>
-      it('should format json', function(){
-        expect(binding('data')).toEqual('data={\n  \"name\":\"misko\",\n  \"project\":\"angular\"}');
-        input('data').enter('{}');
-        expect(binding('data')).toEqual('data={\n  }');
-      });
-     </doc:scenario>
-   </doc:example>
- */
-angularFormatter.json = formatter(toJson, function(value){
-  return fromJson(value || 'null');
-});
-
-/**
- * @workInProgress
- * @ngdoc formatter
- * @name angular.formatter.boolean
- *
- * @description
- *   Use boolean formatter if you wish to store the data as boolean.
- *
- * @returns {boolean} Converts to `true` unless user enters (blank), `f`, `false`, `0`, `no`, `[]`.
- *
- * @example
-   <doc:example>
-     <doc:source>
-        Enter truthy text:
-        <input type="text" name="value" ng:format="boolean" value="no"/>
-        <input type="checkbox" name="value"/>
-        <pre>value={{value}}</pre>
-     </doc:source>
-     <doc:scenario>
-        it('should format boolean', function(){
-          expect(binding('value')).toEqual('value=false');
-          input('value').enter('truthy');
-          expect(binding('value')).toEqual('value=true');
-        });
-     </doc:scenario>
-   </doc:example>
- */
-angularFormatter['boolean'] = formatter(toString, toBoolean);
-
-/**
- * @workInProgress
- * @ngdoc formatter
- * @name angular.formatter.number
- *
- * @description
- * Use number formatter if you wish to convert the user entered string to a number.
- *
- * @returns {number} Number from the parsed string.
- *
- * @example
-   <doc:example>
-     <doc:source>
-      Enter valid number:
-      <input type="text" name="value" ng:format="number" value="1234"/>
-      <pre>value={{value}}</pre>
-     </doc:source>
-     <doc:scenario>
-      it('should format numbers', function(){
-        expect(binding('value')).toEqual('value=1234');
-        input('value').enter('5678');
-        expect(binding('value')).toEqual('value=5678');
-      });
-     </doc:scenario>
-   </doc:example>
- */
-angularFormatter.number = formatter(toString, function(obj){
-  if (obj == null || NUMBER.exec(obj)) {
-    return obj===null || obj === '' ? null : 1*obj;
-  } else {
-    throw "Not a number";
-  }
-});
-
-/**
- * @workInProgress
- * @ngdoc formatter
- * @name angular.formatter.list
- *
- * @description
- * Use list formatter if you wish to convert the user entered string to an array.
- *
- * @returns {Array} Array parsed from the entered string.
- *
- * @example
-   <doc:example>
-     <doc:source>
-        Enter a list of items:
-        <input type="text" name="value" ng:format="list" value=" chair ,, table"/>
-        <input type="text" name="value" ng:format="list"/>
-        <pre>value={{value}}</pre>
-     </doc:source>
-     <doc:scenario>
-      it('should format lists', function(){
-        expect(binding('value')).toEqual('value=["chair","table"]');
-        this.addFutureAction('change to XYZ', function($window, $document, done){
-          $document.elements('.doc-example-live :input:last').val(',,a,b,').trigger('change');
-          done();
-        });
-        expect(binding('value')).toEqual('value=["a","b"]');
-      });
-     </doc:scenario>
-   </doc:example>
- */
-angularFormatter.list = formatter(
-  function(obj) { return obj ? obj.join(", ") : obj; },
-  function(value) {
-    var list = [];
-    forEach((value || '').split(','), function(item){
-      item = trim(item);
-      if (item) list.push(item);
-    });
-    return list;
-  }
-);
-
-/**
- * @workInProgress
- * @ngdoc formatter
- * @name angular.formatter.trim
- *
- * @description
- * Use trim formatter if you wish to trim extra spaces in user text.
- *
- * @returns {String} Trim excess leading and trailing space.
- *
- * @example
-   <doc:example>
-     <doc:source>
-        Enter text with leading/trailing spaces:
-        <input type="text" name="value" ng:format="trim" value="  book  "/>
-        <input type="text" name="value" ng:format="trim"/>
-        <pre>value={{value|json}}</pre>
-     </doc:source>
-     <doc:scenario>
-        it('should format trim', function(){
-          expect(binding('value')).toEqual('value="book"');
-          this.addFutureAction('change to XYZ', function($window, $document, done){
-            $document.elements('.doc-example-live :input:last').val('  text  ').trigger('change');
-            done();
-          });
-          expect(binding('value')).toEqual('value="text"');
-        });
-     </doc:scenario>
-   </doc:example>
- */
-angularFormatter.trim = formatter(
-  function(obj) { return obj ? trim("" + obj) : ""; }
-);
-'use strict';
-
-/**
- * @workInProgress
- * @ngdoc overview
- * @name angular.validator
- * @description
- *
- * Most of the built-in angular validators are used to check user input against defined types or
- * patterns.  You can easily create your own custom validators as well.
- *
- * Following is the list of built-in angular validators:
- *
- * * {@link angular.validator.asynchronous asynchronous()} - Provides asynchronous validation via a
- * callback function.
- * * {@link angular.validator.date date()} - Checks user input against default date format:
- * "MM/DD/YYYY"
- * * {@link angular.validator.email email()} - Validates that user input is a well-formed email
- * address.
- * * {@link angular.validator.integer integer()} - Validates that user input is an integer
- * * {@link angular.validator.json json()} - Validates that user input is valid JSON
- * * {@link angular.validator.number number()} - Validates that user input is a number
- * * {@link angular.validator.phone phone()} - Validates that user input matches the pattern
- * "1(123)123-1234"
- * * {@link angular.validator.regexp regexp()} - Restricts valid input to a specified regular
- * expression pattern
- * * {@link angular.validator.url url()} - Validates that user input is a well-formed URL.
- *
- * For more information about how angular validators work, and how to create your own validators,
- * see {@link guide/dev_guide.templates.validators Understanding Angular Validators} in the angular
- * Developer Guide.
- */
-
-extend(angularValidator, {
-  'noop': function() { return null; },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.regexp
-   * @description
-   * Use regexp validator to restrict the input to any Regular Expression.
-   *
-   * @param {string} value value to validate
-   * @param {string|regexp} expression regular expression.
-   * @param {string=} msg error message to display.
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        <script> function Cntl(){
-         this.ssnRegExp = /^\d\d\d-\d\d-\d\d\d\d$/;
-        }
-        </script>
-        Enter valid SSN:
-        <div ng:controller="Cntl">
-        <input name="ssn" value="123-45-6789" ng:validate="regexp:ssnRegExp" >
-        </div>
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate non ssn', function(){
-         var textBox = element('.doc-example-live :input');
-         expect(textBox.attr('className')).not().toMatch(/ng-validation-error/);
-         expect(textBox.val()).toEqual('123-45-6789');
-         input('ssn').enter('123-45-67890');
-         expect(textBox.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'regexp': function(value, regexp, msg) {
-    if (!value.match(regexp)) {
-      return msg ||
-        "Value does not match expected format " + regexp + ".";
-    } else {
-      return null;
-    }
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.number
-   * @description
-   * Use number validator to restrict the input to numbers with an
-   * optional range. (See integer for whole numbers validator).
-   *
-   * @param {string} value value to validate
-   * @param {int=} [min=MIN_INT] minimum value.
-   * @param {int=} [max=MAX_INT] maximum value.
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter number: <input name="n1" ng:validate="number" > <br>
-        Enter number greater than 10: <input name="n2" ng:validate="number:10" > <br>
-        Enter number between 100 and 200: <input name="n3" ng:validate="number:100:200" > <br>
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate number', function(){
-         var n1 = element('.doc-example-live :input[name=n1]');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n1').enter('1.x');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-         var n2 = element('.doc-example-live :input[name=n2]');
-         expect(n2.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n2').enter('9');
-         expect(n2.attr('className')).toMatch(/ng-validation-error/);
-         var n3 = element('.doc-example-live :input[name=n3]');
-         expect(n3.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n3').enter('201');
-         expect(n3.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'number': function(value, min, max) {
-    var num = 1 * value;
-    if (num == value) {
-      if (typeof min != $undefined && num < min) {
-        return "Value can not be less than " + min + ".";
-      }
-      if (typeof min != $undefined && num > max) {
-        return "Value can not be greater than " + max + ".";
-      }
-      return null;
-    } else {
-      return "Not a number";
-    }
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.integer
-   * @description
-   * Use number validator to restrict the input to integers with an
-   * optional range. (See integer for whole numbers validator).
-   *
-   * @param {string} value value to validate
-   * @param {int=} [min=MIN_INT] minimum value.
-   * @param {int=} [max=MAX_INT] maximum value.
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter integer: <input name="n1" ng:validate="integer" > <br>
-        Enter integer equal or greater than 10: <input name="n2" ng:validate="integer:10" > <br>
-        Enter integer between 100 and 200 (inclusive): <input name="n3" ng:validate="integer:100:200" > <br>
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate integer', function(){
-         var n1 = element('.doc-example-live :input[name=n1]');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n1').enter('1.1');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-         var n2 = element('.doc-example-live :input[name=n2]');
-         expect(n2.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n2').enter('10.1');
-         expect(n2.attr('className')).toMatch(/ng-validation-error/);
-         var n3 = element('.doc-example-live :input[name=n3]');
-         expect(n3.attr('className')).not().toMatch(/ng-validation-error/);
-         input('n3').enter('100.1');
-         expect(n3.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   */
-  'integer': function(value, min, max) {
-    var numberError = angularValidator['number'](value, min, max);
-    if (numberError) return numberError;
-    if (!("" + value).match(/^\s*[\d+]*\s*$/) || value != Math.round(value)) {
-      return "Not a whole number";
-    }
-    return null;
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.date
-   * @description
-   * Use date validator to restrict the user input to a valid date
-   * in format in format MM/DD/YYYY.
-   *
-   * @param {string} value value to validate
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter valid date:
-        <input name="text" value="1/1/2009" ng:validate="date" >
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate date', function(){
-         var n1 = element('.doc-example-live :input');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('text').enter('123/123/123');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'date': function(value) {
-    var fields = /^(\d\d?)\/(\d\d?)\/(\d\d\d\d)$/.exec(value);
-    var date = fields ? new Date(fields[3], fields[1]-1, fields[2]) : 0;
-    return (date &&
-            date.getFullYear() == fields[3] &&
-            date.getMonth() == fields[1]-1 &&
-            date.getDate() == fields[2])
-              ? null
-              : "Value is not a date. (Expecting format: 12/31/2009).";
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.email
-   * @description
-   * Use email validator if you wist to restrict the user input to a valid email.
-   *
-   * @param {string} value value to validate
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter valid email:
-        <input name="text" ng:validate="email" value="me@example.com">
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate email', function(){
-         var n1 = element('.doc-example-live :input');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('text').enter('a@b.c');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'email': function(value) {
-    if (value.match(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/)) {
-      return null;
-    }
-    return "Email needs to be in username@host.com format.";
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.phone
-   * @description
-   * Use phone validator to restrict the input phone numbers.
-   *
-   * @param {string} value value to validate
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter valid phone number:
-        <input name="text" value="1(234)567-8901" ng:validate="phone" >
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate phone', function(){
-         var n1 = element('.doc-example-live :input');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('text').enter('+12345678');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'phone': function(value) {
-    if (value.match(/^1\(\d\d\d\)\d\d\d-\d\d\d\d$/)) {
-      return null;
-    }
-    if (value.match(/^\+\d{2,3} (\(\d{1,5}\))?[\d ]+\d$/)) {
-      return null;
-    }
-    return "Phone number needs to be in 1(987)654-3210 format in North America " +
-           "or +999 (123) 45678 906 internationally.";
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.url
-   * @description
-   * Use phone validator to restrict the input URLs.
-   *
-   * @param {string} value value to validate
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        Enter valid URL:
-        <input name="text" value="http://example.com/abc.html" size="40" ng:validate="url" >
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate url', function(){
-         var n1 = element('.doc-example-live :input');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('text').enter('abc://server/path');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'url': function(value) {
-    if (value.match(/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/)) {
-      return null;
-    }
-    return "URL needs to be in http://server[:port]/path format.";
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.json
-   * @description
-   * Use json validator if you wish to restrict the user input to a valid JSON.
-   *
-   * @param {string} value value to validate
-   * @css ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        <textarea name="json" cols="60" rows="5" ng:validate="json">
-        {name:'abc'}
-        </textarea>
-      </doc:source>
-      <doc:scenario>
-        it('should invalidate json', function(){
-         var n1 = element('.doc-example-live :input');
-         expect(n1.attr('className')).not().toMatch(/ng-validation-error/);
-         input('json').enter('{name}');
-         expect(n1.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  'json': function(value) {
-    try {
-      fromJson(value);
-      return null;
-    } catch (e) {
-      return e.toString();
-    }
-  },
-
-  /**
-   * @workInProgress
-   * @ngdoc validator
-   * @name angular.validator.asynchronous
-   * @description
-   * Use asynchronous validator if the validation can not be computed
-   * immediately, but is provided through a callback. The widget
-   * automatically shows a spinning indicator while the validity of
-   * the widget is computed. This validator caches the result.
-   *
-   * @param {string} value value to validate
-   * @param {function(inputToValidate,validationDone)} validate function to call to validate the state
-   *         of the input.
-   * @param {function(data)=} [update=noop] function to call when state of the
-   *    validator changes
-   *
-   * @paramDescription
-   * The `validate` function (specified by you) is called as
-   * `validate(inputToValidate, validationDone)`:
-   *
-   *    * `inputToValidate`: value of the input box.
-   *    * `validationDone`: `function(error, data){...}`
-   *       * `error`: error text to display if validation fails
-   *       * `data`: data object to pass to update function
-   *
-   * The `update` function is optionally specified by you and is
-   * called by <angular/> on input change. Since the
-   * asynchronous validator caches the results, the update
-   * function can be called without a call to `validate`
-   * function. The function is called as `update(data)`:
-   *
-   *    * `data`: data object as passed from validate function
-   *
-   * @css ng-input-indicator-wait, ng-validation-error
-   *
-   * @example
-    <doc:example>
-      <doc:source>
-        <script>
-        function MyCntl(){
-         this.myValidator = function (inputToValidate, validationDone) {
-           setTimeout(function(){
-             validationDone(inputToValidate.length % 2);
-           }, 500);
-         }
-        }
-        </script>
-        This input is validated asynchronously:
-        <div ng:controller="MyCntl">
-          <input name="text" ng:validate="asynchronous:myValidator">
-        </div>
-      </doc:source>
-      <doc:scenario>
-        it('should change color in delayed way', function(){
-         var textBox = element('.doc-example-live :input');
-         expect(textBox.attr('className')).not().toMatch(/ng-input-indicator-wait/);
-         expect(textBox.attr('className')).not().toMatch(/ng-validation-error/);
-         input('text').enter('X');
-         expect(textBox.attr('className')).toMatch(/ng-input-indicator-wait/);
-         sleep(.6);
-         expect(textBox.attr('className')).not().toMatch(/ng-input-indicator-wait/);
-         expect(textBox.attr('className')).toMatch(/ng-validation-error/);
-        });
-      </doc:scenario>
-    </doc:example>
-   *
-   */
-  /*
-   * cache is attached to the element
-   * cache: {
-   *   inputs : {
-   *     'user input': {
-   *        response: server response,
-   *        error: validation error
-   *     },
-   *     current: 'current input'
-   *   }
-   * }
-   *
-   */
-  'asynchronous': function(input, asynchronousFn, updateFn) {
-    if (!input) return;
-    var scope = this;
-    var element = scope.$element;
-    var cache = element.data('$asyncValidator');
-    if (!cache) {
-      element.data('$asyncValidator', cache = {inputs:{}});
-    }
-
-    cache.current = input;
-
-    var inputState = cache.inputs[input],
-        $invalidWidgets = scope.$service('$invalidWidgets');
-
-    if (!inputState) {
-      cache.inputs[input] = inputState = { inFlight: true };
-      $invalidWidgets.markInvalid(scope.$element);
-      element.addClass('ng-input-indicator-wait');
-      asynchronousFn(input, function(error, data) {
-        inputState.response = data;
-        inputState.error = error;
-        inputState.inFlight = false;
-        if (cache.current == input) {
-          element.removeClass('ng-input-indicator-wait');
-          $invalidWidgets.markValid(element);
-        }
-        element.data($$validate)();
-      });
-    } else if (inputState.inFlight) {
-      // request in flight, mark widget invalid, but don't show it to user
-      $invalidWidgets.markInvalid(scope.$element);
-    } else {
-      (updateFn||noop)(inputState.response);
-    }
-    return inputState.error;
-  }
-
-});
-'use strict';
-
-/**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$cookieStore
  * @requires $cookies
@@ -12975,7 +15351,6 @@ angularServiceInject('$cookieStore', function($store) {
 
   return {
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$cookieStore#get
      * @methodOf angular.service.$cookieStore
@@ -12991,7 +15366,6 @@ angularServiceInject('$cookieStore', function($store) {
     },
 
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$cookieStore#put
      * @methodOf angular.service.$cookieStore
@@ -13007,7 +15381,6 @@ angularServiceInject('$cookieStore', function($store) {
     },
 
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$cookieStore#remove
      * @methodOf angular.service.$cookieStore
@@ -13026,7 +15399,6 @@ angularServiceInject('$cookieStore', function($store) {
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$cookies
  * @requires $browser
@@ -13070,7 +15442,7 @@ angularServiceInject('$cookies', function($browser) {
   /**
    * Pushes all the cookies from the service to the browser and verifies if all cookies were stored.
    */
-  function push(){
+  function push() {
     var name,
         value,
         browserCookies,
@@ -13120,7 +15492,6 @@ angularServiceInject('$cookies', function($browser) {
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$defer
  * @requires $browser
@@ -13134,19 +15505,38 @@ angularServiceInject('$cookies', function($browser) {
  *
  * @param {function()} fn A function, who's execution should be deferred.
  * @param {number=} [delay=0] of milliseconds to defer the function execution.
+ * @returns {*} DeferId that can be used to cancel the task via `$defer.cancel()`.
+ */
+
+/**
+ * @ngdoc function
+ * @name angular.service.$defer#cancel
+ * @methodOf angular.service.$defer
+ *
+ * @description
+ * Cancels a defered task identified with `deferId`.
+ *
+ * @param {*} deferId Token returned by the `$defer` function.
+ * @returns {boolean} Returns `true` if the task hasn't executed yet and was successfuly canceled.
  */
 angularServiceInject('$defer', function($browser) {
   var scope = this;
-  return function(fn, delay) {
-    $browser.defer(function() {
+
+  function defer(fn, delay) {
+    return $browser.defer(function() {
       scope.$apply(fn);
     }, delay);
+  }
+
+  defer.cancel = function(deferId) {
+    return $browser.defer.cancel(deferId);
   };
+
+  return defer;
 }, ['$browser']);
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$document
  * @requires $window
@@ -13161,7 +15551,6 @@ angularServiceInject("$document", function(window){
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$exceptionHandler
  * @requires $log
@@ -13185,409 +15574,910 @@ angularServiceInject('$exceptionHandler', $exceptionHandlerFactory = function($l
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
- * @name angular.service.$hover
- * @requires $browser
- * @requires $document
+ * @name angular.service.$formFactory
  *
  * @description
+ * Use `$formFactory` to create a new instance of a {@link guide/dev_guide.forms form}
+ * controller or to find the nearest form instance for a given DOM element.
+ *
+ * The form instance is a collection of widgets, and is responsible for life cycle and validation
+ * of widget.
+ *
+ * Keep in mind that both form and widget instances are {@link api/angular.scope scopes}.
+ *
+ * @param {Form=} parentForm The form which should be the parent form of the new form controller.
+ *   If none specified default to the `rootForm`.
+ * @returns {Form} A new <a href="#form">form</a> instance.
  *
  * @example
- */
-angularServiceInject("$hover", function(browser, document) {
-  var tooltip, self = this, error, width = 300, arrowWidth = 10, body = jqLite(document[0].body);
-  browser.hover(function(element, show){
-    if (show && (error = element.attr(NG_EXCEPTION) || element.attr(NG_VALIDATION_ERROR))) {
-      if (!tooltip) {
-        tooltip = {
-            callout: jqLite('<div id="ng-callout"></div>'),
-            arrow: jqLite('<div></div>'),
-            title: jqLite('<div class="ng-title"></div>'),
-            content: jqLite('<div class="ng-content"></div>')
-        };
-        tooltip.callout.append(tooltip.arrow);
-        tooltip.callout.append(tooltip.title);
-        tooltip.callout.append(tooltip.content);
-        body.append(tooltip.callout);
-      }
-      var docRect = body[0].getBoundingClientRect(),
-          elementRect = element[0].getBoundingClientRect(),
-          leftSpace = docRect.right - elementRect.right - arrowWidth;
-      tooltip.title.text(element.hasClass("ng-exception") ? "EXCEPTION:" : "Validation error...");
-      tooltip.content.text(error);
-      if (leftSpace < width) {
-        tooltip.arrow.addClass('ng-arrow-right');
-        tooltip.arrow.css({left: (width + 1)+'px'});
-        tooltip.callout.css({
-          position: 'fixed',
-          left: (elementRect.left - arrowWidth - width - 4) + "px",
-          top: (elementRect.top - 3) + "px",
-          width: width + "px"
-        });
-      } else {
-        tooltip.arrow.addClass('ng-arrow-left');
-        tooltip.callout.css({
-          position: 'fixed',
-          left: (elementRect.right + arrowWidth) + "px",
-          top: (elementRect.top - 3) + "px",
-          width: width + "px"
-        });
-      }
-    } else if (tooltip) {
-      tooltip.callout.remove();
-      tooltip = null;
-    }
-  });
-}, ['$browser', '$document'], true);
-'use strict';
-
-/**
- * @workInProgress
- * @ngdoc service
- * @name angular.service.$invalidWidgets
  *
- * @description
- * Keeps references to all invalid widgets found during validation.
- * Can be queried to find whether there are any invalid widgets currently displayed.
+ * This example shows how one could write a widget which would enable data-binding on
+ * `contenteditable` feature of HTML.
  *
- * @example
+    <doc:example>
+      <doc:source>
+        <script>
+          function EditorCntl() {
+            this.html = '<b>Hello</b> <i>World</i>!';
+          }
+
+          function HTMLEditorWidget(element) {
+            var self = this;
+            var htmlFilter = angular.filter('html');
+
+            this.$parseModel = function() {
+              // need to protect for script injection
+              try {
+                this.$viewValue = htmlFilter(this.$modelValue || '').get();
+                if (this.$error.HTML) {
+                  // we were invalid, but now we are OK.
+                  this.$emit('$valid', 'HTML');
+                }
+              } catch (e) {
+                // if HTML not parsable invalidate form.
+                this.$emit('$invalid', 'HTML');
+              }
+            }
+
+            this.$render = function() {
+              element.html(this.$viewValue);
+            }
+
+            element.bind('keyup', function() {
+              self.$apply(function() {
+                self.$emit('$viewChange', element.html());
+              });
+            });
+          }
+
+          angular.directive('ng:contenteditable', function() {
+            function linkFn($formFactory, element) {
+              var exp = element.attr('ng:contenteditable'),
+                  form = $formFactory.forElement(element),
+                  widget;
+              element.attr('contentEditable', true);
+              widget = form.$createWidget({
+                scope: this,
+                model: exp,
+                controller: HTMLEditorWidget,
+                controllerArgs: [element]});
+              // if the element is destroyed, then we need to notify the form.
+              element.bind('$destroy', function() {
+                widget.$destroy();
+              });
+            }
+            linkFn.$inject = ['$formFactory'];
+            return linkFn;
+          });
+        </script>
+        <form name='editorForm' ng:controller="EditorCntl">
+          <div ng:contenteditable="html"></div>
+          <hr/>
+          HTML: <br/>
+          <textarea ng:model="html" cols=80></textarea>
+          <hr/>
+          <pre>editorForm = {{editorForm}}</pre>
+        </form>
+      </doc:source>
+      <doc:scenario>
+        it('should enter invalid HTML', function() {
+          expect(element('form[name=editorForm]').prop('className')).toMatch(/ng-valid/);
+          input('html').enter('<');
+          expect(element('form[name=editorForm]').prop('className')).toMatch(/ng-invalid/);
+        });
+      </doc:scenario>
+    </doc:example>
  */
-angularServiceInject("$invalidWidgets", function(){
-  var invalidWidgets = [];
-
-
-  /** Remove an element from the array of invalid widgets */
-  invalidWidgets.markValid = function(element){
-    var index = indexOf(invalidWidgets, element);
-    if (index != -1)
-      invalidWidgets.splice(index, 1);
-  };
-
-
-  /** Add an element to the array of invalid widgets */
-  invalidWidgets.markInvalid = function(element){
-    var index = indexOf(invalidWidgets, element);
-    if (index === -1)
-      invalidWidgets.push(element);
-  };
-
-
-  /** Return count of all invalid widgets that are currently visible */
-  invalidWidgets.visible = function() {
-    var count = 0;
-    forEach(invalidWidgets, function(widget){
-      count = count + (isVisible(widget) ? 1 : 0);
-    });
-    return count;
-  };
-
-
-  /* At the end of each eval removes all invalid widgets that are not part of the current DOM. */
-  this.$watch(function() {
-    for(var i = 0; i < invalidWidgets.length;) {
-      var widget = invalidWidgets[i];
-      if (isOrphan(widget[0])) {
-        invalidWidgets.splice(i, 1);
-        if (widget.dealoc) widget.dealoc();
-      } else {
-        i++;
-      }
-    }
-  });
+angularServiceInject('$formFactory', function() {
 
 
   /**
-   * Traverses DOM element's (widget's) parents and considers the element to be an orphan if one of
-   * it's parents isn't the current window.document.
+   * @ngdoc proprety
+   * @name rootForm
+   * @propertyOf angular.service.$formFactory
+   * @description
+   * Static property on `$formFactory`
+   *
+   * Each application ({@link guide/dev_guide.scopes.internals root scope}) gets a root form which
+   * is the top-level parent of all forms.
    */
-  function isOrphan(widget) {
-    if (widget == window.document) return false;
-    var parent = widget.parentNode;
-    return !parent || isOrphan(parent);
+  formFactory.rootForm = formFactory(this);
+
+
+  /**
+   * @ngdoc method
+   * @name forElement
+   * @methodOf angular.service.$formFactory
+   * @description
+   * Static method on `$formFactory` service.
+   *
+   * Retrieve the closest form for a given element or defaults to the `root` form. Used by the
+   * {@link angular.widget.form form} element.
+   * @param {Element} element The element where the search for form should initiate.
+   */
+  formFactory.forElement = function(element) {
+    return element.inheritedData('$form') || formFactory.rootForm;
+  };
+  return formFactory;
+
+  function formFactory(parent) {
+    return (parent || formFactory.rootForm).$new(FormController);
   }
 
-  return invalidWidgets;
 });
+
+function propertiesUpdate(widget) {
+  widget.$valid = !(widget.$invalid =
+    !(widget.$readonly || widget.$disabled || equals(widget.$error, {})));
+}
+
+/**
+ * @ngdoc property
+ * @name $error
+ * @propertyOf angular.service.$formFactory
+ * @description
+ * Property of the form and widget instance.
+ *
+ * Summary of all of the errors on the page. If a widget emits `$invalid` with `REQUIRED` key,
+ * then the `$error` object will have a `REQUIRED` key with an array of widgets which have
+ * emitted this key. `form.$error.REQUIRED == [ widget ]`.
+ */
+
+/**
+ * @ngdoc property
+ * @name $invalid
+ * @propertyOf angular.service.$formFactory
+ * @description
+ * Property of the form and widget instance.
+ *
+ * True if any of the widgets of the form are invalid.
+ */
+
+/**
+ * @ngdoc property
+ * @name $valid
+ * @propertyOf angular.service.$formFactory
+ * @description
+ * Property of the form and widget instance.
+ *
+ * True if all of the widgets of the form are valid.
+ */
+
+/**
+ * @ngdoc event
+ * @name angular.service.$formFactory#$valid
+ * @eventOf angular.service.$formFactory
+ * @eventType listen on form
+ * @description
+ * Upon receiving the `$valid` event from the widget update the `$error`, `$valid` and `$invalid`
+ * properties of both the widget as well as the from.
+ *
+ * @param {String} validationKey The validation key to be used when updating the `$error` object.
+ *    The validation key is what will allow the template to bind to a specific validation error
+ *    such as `<div ng:show="form.$error.KEY">error for key</div>`.
+ */
+
+/**
+ * @ngdoc event
+ * @name angular.service.$formFactory#$invalid
+ * @eventOf angular.service.$formFactory
+ * @eventType listen on form
+ * @description
+ * Upon receiving the `$invalid` event from the widget update the `$error`, `$valid` and `$invalid`
+ * properties of both the widget as well as the from.
+ *
+ * @param {String} validationKey The validation key to be used when updating the `$error` object.
+ *    The validation key is what will allow the template to bind to a specific validation error
+ *    such as `<div ng:show="form.$error.KEY">error for key</div>`.
+ */
+
+/**
+ * @ngdoc event
+ * @name angular.service.$formFactory#$validate
+ * @eventOf angular.service.$formFactory
+ * @eventType emit on widget
+ * @description
+ * Emit the `$validate` event on the widget, giving a widget a chance to emit a
+ * `$valid` / `$invalid` event base on its state. The `$validate` event is triggered when the
+ * model or the view changes.
+ */
+
+/**
+ * @ngdoc event
+ * @name angular.service.$formFactory#$viewChange
+ * @eventOf angular.service.$formFactory
+ * @eventType listen on widget
+ * @description
+ * A widget is responsible for emitting this event whenever the view changes do to user interaction.
+ * The event takes a `$viewValue` parameter, which is the new value of the view. This
+ * event triggers a call to `$parseView()` as well as `$validate` event on widget.
+ *
+ * @param {*} viewValue The new value for the view which will be assigned to `widget.$viewValue`.
+ */
+
+function FormController() {
+  var form = this,
+      $error = form.$error = {};
+
+  form.$on('$destroy', function(event){
+    var widget = event.targetScope;
+    if (widget.$widgetId) {
+      delete form[widget.$widgetId];
+    }
+    forEach($error, removeWidget, widget);
+  });
+
+  form.$on('$valid', function(event, error){
+    var widget = event.targetScope;
+    delete widget.$error[error];
+    propertiesUpdate(widget);
+    removeWidget($error[error], error, widget);
+  });
+
+  form.$on('$invalid', function(event, error){
+    var widget = event.targetScope;
+    addWidget(error, widget);
+    widget.$error[error] = true;
+    propertiesUpdate(widget);
+  });
+
+  propertiesUpdate(form);
+
+  function removeWidget(queue, errorKey, widget) {
+    if (queue) {
+      widget = widget || this; // so that we can be used in forEach;
+      for (var i = 0, length = queue.length; i < length; i++) {
+        if (queue[i] === widget) {
+          queue.splice(i, 1);
+          if (!queue.length) {
+            delete $error[errorKey];
+          }
+        }
+      }
+      propertiesUpdate(form);
+    }
+  }
+
+  function addWidget(errorKey, widget) {
+    var queue = $error[errorKey];
+    if (queue) {
+      for (var i = 0, length = queue.length; i < length; i++) {
+        if (queue[i] === widget) {
+          return;
+        }
+      }
+    } else {
+      $error[errorKey] = queue = [];
+    }
+    queue.push(widget);
+    propertiesUpdate(form);
+  }
+}
+
+
+/**
+ * @ngdoc method
+ * @name $createWidget
+ * @methodOf angular.service.$formFactory
+ * @description
+ *
+ * Use form's `$createWidget` instance method to create new widgets. The widgets can be created
+ * using an alias which makes the accessible from the form and available for data-binding,
+ * useful for displaying validation error messages.
+ *
+ * The creation of a widget sets up:
+ *
+ *   - `$watch` of `expression` on `model` scope. This code path syncs the model to the view.
+ *      The `$watch` listener will:
+ *
+ *     - assign the new model value of `expression` to `widget.$modelValue`.
+ *     - call `widget.$parseModel` method if present. The `$parseModel` is responsible for copying
+ *       the `widget.$modelValue` to `widget.$viewValue` and optionally converting the data.
+ *       (For example to convert a number into string)
+ *     - emits `$validate` event on widget giving a widget a chance to emit `$valid` / `$invalid`
+ *       event.
+ *     - call `widget.$render()` method on widget. The `$render` method is responsible for
+ *       reading the `widget.$viewValue` and updating the DOM.
+ *
+ *   - Listen on `$viewChange` event from the `widget`. This code path syncs the view to the model.
+ *     The `$viewChange` listener will:
+ *
+ *     - assign the value to `widget.$viewValue`.
+ *     - call `widget.$parseView` method if present. The `$parseView` is responsible for copying
+ *       the `widget.$viewValue` to `widget.$modelValue` and optionally converting the data.
+ *       (For example to convert a string into number)
+ *     - emits `$validate` event on widget giving a widget a chance to emit `$valid` / `$invalid`
+ *       event.
+ *     - Assign the  `widget.$modelValue` to the `expression` on the `model` scope.
+ *
+ *   - Creates these set of properties on the `widget` which are updated as a response to the
+ *     `$valid` / `$invalid` events:
+ *
+ *     - `$error` -  object - validation errors will be published as keys on this object.
+ *       Data-binding to this property is useful for displaying the validation errors.
+ *     - `$valid` - boolean - true if there are no validation errors
+ *     - `$invalid` - boolean - opposite of `$valid`.
+ * @param {Object} params Named parameters:
+ *
+ *   - `scope` - `{Scope}` -  The scope to which the model for this widget is attached.
+ *   - `model` - `{string}` - The name of the model property on model scope.
+ *   - `controller` - {WidgetController} - The controller constructor function.
+ *      The controller constructor should create these instance methods.
+ *     - `$parseView()`: optional method responsible for copying `$viewVale` to `$modelValue`.
+ *         The method may fire `$valid`/`$invalid` events.
+ *     - `$parseModel()`: optional method responsible for copying `$modelVale` to `$viewValue`.
+ *         The method may fire `$valid`/`$invalid` events.
+ *     - `$render()`: required method which needs to update the DOM of the widget to match the
+ *         `$viewValue`.
+ *
+ *   - `controllerArgs` - `{Array}` (Optional) -  Any extra arguments will be curried to the
+ *     WidgetController constructor.
+ *   - `onChange` - `{(string|function())}` (Optional) - Expression to execute when user changes the
+ *     value.
+ *   - `alias` - `{string}` (Optional) - The name of the form property under which the widget
+ *     instance should be published. The name should be unique for each form.
+ * @returns {Widget} Instance of a widget scope.
+ */
+FormController.prototype.$createWidget = function(params) {
+  var form = this,
+      modelScope = params.scope,
+      onChange = params.onChange,
+      alias = params.alias,
+      scopeGet = parser(params.model).assignable(),
+      scopeSet = scopeGet.assign,
+      widget = this.$new(params.controller, params.controllerArgs);
+
+  widget.$error = {};
+  // Set the state to something we know will change to get the process going.
+  widget.$modelValue = Number.NaN;
+  // watch for scope changes and update the view appropriately
+  modelScope.$watch(scopeGet, function(scope, value) {
+    if (!equals(widget.$modelValue, value)) {
+      widget.$modelValue = value;
+      widget.$parseModel ? widget.$parseModel() : (widget.$viewValue = value);
+      widget.$emit('$validate');
+      widget.$render && widget.$render();
+    }
+  });
+
+  widget.$on('$viewChange', function(event, viewValue){
+    if (!equals(widget.$viewValue, viewValue)) {
+      widget.$viewValue = viewValue;
+      widget.$parseView ? widget.$parseView() : (widget.$modelValue = widget.$viewValue);
+      scopeSet(modelScope, widget.$modelValue);
+      if (onChange) modelScope.$eval(onChange);
+      widget.$emit('$validate');
+    }
+  });
+
+  propertiesUpdate(widget);
+
+  // assign the widgetModel to the form
+  if (alias && !form.hasOwnProperty(alias)) {
+    form[alias] = widget;
+    widget.$widgetId = alias;
+  } else {
+    alias = null;
+  }
+
+  return widget;
+};
 'use strict';
 
 var URL_MATCH = /^(file|ftp|http|https):\/\/(\w+:{0,1}\w*@)?([\w\.-]*)(:([0-9]+))?(\/[^\?#]*)?(\?([^#]*))?(#(.*))?$/,
-    HASH_MATCH = /^([^\?]*)?(\?([^\?]*))?$/,
-    DEFAULT_PORTS = {'http': 80, 'https': 443, 'ftp':21};
+    PATH_MATCH = /^([^\?#]*)?(\?([^#]*))?(#(.*))?$/,
+    HASH_MATCH = PATH_MATCH,
+    DEFAULT_PORTS = {'http': 80, 'https': 443, 'ftp': 21};
+
 
 /**
- * @workInProgress
+ * Encode path using encodeUriSegment, ignoring forward slashes
+ *
+ * @param {string} path Path to encode
+ * @returns {string}
+ */
+function encodePath(path) {
+  var segments = path.split('/'),
+      i = segments.length;
+
+  while (i--) {
+    segments[i] = encodeUriSegment(segments[i]);
+  }
+
+  return segments.join('/');
+}
+
+
+function matchUrl(url, obj) {
+  var match = URL_MATCH.exec(url),
+
+  match = {
+      protocol: match[1],
+      host: match[3],
+      port: parseInt(match[5]) || DEFAULT_PORTS[match[1]] || null,
+      path: match[6] || '/',
+      search: match[8],
+      hash: match[10]
+    };
+
+  if (obj) {
+    obj.$$protocol = match.protocol;
+    obj.$$host = match.host;
+    obj.$$port = match.port;
+  }
+
+  return match;
+}
+
+
+function composeProtocolHostPort(protocol, host, port) {
+  return protocol + '://' + host + (port == DEFAULT_PORTS[protocol] ? '' : ':' + port);
+}
+
+
+function pathPrefixFromBase(basePath) {
+  return basePath.substr(0, basePath.lastIndexOf('/'));
+}
+
+
+function convertToHtml5Url(url, basePath, hashPrefix) {
+  var match = matchUrl(url);
+
+  // already html5 url
+  if (decodeURIComponent(match.path) != basePath || isUndefined(match.hash) ||
+      match.hash.indexOf(hashPrefix) != 0) {
+    return url;
+  // convert hashbang url -> html5 url
+  } else {
+    return composeProtocolHostPort(match.protocol, match.host, match.port) +
+           pathPrefixFromBase(basePath) + match.hash.substr(hashPrefix.length);
+  }
+}
+
+
+function convertToHashbangUrl(url, basePath, hashPrefix) {
+  var match = matchUrl(url);
+
+  // already hashbang url
+  if (decodeURIComponent(match.path) == basePath) {
+    return url;
+  // convert html5 url -> hashbang url
+  } else {
+    var search = match.search && '?' + match.search || '',
+        hash = match.hash && '#' + match.hash || '',
+        pathPrefix = pathPrefixFromBase(basePath),
+        path = match.path.substr(pathPrefix.length);
+
+    if (match.path.indexOf(pathPrefix) != 0) {
+      throw 'Invalid url "' + url + '", missing path prefix "' + pathPrefix + '" !';
+    }
+
+    return composeProtocolHostPort(match.protocol, match.host, match.port) + basePath +
+           '#' + hashPrefix + path + search + hash;
+  }
+}
+
+
+/**
+ * LocationUrl represents an url
+ * This object is exposed as $location service when HTML5 mode is enabled and supported
+ *
+ * @constructor
+ * @param {string} url HTML5 url
+ * @param {string} pathPrefix
+ */
+function LocationUrl(url, pathPrefix) {
+  pathPrefix = pathPrefix || '';
+
+  /**
+   * Parse given html5 (regular) url string into properties
+   * @param {string} url HTML5 url
+   * @private
+   */
+  this.$$parse = function(url) {
+    var match = matchUrl(url, this);
+
+    if (match.path.indexOf(pathPrefix) != 0) {
+      throw 'Invalid url "' + url + '", missing path prefix "' + pathPrefix + '" !';
+    }
+
+    this.$$path = decodeURIComponent(match.path.substr(pathPrefix.length));
+    this.$$search = parseKeyValue(match.search);
+    this.$$hash = match.hash && decodeURIComponent(match.hash) || '';
+
+    this.$$compose();
+  },
+
+  /**
+   * Compose url and update `absUrl` property
+   * @private
+   */
+  this.$$compose = function() {
+    var search = toKeyValue(this.$$search),
+        hash = this.$$hash ? '#' + encodeUriSegment(this.$$hash) : '';
+
+    this.$$url = encodePath(this.$$path) + (search ? '?' + search : '') + hash;
+    this.$$absUrl = composeProtocolHostPort(this.$$protocol, this.$$host, this.$$port) +
+                    pathPrefix + this.$$url;
+  };
+
+  this.$$parse(url);
+}
+
+
+/**
+ * LocationHashbangUrl represents url
+ * This object is exposed as $location service when html5 history api is disabled or not supported
+ *
+ * @constructor
+ * @param {string} url Legacy url
+ * @param {string} hashPrefix Prefix for hash part (containing path and search)
+ */
+function LocationHashbangUrl(url, hashPrefix) {
+  var basePath;
+
+  /**
+   * Parse given hashbang url into properties
+   * @param {string} url Hashbang url
+   * @private
+   */
+  this.$$parse = function(url) {
+    var match = matchUrl(url, this);
+
+    if (match.hash && match.hash.indexOf(hashPrefix) != 0) {
+      throw 'Invalid url "' + url + '", missing hash prefix "' + hashPrefix + '" !';
+    }
+
+    basePath = match.path + (match.search ? '?' + match.search : '');
+    match = HASH_MATCH.exec((match.hash || '').substr(hashPrefix.length));
+    if (match[1]) {
+      this.$$path = (match[1].charAt(0) == '/' ? '' : '/') + decodeURIComponent(match[1]);
+    } else {
+      this.$$path = '';
+    }
+
+    this.$$search = parseKeyValue(match[3]);
+    this.$$hash = match[5] && decodeURIComponent(match[5]) || '';
+
+    this.$$compose();
+  };
+
+  /**
+   * Compose hashbang url and update `absUrl` property
+   * @private
+   */
+  this.$$compose = function() {
+    var search = toKeyValue(this.$$search),
+        hash = this.$$hash ? '#' + encodeUriSegment(this.$$hash) : '';
+
+    this.$$url = encodePath(this.$$path) + (search ? '?' + search : '') + hash;
+    this.$$absUrl = composeProtocolHostPort(this.$$protocol, this.$$host, this.$$port) +
+                    basePath + (this.$$url ? '#' + hashPrefix + this.$$url : '');
+  };
+
+  this.$$parse(url);
+}
+
+
+LocationUrl.prototype = LocationHashbangUrl.prototype = {
+
+  /**
+   * Has any change been replacing ?
+   * @private
+   */
+  $$replace: false,
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#absUrl
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter only.
+   *
+   * Return full url representation with all segments encoded according to rules specified in
+   * {@link http://www.ietf.org/rfc/rfc3986.txt RFC 3986}.
+   *
+   * @return {string}
+   */
+  absUrl: locationGetter('$$absUrl'),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#url
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter / setter.
+   *
+   * Return url (e.g. `/path?a=b#hash`) when called without any parameter.
+   *
+   * Change path, search and hash, when called with parameter and return `$location`.
+   *
+   * @param {string=} url New url without base prefix (e.g. `/path?a=b#hash`)
+   * @return {string}
+   */
+  url: function(url, replace) {
+    if (isUndefined(url))
+      return this.$$url;
+
+    var match = PATH_MATCH.exec(url);
+    this.path(decodeURIComponent(match[1] || '')).search(match[3] || '')
+        .hash(match[5] || '', replace);
+
+    return this;
+  },
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#protocol
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter only.
+   *
+   * Return protocol of current url.
+   *
+   * @return {string}
+   */
+  protocol: locationGetter('$$protocol'),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#host
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter only.
+   *
+   * Return host of current url.
+   *
+   * @return {string}
+   */
+  host: locationGetter('$$host'),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#port
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter only.
+   *
+   * Return port of current url.
+   *
+   * @return {Number}
+   */
+  port: locationGetter('$$port'),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#path
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter / setter.
+   *
+   * Return path of current url when called without any parameter.
+   *
+   * Change path when called with parameter and return `$location`.
+   *
+   * Note: Path should always begin with forward slash (/), this method will add the forward slash
+   * if it is missing.
+   *
+   * @param {string=} path New path
+   * @return {string}
+   */
+  path: locationGetterSetter('$$path', function(path) {
+    return path.charAt(0) == '/' ? path : '/' + path;
+  }),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#search
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter / setter.
+   *
+   * Return search part (as object) of current url when called without any parameter.
+   *
+   * Change search part when called with parameter and return `$location`.
+   *
+   * @param {string|object<string,string>=} search New search part - string or hash object
+   * @return {string}
+   */
+  search: function(search, paramValue) {
+    if (isUndefined(search))
+      return this.$$search;
+
+    if (isDefined(paramValue)) {
+      if (paramValue === null) {
+        delete this.$$search[search];
+      } else {
+        this.$$search[search] = encodeUriQuery(paramValue);
+      }
+    } else {
+      this.$$search = isString(search) ? parseKeyValue(search) : search;
+    }
+
+    this.$$compose();
+    return this;
+  },
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#hash
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * This method is getter / setter.
+   *
+   * Return hash fragment when called without any parameter.
+   *
+   * Change hash fragment when called with parameter and return `$location`.
+   *
+   * @param {string=} hash New hash fragment
+   * @return {string}
+   */
+  hash: locationGetterSetter('$$hash', identity),
+
+  /**
+   * @ngdoc method
+   * @name angular.service.$location#replace
+   * @methodOf angular.service.$location
+   *
+   * @description
+   * If called, all changes to $location during current `$digest` will be replacing current history
+   * record, instead of adding new one.
+   */
+  replace: function() {
+    this.$$replace = true;
+    return this;
+  }
+};
+
+
+function locationGetter(property) {
+  return function() {
+    return this[property];
+  };
+}
+
+
+function locationGetterSetter(property, preprocess) {
+  return function(value) {
+    if (isUndefined(value))
+      return this[property];
+
+    this[property] = preprocess(value);
+    this.$$compose();
+
+    return this;
+  };
+}
+
+
+/**
  * @ngdoc service
  * @name angular.service.$location
- * @requires $browser
  *
- * @property {string} href The full URL of the current location.
- * @property {string} protocol The protocol part of the URL (e.g. http or https).
- * @property {string} host The host name, ip address or FQDN of the current location.
- * @property {number} port The port number of the current location (e.g. 80, 443, 8080).
- * @property {string} path The path of the current location (e.g. /myapp/inbox).
- * @property {Object.<string|boolean>} search Map of query parameters (e.g. {user:"foo", page:23}).
- * @property {string} hash The fragment part of the URL of the current location (e.g. #foo).
- * @property {string} hashPath Similar to `path`, but located in the `hash` fragment
- *     (e.g. ../foo#/some/path  => /some/path).
- * @property {Object.<string|boolean>} hashSearch Similar to `search` but located in `hash`
- *     fragment (e.g. .../foo#/some/path?hashQuery=param  =>  {hashQuery: "param"}).
+ * @requires $browser
+ * @requires $sniffer
+ * @requires $locationConfig
+ * @requires $document
  *
  * @description
- * Parses the browser location url and makes it available to your application.
- * Any changes to the url are reflected into `$location` service and changes to
- * `$location` are reflected in the browser location url.
+ * The $location service parses the URL in the browser address bar (based on the {@link https://developer.mozilla.org/en/window.location window.location}) and makes the URL available to your application. Changes to the URL in the address bar are reflected into $location service and changes to $location are reflected into the browser address bar.
  *
- * Notice that using browser's forward/back buttons changes the $location.
+ * **The $location service:**
  *
- * @example
-   <doc:example>
-     <doc:source>
-       <div ng:init="$location = $service('$location')">
-         <a id="ex-test" href="#myPath?name=misko">test hash</a>|
-         <a id="ex-reset" href="#!/api/angular.service.$location">reset hash</a><br/>
-         <input type='text' name="$location.hash" size="30">
-         <pre>$location = {{$location}}</pre>
-       </div>
-     </doc:source>
-     <doc:scenario>
-       it('should initialize the input field', function() {
-         expect(using('.doc-example-live').input('$location.hash').val()).
-           toBe('!/api/angular.service.$location');
-       });
-
-
-       it('should bind $location.hash to the input field', function() {
-         using('.doc-example-live').input('$location.hash').enter('foo');
-         expect(browser().location().hash()).toBe('foo');
-       });
-
-
-       it('should set the hash to a test string with test link is presed', function() {
-         using('.doc-example-live').element('#ex-test').click();
-         expect(using('.doc-example-live').input('$location.hash').val()).
-           toBe('myPath?name=misko');
-       });
-
-       it('should reset $location when reset link is pressed', function() {
-         using('.doc-example-live').input('$location.hash').enter('foo');
-         using('.doc-example-live').element('#ex-reset').click();
-         expect(using('.doc-example-live').input('$location.hash').val()).
-           toBe('!/api/angular.service.$location');
-       });
-
-     </doc:scenario>
-    </doc:example>
+ * - Exposes the current URL in the browser address bar, so you can
+ *   - Watch and observe the URL.
+ *   - Change the URL.
+ * - Synchronizes the URL with the browser when the user
+ *   - Changes the address bar.
+ *   - Clicks the back or forward button (or clicks a History link).
+ *   - Clicks on a link.
+ * - Represents the URL object as a set of methods (protocol, host, port, path, search, hash).
+ *
+ * For more information see {@link guide/dev_guide.services.$location Developer Guide: Angular Services: Using $location}
  */
-angularServiceInject("$location", function($browser) {
-  var location = {update: update, updateHash: updateHash};
-  var lastLocation = {}; // last state since last update().
+angularServiceInject('$location', function($browser, $sniffer, $locationConfig, $document) {
+  var scope = this, currentUrl,
+      basePath = $browser.baseHref() || '/',
+      pathPrefix = pathPrefixFromBase(basePath),
+      hashPrefix = $locationConfig.hashPrefix || '',
+      initUrl = $browser.url();
 
-  $browser.onHashChange(bind(this, this.$apply, function() { //register
-    update($browser.getUrl());
-  }))(); //initialize
-
-  this.$watch(sync);
-
-  return location;
-
-  // PUBLIC METHODS
-
-  /**
-   * @workInProgress
-   * @ngdoc method
-   * @name angular.service.$location#update
-   * @methodOf angular.service.$location
-   *
-   * @description
-   * Updates the location object.
-   * Does not immediately update the browser
-   * Browser is updated at the end of $digest()
-   *
-   * Does not immediately update the browser. Instead the browser is updated at the end of $eval()
-   * cycle.
-   *
-   * <pre>
-       $location.update('http://www.angularjs.org/path#hash?search=x');
-       $location.update({host: 'www.google.com', protocol: 'https'});
-       $location.update({hashPath: '/path', hashSearch: {a: 'b', x: true}});
-     </pre>
-   *
-   * @param {string|Object} href Full href as a string or object with properties
-   */
-  function update(href) {
-    if (isString(href)) {
-      extend(location, parseHref(href));
+  if ($locationConfig.html5Mode) {
+    if ($sniffer.history) {
+      currentUrl = new LocationUrl(convertToHtml5Url(initUrl, basePath, hashPrefix), pathPrefix);
     } else {
-      if (isDefined(href.hash)) {
-        extend(href, isString(href.hash) ? parseHash(href.hash) : href.hash);
+      currentUrl = new LocationHashbangUrl(convertToHashbangUrl(initUrl, basePath, hashPrefix),
+                                           hashPrefix);
+    }
+
+    // link rewriting
+    var u = currentUrl,
+        absUrlPrefix = composeProtocolHostPort(u.protocol(), u.host(), u.port()) + pathPrefix;
+
+    $document.bind('click', function(event) {
+      // TODO(vojta): rewrite link when opening in new tab/window (in legacy browser)
+      // currently we open nice url link and redirect then
+
+      if (event.ctrlKey || event.metaKey || event.which == 2) return;
+
+      var elm = jqLite(event.target);
+
+      // traverse the DOM up to find first A tag
+      while (elm.length && lowercase(elm[0].nodeName) !== 'a') {
+        elm = elm.parent();
       }
 
-      extend(location, href);
+      var href = elm.attr('href');
+      if (!href || isDefined(elm.attr('ng:ext-link')) || elm.attr('target')) return;
 
-      if (isDefined(href.hashPath || href.hashSearch)) {
-        location.hash = composeHash(location);
-      }
+      // remove same domain from full url links (IE7 always returns full hrefs)
+      href = href.replace(absUrlPrefix, '');
 
-      location.href = composeHref(location);
+      // link to different domain (or base path)
+      if (href.substr(0, 4) == 'http') return;
+
+      // remove pathPrefix from absolute links
+      href = href.indexOf(pathPrefix) === 0 ? href.substr(pathPrefix.length) : href;
+
+      currentUrl.url(href);
+      scope.$apply();
+      event.preventDefault();
+      // hack to work around FF6 bug 684208 when scenario runner clicks on links
+      window.angular['ff-684208-preventDefault'] = true;
+    });
+  } else {
+    currentUrl = new LocationHashbangUrl(initUrl, hashPrefix);
+  }
+
+  // rewrite hashbang url <> html5 url
+  if (currentUrl.absUrl() != initUrl) {
+    $browser.url(currentUrl.absUrl(), true);
+  }
+
+  // update $location when $browser url changes
+  $browser.onUrlChange(function(newUrl) {
+    if (currentUrl.absUrl() != newUrl) {
+      currentUrl.$$parse(newUrl);
+      scope.$apply();
     }
-    $browser.setUrl(location.href);
-    copy(location, lastLocation);
-  }
+  });
 
-  /**
-   * @workInProgress
-   * @ngdoc method
-   * @name angular.service.$location#updateHash
-   * @methodOf angular.service.$location
-   *
-   * @description
-   * Updates the hash fragment part of the url.
-   *
-   * @see update()
-   *
-   * <pre>
-       scope.$location.updateHash('/hp')
-         ==> update({hashPath: '/hp'})
-       scope.$location.updateHash({a: true, b: 'val'})
-         ==> update({hashSearch: {a: true, b: 'val'}})
-       scope.$location.updateHash('/hp', {a: true})
-         ==> update({hashPath: '/hp', hashSearch: {a: true}})
-     </pre>
-   *
-   * @param {string|Object} path A hashPath or hashSearch object
-   * @param {Object=} search A hashSearch object
-   */
-  function updateHash(path, search) {
-    var hash = {};
-
-    if (isString(path)) {
-      hash.hashPath = path;
-      hash.hashSearch = search || {};
-    } else
-      hash.hashSearch = path;
-
-    hash.hash = composeHash(hash);
-
-    update({hash: hash});
-  }
-
-
-  // INNER METHODS
-
-  /**
-   * Synchronizes all location object properties.
-   *
-   * User is allowed to change properties, so after property change,
-   * location object is not in consistent state.
-   *
-   * Properties are synced with the following precedence order:
-   *
-   * - `$location.href`
-   * - `$location.hash`
-   * - everything else
-   *
-   * Keep in mind that if the following code is executed:
-   *
-   * scope.$location.href = 'http://www.angularjs.org/path#a/b'
-   *
-   * immediately afterwards all other properties are still the old ones...
-   *
-   * This method checks the changes and update location to the consistent state
-   */
-  function sync() {
-    if (!equals(location, lastLocation)) {
-      if (location.href != lastLocation.href) {
-        update(location.href);
-      } else {
-        if (location.hash != lastLocation.hash) {
-          var hash = parseHash(location.hash);
-          updateHash(hash.hashPath, hash.hashSearch);
-        } else {
-          location.hash = composeHash(location);
-          location.href = composeHref(location);
-        }
-        update(location.href);
-      }
-    }
-  }
-
-
-  /**
-   * Compose href string from a location object
-   *
-   * @param {Object} loc The location object with all properties
-   * @return {string} Composed href
-   */
-  function composeHref(loc) {
-    var url = toKeyValue(loc.search);
-    var port = (loc.port == DEFAULT_PORTS[loc.protocol] ? null : loc.port);
-
-    return loc.protocol  + '://' + loc.host +
-          (port ? ':' + port : '') + loc.path +
-          (url ? '?' + url : '') + (loc.hash ? '#' + loc.hash : '');
-  }
-
-  /**
-   * Compose hash string from location object
-   *
-   * @param {Object} loc Object with hashPath and hashSearch properties
-   * @return {string} Hash string
-   */
-  function composeHash(loc) {
-    var hashSearch = toKeyValue(loc.hashSearch);
-    //TODO: temporary fix for issue #158
-    return escape(loc.hashPath).replace(/%21/gi, '!').replace(/%3A/gi, ':').replace(/%24/gi, '$') +
-          (hashSearch ? '?' + hashSearch : '');
-  }
-
-  /**
-   * Parse href string into location object
-   *
-   * @param {string} href
-   * @return {Object} The location object
-   */
-  function parseHref(href) {
-    var loc = {};
-    var match = URL_MATCH.exec(href);
-
-    if (match) {
-      loc.href = href.replace(/#$/, '');
-      loc.protocol = match[1];
-      loc.host = match[3] || '';
-      loc.port = match[5] || DEFAULT_PORTS[loc.protocol] || null;
-      loc.path = match[6] || '';
-      loc.search = parseKeyValue(match[8]);
-      loc.hash = match[10] || '';
-
-      extend(loc, parseHash(loc.hash));
+  // update browser
+  var changeCounter = 0;
+  scope.$watch(function() {
+    if ($browser.url() != currentUrl.absUrl()) {
+      changeCounter++;
+      scope.$evalAsync(function() {
+        $browser.url(currentUrl.absUrl(), currentUrl.$$replace);
+        currentUrl.$$replace = false;
+      });
     }
 
-    return loc;
-  }
+    return changeCounter;
+  });
 
-  /**
-   * Parse hash string into object
-   *
-   * @param {string} hash
-   */
-  function parseHash(hash) {
-    var h = {};
-    var match = HASH_MATCH.exec(hash);
+  return currentUrl;
+}, ['$browser', '$sniffer', '$locationConfig', '$document']);
 
-    if (match) {
-      h.hash = hash;
-      h.hashPath = unescape(match[1] || '');
-      h.hashSearch = parseKeyValue(match[3]);
-    }
 
-    return h;
-  }
-}, ['$browser']);
+angular.service('$locationConfig', function() {
+  return {
+    html5Mode: false,
+    hashPrefix: ''
+  };
+});
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$log
  * @requires $window
@@ -13601,13 +16491,21 @@ angularServiceInject("$location", function($browser) {
  * @example
     <doc:example>
       <doc:source>
-         <p>Reload this page with open console, enter text and hit the log button...</p>
-         Message:
-         <input type="text" name="message" value="Hello World!"/>
-         <button ng:click="$log.log(message)">log</button>
-         <button ng:click="$log.warn(message)">warn</button>
-         <button ng:click="$log.info(message)">info</button>
-         <button ng:click="$log.error(message)">error</button>
+         <script>
+           function LogCtrl($log) {
+             this.$log = $log;
+             this.message = 'Hello World!';
+           }
+         </script>
+         <div ng:controller="LogCtrl">
+           <p>Reload this page with open console, enter text and hit the log button...</p>
+           Message:
+           <input type="text" ng:model="message"/>
+           <button ng:click="$log.log(message)">log</button>
+           <button ng:click="$log.warn(message)">warn</button>
+           <button ng:click="$log.info(message)">info</button>
+           <button ng:click="$log.error(message)">error</button>
+         </div>
       </doc:source>
       <doc:scenario>
       </doc:scenario>
@@ -13617,7 +16515,6 @@ var $logFactory; //reference to be used only in tests
 angularServiceInject("$log", $logFactory = function($window){
   return {
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$log#log
      * @methodOf angular.service.$log
@@ -13628,7 +16525,6 @@ angularServiceInject("$log", $logFactory = function($window){
     log: consoleLog('log'),
 
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$log#warn
      * @methodOf angular.service.$log
@@ -13639,7 +16535,6 @@ angularServiceInject("$log", $logFactory = function($window){
     warn: consoleLog('warn'),
 
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$log#info
      * @methodOf angular.service.$log
@@ -13650,7 +16545,6 @@ angularServiceInject("$log", $logFactory = function($window){
     info: consoleLog('info'),
 
     /**
-     * @workInProgress
      * @ngdoc method
      * @name angular.service.$log#error
      * @methodOf angular.service.$log
@@ -13665,7 +16559,7 @@ angularServiceInject("$log", $logFactory = function($window){
     var console = $window.console || {};
     var logFn = console[type] || console.log || noop;
     if (logFn.apply) {
-      return function(){
+      return function() {
         var args = [];
         forEach(arguments, function(arg){
           args.push(formatError(arg));
@@ -13681,7 +16575,6 @@ angularServiceInject("$log", $logFactory = function($window){
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$resource
  * @requires $xhr.cache
@@ -13745,7 +16638,7 @@ angularServiceInject("$log", $logFactory = function($window){
  *   update, delete) on server-side data like this:
  *   <pre>
         var User = $resource('/user/:userId', {userId:'@id'});
-        var user = User.get({userId:123}, function(){
+        var user = User.get({userId:123}, function() {
           user.abc = true;
           user.$save();
         });
@@ -13816,7 +16709,7 @@ angularServiceInject("$log", $logFactory = function($window){
 
    <pre>
      var User = $resource('/user/:userId', {userId:'@id'});
-     var user = User.get({userId:123}, function(){
+     var user = User.get({userId:123}, function() {
        user.abc = true;
        user.$save();
      });
@@ -13840,6 +16733,7 @@ angularServiceInject("$log", $logFactory = function($window){
       <doc:source jsfiddle="false">
        <script>
          function BuzzController($resource) {
+           this.userId = 'googlebuzz';
            this.Activity = $resource(
              'https://www.googleapis.com/buzz/v1/activities/:userId/:visibility/:activityId/:comments',
              {alt:'json', callback:'JSON_CALLBACK'},
@@ -13859,7 +16753,7 @@ angularServiceInject("$log", $logFactory = function($window){
        </script>
 
        <div ng:controller="BuzzController">
-         <input name="userId" value="googlebuzz"/>
+         <input ng:model="userId"/>
          <button ng:click="fetch()">fetch</button>
          <hr/>
          <div ng:repeat="item in activities.data.items">
@@ -13887,7 +16781,6 @@ angularServiceInject('$resource', function($xhr){
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$route
  * @requires $location
@@ -13897,7 +16790,7 @@ angularServiceInject('$resource', function($xhr){
  * @property {Array.<Object>} routes Array of all configured routes.
  *
  * @description
- * Watches `$location.hashPath` and tries to map the hash to an existing route
+ * Watches `$location.url()` and tries to map the path to an existing route
  * definition. It is used for deep-linking URLs to controllers and views (HTML partials).
  *
  * The `$route` service is typically used in conjunction with {@link angular.widget.ng:view ng:view}
@@ -13906,7 +16799,6 @@ angularServiceInject('$resource', function($xhr){
  * @example
    This example shows how changing the URL hash causes the <tt>$route</tt>
    to match a route against the URL, and the <tt>[[ng:include]]</tt> pulls in the partial.
-   Try changing the URL in the input box to see changes.
 
     <doc:example>
       <doc:source jsfiddle="false">
@@ -13937,7 +16829,7 @@ angularServiceInject('$resource', function($xhr){
           <a href="#/Book/Moby/ch/1">Moby: Ch1</a> |
           <a href="#/Book/Gatsby">Gatsby</a> |
           <a href="#/Book/Gatsby/ch/4?key=value">Gatsby: Ch4</a><br/>
-          $location.hashPath: <input type="text" name="$location.hashPath" size="80" />
+          <pre>$location.path() = {{$location.path()}}</pre>
           <pre>$route.current.template = {{$route.current.template}}</pre>
           <pre>$route.current.params = {{$route.current.params}}</pre>
           <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre>
@@ -13952,7 +16844,6 @@ angularServiceInject('$resource', function($xhr){
  */
 angularServiceInject('$route', function($location, $routeParams) {
   /**
-   * @workInProgress
    * @ngdoc event
    * @name angular.service.$route#$beforeRouteChange
    * @eventOf angular.service.$route
@@ -13971,7 +16862,6 @@ angularServiceInject('$route', function($location, $routeParams) {
    */
 
   /**
-   * @workInProgress
    * @ngdoc event
    * @name angular.service.$route#$afterRouteChange
    * @eventOf angular.service.$route
@@ -13990,7 +16880,6 @@ angularServiceInject('$route', function($location, $routeParams) {
    */
 
   /**
-   * @workInProgress
    * @ngdoc event
    * @name angular.service.$route#$routeUpdate
    * @eventOf angular.service.$route
@@ -14006,12 +16895,11 @@ angularServiceInject('$route', function($location, $routeParams) {
       parentScope = this,
       rootScope = this,
       dirty = 0,
-      allowReload = true,
+      forceReload = false,
       $route = {
         routes: routes,
 
         /**
-         * @workInProgress
          * @ngdoc method
          * @name angular.service.$route#parent
          * @methodOf angular.service.$route
@@ -14028,7 +16916,6 @@ angularServiceInject('$route', function($location, $routeParams) {
         },
 
         /**
-         * @workInProgress
          * @ngdoc method
          * @name angular.service.$route#when
          * @methodOf angular.service.$route
@@ -14045,21 +16932,20 @@ angularServiceInject('$route', function($location, $routeParams) {
          *      {@link angular.widget.ng:view ng:view} or
          *      {@link angular.widget.ng:include ng:include} widgets.
          *    - `redirectTo` – {(string|function())=} – value to update
-         *      {@link angular.service.$location $location} hash with and trigger route redirection.
+         *      {@link angular.service.$location $location} path with and trigger route redirection.
          *
          *      If `redirectTo` is a function, it will be called with the following parameters:
          *
          *      - `{Object.<string>}` - route parameters extracted from the current
-         *        `$location.hashPath` by applying the current route template.
-         *      - `{string}` - current `$location.hash`
-         *      - `{string}` - current `$location.hashPath`
-         *      - `{string}` - current `$location.hashSearch`
+         *        `$location.path()` by applying the current route template.
+         *      - `{string}` - current `$location.path()`
+         *      - `{Object}` - current `$location.search()`
          *
          *      The custom `redirectTo` function is expected to return a string which will be used
-         *      to update `$location.hash`.
+         *      to update `$location.path()` and `$location.search()`.
          *
-         *    - `[reloadOnSearch=true]` - {boolean=} - reload route when $location.hashSearch
-         *      changes.
+         *    - `[reloadOnSearch=true]` - {boolean=} - reload route when only $location.search()
+         *    changes.
          *
          *      If the option is set to false and url in the browser changes, then
          *      $routeUpdate event is emited on the current route scope. You can use this event to
@@ -14076,17 +16962,15 @@ angularServiceInject('$route', function($location, $routeParams) {
          * @description
          * Adds a new route definition to the `$route` service.
          */
-        when:function (path, route) {
-          if (isUndefined(path)) return routes; //TODO(im): remove - not needed!
+        when: function(path, route) {
           var routeDef = routes[path];
           if (!routeDef) routeDef = routes[path] = {reloadOnSearch: true};
-          if (route) extend(routeDef, route); //TODO(im): what the heck? merge two route definitions?
+          if (route) extend(routeDef, route); // TODO(im): what the heck? merge two route definitions?
           dirty++;
           return routeDef;
         },
 
         /**
-         * @workInProgress
          * @ngdoc method
          * @name angular.service.$route#otherwise
          * @methodOf angular.service.$route
@@ -14102,7 +16986,6 @@ angularServiceInject('$route', function($location, $routeParams) {
         },
 
         /**
-         * @workInProgress
          * @ngdoc method
          * @name angular.service.$route#reload
          * @methodOf angular.service.$route
@@ -14113,64 +16996,68 @@ angularServiceInject('$route', function($location, $routeParams) {
          */
         reload: function() {
           dirty++;
-          allowReload = false;
+          forceReload = true;
         }
       };
 
-
-
-  this.$watch(function(){ return dirty + $location.hash; }, updateRoute);
+  this.$watch(function() { return dirty + $location.url(); }, updateRoute);
 
   return $route;
 
   /////////////////////////////////////////////////////
 
-  function switchRouteMatcher(on, when, dstName) {
-    var regex = '^' + when.replace(/[\.\\\(\)\^\$]/g, "\$1") + '$',
+  function switchRouteMatcher(on, when) {
+    // TODO(i): this code is convoluted and inefficient, we should construct the route matching
+    //   regex only once and then reuse it
+    var regex = '^' + when.replace(/([\.\\\(\)\^\$])/g, "\\$1") + '$',
         params = [],
         dst = {};
-    forEach(when.split(/\W/), function(param){
+    forEach(when.split(/\W/), function(param) {
       if (param) {
         var paramRegExp = new RegExp(":" + param + "([\\W])");
         if (regex.match(paramRegExp)) {
-          regex = regex.replace(paramRegExp, "([^\/]*)$1");
+          regex = regex.replace(paramRegExp, "([^\\/]*)$1");
           params.push(param);
         }
       }
     });
     var match = on.match(new RegExp(regex));
     if (match) {
-      forEach(params, function(name, index){
+      forEach(params, function(name, index) {
         dst[name] = match[index + 1];
       });
-      if (dstName) this.$set(dstName, dst);
     }
     return match ? dst : null;
   }
 
-  function updateRoute(){
+  function updateRoute() {
     var next = parseRoute(),
-        last = $route.current;
+        last = $route.current,
+        Controller;
 
     if (next && last && next.$route === last.$route
-        && equals(next.pathParams, last.pathParams) && !next.reloadOnSearch && allowReload) {
+        && equals(next.pathParams, last.pathParams) && !next.reloadOnSearch && !forceReload) {
       $route.current = next;
       copy(next.params, $routeParams);
       last.scope && last.scope.$emit('$routeUpdate');
     } else {
-      allowReload = true;
+      forceReload = false;
       rootScope.$broadcast('$beforeRouteChange', next, last);
       last && last.scope && last.scope.$destroy();
       $route.current = next;
       if (next) {
         if (next.redirectTo) {
-          $location.update(isString(next.redirectTo)
-              ? {hashSearch: next.params, hashPath: interpolate(next.redirectTo, next.params)}
-          : {hash: next.redirectTo(next.pathParams,
-              $location.hash, $location.hashPath, $location.hashSearch)});
+          if (isString(next.redirectTo)) {
+            $location.path(interpolate(next.redirectTo, next.params)).search(next.params)
+                     .replace();
+          } else {
+            $location.url(next.redirectTo(next.pathParams, $location.path(), $location.search()))
+                     .replace();
+          }
         } else {
           copy(next.params, $routeParams);
-          next.scope = parentScope.$new(next.controller);
+          (Controller = next.controller) && inferInjectionArgs(Controller);
+          next.scope = parentScope.$new(Controller);
         }
       }
       rootScope.$broadcast('$afterRouteChange', next, last);
@@ -14181,13 +17068,13 @@ angularServiceInject('$route', function($location, $routeParams) {
   /**
    * @returns the current active route, by matching it against the URL
    */
-  function parseRoute(){
+  function parseRoute() {
     // Match a route
     var params, match;
     forEach(routes, function(route, path) {
-      if (!match && (params = matcher($location.hashPath, path))) {
+      if (!match && (params = matcher($location.path(), path))) {
         match = inherit(route, {
-          params: extend({}, $location.hashSearch, params),
+          params: extend({}, $location.search(), params),
           pathParams: params});
         match.$route = route;
       }
@@ -14220,17 +17107,16 @@ angularServiceInject('$route', function($location, $routeParams) {
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$routeParams
  * @requires $route
  *
  * @description
  * Current set of route parameters. The route parameters are a combination of the
- * {@link angular.service.$location $location} `hashSearch`, and `path`. The `path` parameters
+ * {@link angular.service.$location $location} `search()`, and `path()`. The `path` parameters
  * are extracted when the {@link angular.service.$route $route} path is matched.
  *
- * In case of parameter name collision, `path` params take precedence over `hashSearch` params.
+ * In case of parameter name collision, `path` params take precedence over `search` params.
  *
  * The service guarantees that the identity of the `$routeParams` object will remain unchanged
  * (but its properties will likely change) even when a route change occurs.
@@ -14245,13 +17131,35 @@ angularServiceInject('$route', function($location, $routeParams) {
  *  $routeParams ==> {chapterId:1, sectionId:2, search:'moby'}
  * </pre>
  */
-angularService('$routeParams', function(){
+angularService('$routeParams', function() {
   return {};
 });
 'use strict';
 
 /**
- * @workInProgress
+ * @ngdoc service
+ * @name angular.service.$sniffer
+ * @requires $window
+ *
+ * @property {boolean} history Does the browser support html5 history api ?
+ * @property {boolean} hashchange Does the browser support hashchange event ?
+ *
+ * @description
+ * This is very simple implementation of testing browser's features.
+ */
+angularServiceInject('$sniffer', function($window) {
+  if ($window.Modernizr) return $window.Modernizr;
+
+  return {
+    history: !!($window.history && $window.history.pushState),
+    hashchange: 'onhashchange' in $window &&
+                // IE8 compatible mode lies
+                (!$window.document.documentMode || $window.document.documentMode > 7)
+  };
+}, ['$window']);
+'use strict';
+
+/**
  * @ngdoc service
  * @name angular.service.$window
  *
@@ -14267,7 +17175,7 @@ angularService('$routeParams', function(){
  * @example
    <doc:example>
      <doc:source>
-       <input ng:init="$window = $service('$window'); greeting='Hello World!'" type="text" name="greeting" />
+       <input ng:init="$window = $service('$window'); greeting='Hello World!'" type="text" ng:model="greeting" />
        <button ng:click="$window.alert(greeting)">ALERT</button>
      </doc:source>
      <doc:scenario>
@@ -14278,7 +17186,6 @@ angularServiceInject("$window", bind(window, identity, window));
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$xhr.bulk
  * @requires $xhr
@@ -14360,13 +17267,12 @@ angularServiceInject('$xhr.bulk', function($xhr, $error, $log){
       }
     });
   };
-  this.$watch(function(){ bulkXHR.flush(); });
+  this.$watch(function() { bulkXHR.flush(); });
   return bulkXHR;
 }, ['$xhr', '$xhr.error', '$log']);
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$xhr.cache
  * @function
@@ -14481,7 +17387,6 @@ angularServiceInject('$xhr.cache', function($xhr, $defer, $error, $log) {
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$xhr.error
  * @function
@@ -14524,7 +17429,6 @@ angularServiceInject('$xhr.error', function($log){
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc service
  * @name angular.service.$xhr
  * @function
@@ -14634,6 +17538,7 @@ angularServiceInject('$xhr.error', function($log){
        <script>
          function FetchCntl($xhr) {
            var self = this;
+           this.url = 'index.html';
 
            this.fetch = function() {
              self.code = null;
@@ -14656,15 +17561,15 @@ angularServiceInject('$xhr.error', function($log){
          FetchCntl.$inject = ['$xhr'];
        </script>
        <div ng:controller="FetchCntl">
-         <select name="method">
+         <select ng:model="method">
            <option>GET</option>
            <option>JSON</option>
          </select>
-         <input type="text" name="url" value="index.html" size="80"/>
+         <input type="text" ng:model="url" size="80"/>
          <button ng:click="fetch()">fetch</button><br>
          <button ng:click="updateModel('GET', 'index.html')">Sample GET</button>
-         <button ng:click="updateModel('JSON', 'https://www.googleapis.com/buzz/v1/activities/googlebuzz/@self?alt=json&callback=JSON_CALLBACK')">Sample JSONP (Buzz API)</button>
-         <button ng:click="updateModel('JSON', 'https://www.invalid_JSONP_request.com&callback=JSON_CALLBACK')">Invalid JSONP</button>
+         <button ng:click="updateModel('JSON', 'http://angularjs.org/greet.php?callback=JSON_CALLBACK&name=Super%20Hero')">Sample JSONP</button>
+         <button ng:click="updateModel('JSON', 'http://angularjs.org/doesntexist&callback=JSON_CALLBACK')">Invalid JSONP</button>
          <pre>code={{code}}</pre>
          <pre>response={{response}}</pre>
        </div>
@@ -14677,11 +17582,11 @@ angularServiceInject('$xhr.error', function($log){
          expect(binding('response')).toMatch(/angularjs.org/);
        });
 
-       it('should make JSONP request to the Buzz API', function() {
-         element(':button:contains("Buzz API")').click();
+       it('should make JSONP request to the angularjs.org', function() {
+         element(':button:contains("Sample JSONP")').click();
          element(':button:contains("fetch")').click();
          expect(binding('code')).toBe('code=200');
-         expect(binding('response')).toMatch(/buzz-feed/);
+         expect(binding('response')).toMatch(/Super Hero!/);
        });
 
        it('should make JSONP request to invalid URL and invoke the error handler',
@@ -14727,7 +17632,7 @@ angularServiceInject('$xhr', function($browser, $error, $log){
             response = fromJson(response, true);
           }
         }
-        rootScope.$apply(function(){
+        rootScope.$apply(function() {
           if (200 <= code && code < 300) {
               success(code, response);
           } else if (isFunction(error)) {
@@ -14841,8 +17746,6 @@ angularServiceInject('$locale', function() {
  * to `ng:bind`, but uses JSON key / value pairs to do so.
  * * {@link angular.directive.ng:bind-template ng:bind-template} - Replaces the text value of an
  * element with a specified template.
- * * {@link angular.directive.ng:change ng:change} - Executes an expression when the value of an
- * input widget changes.
  * * {@link angular.directive.ng:class ng:class} - Conditionally set a CSS class on an element.
  * * {@link angular.directive.ng:class-even ng:class-even} - Like `ng:class`, but works in
  * conjunction with {@link angular.widget.@ng:repeat} to affect even rows in a collection.
@@ -14866,7 +17769,6 @@ angularServiceInject('$locale', function() {
  */
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:init
  *
@@ -14885,7 +17787,7 @@ angularServiceInject('$locale', function() {
     </div>
      </doc:source>
      <doc:scenario>
-       it('should check greeting', function(){
+       it('should check greeting', function() {
          expect(binding('greeting')).toBe('Hello');
          expect(binding('person')).toBe('World');
        });
@@ -14899,7 +17801,6 @@ angularDirective("ng:init", function(expression){
 });
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:controller
  *
@@ -14939,10 +17840,10 @@ angularDirective("ng:init", function(expression){
             {type:'email', value:'john.smith@example.org'} ];
         }
         SettingsController.prototype = {
-         greet: function(){
+         greet: function() {
            alert(this.name);
          },
-         addContact: function(){
+         addContact: function() {
            this.contacts.push({type:'email', value:'yourname@example.org'});
          },
          removeContact: function(contactToRemove) {
@@ -14955,16 +17856,16 @@ angularDirective("ng:init", function(expression){
         };
       </script>
       <div ng:controller="SettingsController">
-        Name: <input type="text" name="name"/>
+        Name: <input type="text" ng:model="name"/>
         [ <a href="" ng:click="greet()">greet</a> ]<br/>
         Contact:
         <ul>
           <li ng:repeat="contact in contacts">
-            <select name="contact.type">
+            <select ng:model="contact.type">
                <option>phone</option>
                <option>email</option>
             </select>
-            <input type="text" name="contact.value"/>
+            <input type="text" ng:model="contact.value"/>
             [ <a href="" ng:click="clearContact(contact)">clear</a>
             | <a href="" ng:click="removeContact(contact)">X</a> ]
           </li>
@@ -14973,18 +17874,18 @@ angularDirective("ng:init", function(expression){
       </div>
      </doc:source>
      <doc:scenario>
-       it('should check controller', function(){
+       it('should check controller', function() {
          expect(element('.doc-example-live div>:input').val()).toBe('John Smith');
-         expect(element('.doc-example-live li[ng\\:repeat-index="0"] input').val())
+         expect(element('.doc-example-live li:nth-child(1) input').val())
            .toBe('408 555 1212');
-         expect(element('.doc-example-live li[ng\\:repeat-index="1"] input').val())
+         expect(element('.doc-example-live li:nth-child(2) input').val())
            .toBe('john.smith@example.org');
 
          element('.doc-example-live li:first a:contains("clear")').click();
          expect(element('.doc-example-live li:first input').val()).toBe('');
 
          element('.doc-example-live li:last a:contains("add")').click();
-         expect(element('.doc-example-live li[ng\\:repeat-index="2"] input').val())
+         expect(element('.doc-example-live li:nth-child(3) input').val())
            .toBe('yourname@example.org');
        });
      </doc:scenario>
@@ -14996,6 +17897,7 @@ angularDirective("ng:controller", function(expression){
       getter(scope, expression, true) ||
       getter(window, expression, true);
     assertArgFn(Controller, expression);
+    inferInjectionArgs(Controller);
     return Controller;
   });
   return noop;
@@ -15021,11 +17923,18 @@ angularDirective("ng:controller", function(expression){
  * Enter a name in the Live Preview text box; the greeting below the text box changes instantly.
    <doc:example>
      <doc:source>
-       Enter name: <input type="text" name="name" value="Whirled"> <br>
-       Hello <span ng:bind="name"></span>!
+       <script>
+         function Ctrl() {
+           this.name = 'Whirled';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         Enter name: <input type="text" ng:model="name"> <br/>
+         Hello <span ng:bind="name"></span>!
+       </div>
      </doc:source>
      <doc:scenario>
-       it('should check ng:bind', function(){
+       it('should check ng:bind', function() {
          expect(using('.doc-example-live').binding('name')).toBe('Whirled');
          using('.doc-example-live').input('name').enter('world');
          expect(using('.doc-example-live').binding('name')).toBe('world');
@@ -15037,48 +17946,44 @@ angularDirective("ng:bind", function(expression, element){
   element.addClass('ng-binding');
   var exprFn = parser(expression).statements();
   return function(element) {
-    var lastValue = noop, lastError = noop;
+    var lastValue = Number.NaN;
     this.$watch(function(scope) {
       // TODO(misko): remove error handling https://github.com/angular/angular.js/issues/347
-      var error, value, html, isHtml, isDomElement,
+      var value, html, isHtml, isDomElement,
           hadOwnElement = scope.hasOwnProperty('$element'),
           oldElement = scope.$element;
       // TODO(misko): get rid of $element https://github.com/angular/angular.js/issues/348
       scope.$element = element;
       try {
         value = exprFn(scope);
+        // If we are HTML than save the raw HTML data so that we don't recompute sanitization since
+        // it is expensive.
+        // TODO(misko): turn this into a more generic way to compute this
+        if ((isHtml = (value instanceof HTML)))
+          value = (html = value).html;
+        if (lastValue === value) return;
+        isDomElement = isElement(value);
+        if (!isHtml && !isDomElement && isObject(value)) {
+          value = toJson(value, true);
+        }
+        if (value != lastValue) {
+          lastValue = value;
+          if (isHtml) {
+            element.html(html.get());
+          } else if (isDomElement) {
+            element.html('');
+            element.append(value);
+          } else {
+            element.text(value == undefined ? '' : value);
+          }
+        }
       } catch (e) {
         scope.$service('$exceptionHandler')(e);
-        error = formatError(e);
       } finally {
         if (hadOwnElement) {
           scope.$element = oldElement;
         } else {
           delete scope.$element;
-        }
-      }
-      // If we are HTML, then save the raw HTML data so that we don't
-      // recompute sanitization since that is expensive.
-      // TODO: turn this into a more generic way to compute this
-      if ((isHtml = (value instanceof HTML)))
-        value = (html = value).html;
-      if (lastValue === value && lastError == error) return;
-      isDomElement = isElement(value);
-      if (!isHtml && !isDomElement && isObject(value)) {
-        value = toJson(value, true);
-      }
-      if (value != lastValue || error != lastError) {
-        lastValue = value;
-        lastError = error;
-        elementError(element, NG_EXCEPTION, error);
-        if (error) value = error;
-        if (isHtml) {
-          element.html(html.get());
-        } else if (isDomElement) {
-          element.html('');
-          element.append(value);
-        } else {
-          element.text(value == undefined ? '' : value);
         }
       }
     });
@@ -15093,20 +17998,8 @@ function compileBindTemplate(template){
     forEach(parseBindings(template), function(text){
       var exp = binding(text);
       bindings.push(exp
-        ? function(scope, element) {
-            var error, value;
-            try {
-              value = scope.$eval(exp);
-            } catch(e) {
-              scope.$service('$exceptionHandler')(e);
-              error = toJson(e);
-            }
-            elementError(element, NG_EXCEPTION, error);
-            return error ? error : value;
-          }
-        : function() {
-            return text;
-          });
+        ? function(scope, element) { return scope.$eval(exp); }
+        : function() { return text; });
     });
     bindTemplateCache[template] = fn = function(scope, element, prettyPrintJson) {
       var parts = [],
@@ -15138,7 +18031,6 @@ function compileBindTemplate(template){
 }
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:bind-template
  *
@@ -15157,12 +18049,20 @@ function compileBindTemplate(template){
  * Try it here: enter text in text box and watch the greeting change.
    <doc:example>
      <doc:source>
-      Salutation: <input type="text" name="salutation" value="Hello"><br/>
-      Name: <input type="text" name="name" value="World"><br/>
-      <pre ng:bind-template="{{salutation}} {{name}}!"></pre>
+       <script>
+         function Ctrl() {
+           this.salutation = 'Hello';
+           this.name = 'World';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+        Salutation: <input type="text" ng:model="salutation"><br/>
+        Name: <input type="text" ng:model="name"><br/>
+        <pre ng:bind-template="{{salutation}} {{name}}!"></pre>
+       </div>
      </doc:source>
      <doc:scenario>
-       it('should check ng:bind', function(){
+       it('should check ng:bind', function() {
          expect(using('.doc-example-live').binding('{{salutation}} {{name}}')).
            toBe('Hello World!');
          using('.doc-example-live').input('salutation').enter('Greetings');
@@ -15188,13 +18088,6 @@ angularDirective("ng:bind-template", function(expression, element){
   };
 });
 
-var REMOVE_ATTRIBUTES = {
-  'disabled':'disabled',
-  'readonly':'readOnly',
-  'checked':'checked',
-  'selected':'selected',
-  'multiple':'multiple'
-};
 /**
  * @ngdoc directive
  * @name angular.directive.ng:bind-attr
@@ -15208,17 +18101,27 @@ var REMOVE_ATTRIBUTES = {
  *
  * Instead of writing `ng:bind-attr` statements in your HTML, you can use double-curly markup to
  * specify an <tt ng:non-bindable>{{expression}}</tt> for the value of an attribute.
- * At compile time, the attribute is translated into an `<span ng:bind-attr="{attr:expression}"/>`
+ * At compile time, the attribute is translated into an
+ * `<span ng:bind-attr="{attr:expression}"></span>`.
  *
  * The following HTML snippet shows how to specify `ng:bind-attr`:
+ * <pre>
+ *   <a ng:bind-attr='{"href":"http://www.google.com/search?q={{query}}"}'>Google</a>
+ * </pre>
+ *
+ * This is cumbersome, so as we mentioned using double-curly markup is a prefered way of creating
+ * this binding:
  * <pre>
  *   <a href="http://www.google.com/search?q={{query}}">Google</a>
  * </pre>
  *
- * During compilation, the snippet gets translated to the following:
- * <pre>
- *   <a ng:bind-attr='{"href":"http://www.google.com/search?q={{query}}"}'>Google</a>
- * </pre>
+ * During compilation, the template with attribute markup gets translated to the ng:bind-attr form
+ * mentioned above.
+ *
+ * _Note_: You might want to consider using {@link angular.directive.ng:href ng:href} instead of
+ * `href` if the binding is present in the main application template (`index.html`) and you want to
+ * make sure that a user is not capable of clicking on raw/uncompiled link.
+ *
  *
  * @element ANY
  * @param {string} attribute_json one or more JSON key-value pairs representing
@@ -15232,12 +18135,23 @@ var REMOVE_ATTRIBUTES = {
  * Enter a search string in the Live Preview text box and then click "Google". The search executes instantly.
    <doc:example>
      <doc:source>
-      Google for:
-      <input type="text" name="query" value="AngularJS"/>
-      <a href="http://www.google.com/search?q={{query}}">Google</a>
+       <script>
+         function Ctrl() {
+           this.query = 'AngularJS';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+        Google for:
+        <input type="text" ng:model="query"/>
+        <a ng:bind-attr='{"href":"http://www.google.com/search?q={{query}}"}'>
+          Google
+        </a> (ng:bind-attr) |
+        <a href="http://www.google.com/search?q={{query}}">Google</a>
+        (curly binding in attribute val)
+       </div>
      </doc:source>
      <doc:scenario>
-       it('should check ng:bind-attr', function(){
+       it('should check ng:bind-attr', function() {
          expect(using('.doc-example-live').element('a').attr('href')).
            toBe('http://www.google.com/search?q=AngularJS');
          using('.doc-example-live').input('query').enter('google');
@@ -15253,22 +18167,10 @@ angularDirective("ng:bind-attr", function(expression){
     this.$watch(function(scope){
       var values = scope.$eval(expression);
       for(var key in values) {
-        var value = compileBindTemplate(values[key])(scope, element),
-            specialName = REMOVE_ATTRIBUTES[lowercase(key)];
+        var value = compileBindTemplate(values[key])(scope, element);
         if (lastValue[key] !== value) {
           lastValue[key] = value;
-          if (specialName) {
-            if (toBoolean(value)) {
-              element.attr(specialName, specialName);
-              element.attr('ng-' + specialName, value);
-            } else {
-              element.removeAttr(specialName);
-              element.removeAttr('ng-' + specialName);
-            }
-            (element.data($$validate)||noop)();
-          } else {
-            element.attr(key, value);
-          }
+          element.attr(key, BOOLEAN_ATTR[lowercase(key)] ? toBoolean(value) : value);
         }
       }
     });
@@ -15277,7 +18179,6 @@ angularDirective("ng:bind-attr", function(expression){
 
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:click
  *
@@ -15298,7 +18199,7 @@ angularDirective("ng:bind-attr", function(expression){
       count: {{count}}
      </doc:source>
      <doc:scenario>
-       it('should check ng:click', function(){
+       it('should check ng:click', function() {
          expect(binding('count')).toBe('0');
          element('.doc-example-live :button').click();
          expect(binding('count')).toBe('1');
@@ -15326,7 +18227,6 @@ angularDirective("ng:click", function(expression, element){
 
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:submit
  *
@@ -15342,15 +18242,25 @@ angularDirective("ng:click", function(expression, element){
  * @example
    <doc:example>
      <doc:source>
-      <form ng:submit="list.push(text);text='';" ng:init="list=[]">
+      <script>
+        function Ctrl() {
+          this.list = [];
+          this.text = 'hello';
+          this.submit = function() {
+            this.list.push(this.text);
+            this.text = '';
+          };
+        }
+      </script>
+      <form ng:submit="submit()" ng:controller="Ctrl">
         Enter text and hit enter:
-        <input type="text" name="text" value="hello"/>
+        <input type="text" ng:model="text"/>
         <input type="submit" id="submit" value="Submit" />
+        <pre>list={{list}}</pre>
       </form>
-      <pre>list={{list}}</pre>
      </doc:source>
      <doc:scenario>
-       it('should check ng:submit', function(){
+       it('should check ng:submit', function() {
          expect(binding('list')).toBe('list=[]');
          element('.doc-example-live #submit').click();
          expect(binding('list')).toBe('list=["hello"]');
@@ -15374,8 +18284,8 @@ function ngClass(selector) {
     return function(element) {
       this.$watch(expression, function(scope, newVal, oldVal) {
         if (selector(scope.$index)) {
-          element.removeClass(isArray(oldVal) ? oldVal.join(' ') : oldVal)
-          element.addClass(isArray(newVal) ? newVal.join(' ') : newVal);
+          if (oldVal) element.removeClass(isArray(oldVal) ? oldVal.join(' ') : oldVal);
+          if (newVal) element.addClass(isArray(newVal) ? newVal.join(' ') : newVal);
         }
       });
     };
@@ -15383,7 +18293,6 @@ function ngClass(selector) {
 }
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:class
  *
@@ -15409,27 +18318,26 @@ function ngClass(selector) {
       <span ng:class="myVar">Sample Text &nbsp;&nbsp;&nbsp;&nbsp;</span>
      </doc:source>
      <doc:scenario>
-       it('should check ng:class', function(){
-         expect(element('.doc-example-live span').attr('className')).not().
+       it('should check ng:class', function() {
+         expect(element('.doc-example-live span').prop('className')).not().
            toMatch(/ng-input-indicator-wait/);
 
          using('.doc-example-live').element(':button:first').click();
 
-         expect(element('.doc-example-live span').attr('className')).
+         expect(element('.doc-example-live span').prop('className')).
            toMatch(/ng-input-indicator-wait/);
 
          using('.doc-example-live').element(':button:last').click();
 
-         expect(element('.doc-example-live span').attr('className')).not().
+         expect(element('.doc-example-live span').prop('className')).not().
            toMatch(/ng-input-indicator-wait/);
        });
      </doc:scenario>
    </doc:example>
  */
-angularDirective("ng:class", ngClass(function(){return true;}));
+angularDirective("ng:class", ngClass(function() {return true;}));
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:class-odd
  *
@@ -15458,10 +18366,10 @@ angularDirective("ng:class", ngClass(function(){return true;}));
         </ol>
      </doc:source>
      <doc:scenario>
-       it('should check ng:class-odd and ng:class-even', function(){
-         expect(element('.doc-example-live li:first span').attr('className')).
+       it('should check ng:class-odd and ng:class-even', function() {
+         expect(element('.doc-example-live li:first span').prop('className')).
            toMatch(/ng-format-negative/);
-         expect(element('.doc-example-live li:last span').attr('className')).
+         expect(element('.doc-example-live li:last span').prop('className')).
            toMatch(/ng-input-indicator-wait/);
        });
      </doc:scenario>
@@ -15470,7 +18378,6 @@ angularDirective("ng:class", ngClass(function(){return true;}));
 angularDirective("ng:class-odd", ngClass(function(i){return i % 2 === 0;}));
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:class-even
  *
@@ -15499,10 +18406,10 @@ angularDirective("ng:class-odd", ngClass(function(i){return i % 2 === 0;}));
         </ol>
      </doc:source>
      <doc:scenario>
-       it('should check ng:class-odd and ng:class-even', function(){
-         expect(element('.doc-example-live li:first span').attr('className')).
+       it('should check ng:class-odd and ng:class-even', function() {
+         expect(element('.doc-example-live li:first span').prop('className')).
            toMatch(/ng-format-negative/);
-         expect(element('.doc-example-live li:last span').attr('className')).
+         expect(element('.doc-example-live li:last span').prop('className')).
            toMatch(/ng-input-indicator-wait/);
        });
      </doc:scenario>
@@ -15511,7 +18418,6 @@ angularDirective("ng:class-odd", ngClass(function(i){return i % 2 === 0;}));
 angularDirective("ng:class-even", ngClass(function(i){return i % 2 === 1;}));
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:show
  *
@@ -15526,12 +18432,12 @@ angularDirective("ng:class-even", ngClass(function(i){return i % 2 === 1;}));
  * @example
    <doc:example>
      <doc:source>
-        Click me: <input type="checkbox" name="checked"><br/>
+        Click me: <input type="checkbox" ng:model="checked"><br/>
         Show: <span ng:show="checked">I show up when your checkbox is checked.</span> <br/>
         Hide: <span ng:hide="checked">I hide when your checkbox is checked.</span>
      </doc:source>
      <doc:scenario>
-       it('should check ng:show / ng:hide', function(){
+       it('should check ng:show / ng:hide', function() {
          expect(element('.doc-example-live span:first:hidden').count()).toEqual(1);
          expect(element('.doc-example-live span:last:visible').count()).toEqual(1);
 
@@ -15552,7 +18458,6 @@ angularDirective("ng:show", function(expression, element){
 });
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:hide
  *
@@ -15567,12 +18472,12 @@ angularDirective("ng:show", function(expression, element){
  * @example
    <doc:example>
      <doc:source>
-        Click me: <input type="checkbox" name="checked"><br/>
+        Click me: <input type="checkbox" ng:model="checked"><br/>
         Show: <span ng:show="checked">I show up when you checkbox is checked?</span> <br/>
         Hide: <span ng:hide="checked">I hide when you checkbox is checked?</span>
      </doc:source>
      <doc:scenario>
-       it('should check ng:show / ng:hide', function(){
+       it('should check ng:show / ng:hide', function() {
          expect(element('.doc-example-live span:first:hidden').count()).toEqual(1);
          expect(element('.doc-example-live span:last:visible').count()).toEqual(1);
 
@@ -15593,7 +18498,6 @@ angularDirective("ng:hide", function(expression, element){
 });
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:style
  *
@@ -15615,29 +18519,21 @@ angularDirective("ng:hide", function(expression, element){
         <pre>myStyle={{myStyle}}</pre>
      </doc:source>
      <doc:scenario>
-       it('should check ng:style', function(){
+       it('should check ng:style', function() {
          expect(element('.doc-example-live span').css('color')).toBe('rgb(0, 0, 0)');
          element('.doc-example-live :button[value=set]').click();
-         expect(element('.doc-example-live span').css('color')).toBe('red');
+         expect(element('.doc-example-live span').css('color')).toBe('rgb(255, 0, 0)');
          element('.doc-example-live :button[value=clear]').click();
          expect(element('.doc-example-live span').css('color')).toBe('rgb(0, 0, 0)');
        });
      </doc:scenario>
    </doc:example>
  */
-angularDirective("ng:style", function(expression, element){
-  return function(element){
-    var resetStyle = getStyle(element);
-    this.$watch(function(scope){
-      var style = scope.$eval(expression) || {}, key, mergedStyle = {};
-      for(key in style) {
-        if (resetStyle[key] === undefined) resetStyle[key] = '';
-        mergedStyle[key] = style[key];
-      }
-      for(key in resetStyle) {
-        mergedStyle[key] = mergedStyle[key] || resetStyle[key];
-      }
-      element.css(mergedStyle);
+angularDirective("ng:style", function(expression, element) {
+  return function(element) {
+    this.$watch(expression, function(scope, newStyles, oldStyles) {
+      if (oldStyles) forEach(oldStyles, function(val, style) { element.css(style, '');});
+      if (newStyles) element.css(newStyles);
     });
   };
 });
@@ -15836,7 +18732,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 });
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:href
  *
@@ -15865,13 +18760,13 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  * This example uses `link` variable inside `href` attribute:
     <doc:example>
       <doc:source>
-        <input name="value" /><br />
+        <input ng:model="value" /><br />
         <a id="link-1" href ng:click="value = 1">link 1</a> (link, don't reload)<br />
         <a id="link-2" href="" ng:click="value = 2">link 2</a> (link, don't reload)<br />
-        <a id="link-3" ng:href="#{{'123'}}" ng:click="value = 3">link 3</a> (link, reload!)<br />
+        <a id="link-3" ng:href="/{{'123'}}" ng:ext-link>link 3</a> (link, reload!)<br />
         <a id="link-4" href="" name="xx" ng:click="value = 4">anchor</a> (link, don't reload)<br />
         <a id="link-5" name="xxx" ng:click="value = 5">anchor</a> (no link)<br />
-        <a id="link-6" ng:href="#/{{value}}">link</a> (link, change hash)
+        <a id="link-6" ng:href="/{{value}}" ng:ext-link>link</a> (link, change hash)
       </doc:source>
       <doc:scenario>
         it('should execute ng:click but not reload when href without value', function() {
@@ -15887,10 +18782,10 @@ angularTextMarkup('option', function(text, textNode, parentElement){
         });
 
         it('should execute ng:click and change url when ng:href specified', function() {
+          expect(element('#link-3').attr('href')).toBe("/123");
+
           element('#link-3').click();
-          expect(input('value').val()).toEqual('3');
-          expect(element('#link-3').attr('href')).toBe("#123");
-          expect(browser().location().hash()).toEqual('123');
+          expect(browser().window().path()).toEqual('/123');
         });
 
         it('should execute ng:click but not reload when href empty string and name specified', function() {
@@ -15907,16 +18802,16 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
         it('should only change url when only ng:href', function() {
           input('value').enter('6');
+          expect(element('#link-6').attr('href')).toBe("/6");
+
           element('#link-6').click();
-          expect(browser().location().hash()).toEqual('/6');
-          expect(element('#link-6').attr('href')).toBe("#/6");
+          expect(browser().window().path()).toEqual('/6');
         });
       </doc:scenario>
     </doc:example>
  */
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:src
  *
@@ -15942,7 +18837,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  */
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:disabled
  *
@@ -15963,14 +18857,14 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  * @example
     <doc:example>
       <doc:source>
-        Click me to toggle: <input type="checkbox" name="checked"><br/>
-        <button name="button" ng:disabled="{{checked}}">Button</button>
+        Click me to toggle: <input type="checkbox" ng:model="checked"><br/>
+        <button ng:model="button" ng:disabled="{{checked}}">Button</button>
       </doc:source>
       <doc:scenario>
         it('should toggle button', function() {
-          expect(element('.doc-example-live :button').attr('disabled')).toBeFalsy();
+          expect(element('.doc-example-live :button').prop('disabled')).toBeFalsy();
           input('checked').check();
-          expect(element('.doc-example-live :button').attr('disabled')).toBeTruthy();
+          expect(element('.doc-example-live :button').prop('disabled')).toBeTruthy();
         });
       </doc:scenario>
     </doc:example>
@@ -15981,7 +18875,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:checked
  *
@@ -15993,14 +18886,14 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  * @example
     <doc:example>
       <doc:source>
-        Check me to check both: <input type="checkbox" name="master"><br/>
+        Check me to check both: <input type="checkbox" ng:model="master"><br/>
         <input id="checkSlave" type="checkbox" ng:checked="{{master}}">
       </doc:source>
       <doc:scenario>
         it('should check both checkBoxes', function() {
-          expect(element('.doc-example-live #checkSlave').attr('checked')).toBeFalsy();
+          expect(element('.doc-example-live #checkSlave').prop('checked')).toBeFalsy();
           input('master').check();
-          expect(element('.doc-example-live #checkSlave').attr('checked')).toBeTruthy();
+          expect(element('.doc-example-live #checkSlave').prop('checked')).toBeTruthy();
         });
       </doc:scenario>
     </doc:example>
@@ -16011,7 +18904,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:multiple
  *
@@ -16024,7 +18916,7 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  * @example
      <doc:example>
        <doc:source>
-         Check me check multiple: <input type="checkbox" name="checked"><br/>
+         Check me check multiple: <input type="checkbox" ng:model="checked"><br/>
          <select id="select" ng:multiple="{{checked}}">
            <option>Misko</option>
            <option>Igor</option>
@@ -16034,9 +18926,9 @@ angularTextMarkup('option', function(text, textNode, parentElement){
        </doc:source>
        <doc:scenario>
          it('should toggle multiple', function() {
-           expect(element('.doc-example-live #select').attr('multiple')).toBeFalsy();
+           expect(element('.doc-example-live #select').prop('multiple')).toBeFalsy();
            input('checked').check();
-           expect(element('.doc-example-live #select').attr('multiple')).toBeTruthy();
+           expect(element('.doc-example-live #select').prop('multiple')).toBeTruthy();
          });
        </doc:scenario>
      </doc:example>
@@ -16047,7 +18939,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
 
 /**
- * @workInProgress
  * @ngdoc directive
  * @name angular.directive.ng:readonly
  *
@@ -16059,14 +18950,14 @@ angularTextMarkup('option', function(text, textNode, parentElement){
  * @example
     <doc:example>
       <doc:source>
-        Check me to make text readonly: <input type="checkbox" name="checked"><br/>
+        Check me to make text readonly: <input type="checkbox" ng:model="checked"><br/>
         <input type="text" ng:readonly="{{checked}}" value="I'm Angular"/>
       </doc:source>
       <doc:scenario>
         it('should toggle readonly attr', function() {
-          expect(element('.doc-example-live :text').attr('readonly')).toBeFalsy();
+          expect(element('.doc-example-live :text').prop('readonly')).toBeFalsy();
           input('checked').check();
-          expect(element('.doc-example-live :text').attr('readonly')).toBeTruthy();
+          expect(element('.doc-example-live :text').prop('readonly')).toBeTruthy();
         });
       </doc:scenario>
     </doc:example>
@@ -16077,7 +18968,6 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
 
 /**
-* @workInProgress
 * @ngdoc directive
 * @name angular.directive.ng:selected
 *
@@ -16089,7 +18979,7 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 * @example
    <doc:example>
      <doc:source>
-       Check me to select: <input type="checkbox" name="checked"><br/>
+       Check me to select: <input type="checkbox" ng:model="checked"><br/>
        <select>
          <option>Hello!</option>
          <option id="greet" ng:selected="{{checked}}">Greetings!</option>
@@ -16097,9 +18987,9 @@ angularTextMarkup('option', function(text, textNode, parentElement){
      </doc:source>
      <doc:scenario>
        it('should select Greetings!', function() {
-         expect(element('.doc-example-live #greet').attr('selected')).toBeFalsy();
+         expect(element('.doc-example-live #greet').prop('selected')).toBeFalsy();
          input('checked').check();
-         expect(element('.doc-example-live #greet').attr('selected')).toBeTruthy();
+         expect(element('.doc-example-live #greet').prop('selected')).toBeTruthy();
        });
      </doc:scenario>
    </doc:example>
@@ -16109,10 +18999,10 @@ angularTextMarkup('option', function(text, textNode, parentElement){
 
 
 var NG_BIND_ATTR = 'ng:bind-attr';
-var SPECIAL_ATTRS = {};
+var SIDE_EFFECT_ATTRS = {};
 
-forEach('src,href,checked,disabled,multiple,readonly,selected'.split(','), function(name) {
-  SPECIAL_ATTRS['ng:' + name] = name;
+forEach('src,href,multiple,selected,checked,disabled,readonly,required'.split(','), function(name) {
+  SIDE_EFFECT_ATTRS['ng:' + name] = name;
 });
 
 angularAttrMarkup('{{}}', function(value, name, element){
@@ -16122,17 +19012,16 @@ angularAttrMarkup('{{}}', function(value, name, element){
     value = decodeURI(value);
   var bindings = parseBindings(value),
       bindAttr;
-  if (hasBindings(bindings) || SPECIAL_ATTRS[name]) {
+  if (hasBindings(bindings) || SIDE_EFFECT_ATTRS[name]) {
     element.removeAttr(name);
     bindAttr = fromJson(element.attr(NG_BIND_ATTR) || "{}");
-    bindAttr[SPECIAL_ATTRS[name] || name] = value;
+    bindAttr[SIDE_EFFECT_ATTRS[name] || name] = value;
     element.attr(NG_BIND_ATTR, toJson(bindAttr));
   }
 });
 'use strict';
 
 /**
- * @workInProgress
  * @ngdoc overview
  * @name angular.widget
  * @description
@@ -16145,14 +19034,11 @@ angularAttrMarkup('{{}}', function(value, name, element){
  *
  * Following is the list of built-in angular widgets:
  *
- * * {@link angular.widget.@ng:format ng:format} - Formats data for display to user and for storage.
  * * {@link angular.widget.@ng:non-bindable ng:non-bindable} - Blocks angular from processing an
  *   HTML element.
  * * {@link angular.widget.@ng:repeat ng:repeat} - Creates and manages a collection of cloned HTML
  *   elements.
- * * {@link angular.widget.@ng:required ng:required} - Verifies presence of user input.
- * * {@link angular.widget.@ng:validate ng:validate} - Validates content of user input.
- * * {@link angular.widget.HTML HTML input elements} - Standard HTML input elements data-bound by
+ * * {@link angular.inputType HTML input elements} - Standard HTML input elements data-bound by
  *   angular.
  * * {@link angular.widget.ng:view ng:view} - Works with $route to "include" partial templates
  * * {@link angular.widget.ng:switch ng:switch} - Conditionally changes DOM structure
@@ -16163,906 +19049,6 @@ angularAttrMarkup('{{}}', function(value, name, element){
  */
 
 /**
- * @workInProgress
- * @ngdoc widget
- * @name angular.widget.HTML
- *
- * @description
- * The most common widgets you will use will be in the form of the
- * standard HTML set. These widgets are bound using the `name` attribute
- * to an expression. In addition, they can have `ng:validate`, `ng:required`,
- * `ng:format`, `ng:change` attribute to further control their behavior.
- *
- * @usageContent
- *   see example below for usage
- *
- *   <input type="text|checkbox|..." ... />
- *   <textarea ... />
- *   <select ...>
- *     <option>...</option>
- *   </select>
- *
- * @example
-    <doc:example>
-      <doc:source>
-        <table style="font-size:.9em;">
-          <tr>
-            <th>Name</th>
-            <th>Format</th>
-            <th>HTML</th>
-            <th>UI</th>
-            <th ng:non-bindable>{{input#}}</th>
-          </tr>
-          <tr>
-            <th>text</th>
-            <td>String</td>
-            <td><tt>&lt;input type="text" name="input1"&gt;</tt></td>
-            <td><input type="text" name="input1" size="4"></td>
-            <td><tt>{{input1|json}}</tt></td>
-          </tr>
-          <tr>
-            <th>textarea</th>
-            <td>String</td>
-            <td><tt>&lt;textarea name="input2"&gt;&lt;/textarea&gt;</tt></td>
-            <td><textarea name="input2" cols='6'></textarea></td>
-            <td><tt>{{input2|json}}</tt></td>
-          </tr>
-          <tr>
-            <th>radio</th>
-            <td>String</td>
-            <td><tt>
-              &lt;input type="radio" name="input3" value="A"&gt;<br>
-              &lt;input type="radio" name="input3" value="B"&gt;
-            </tt></td>
-            <td>
-              <input type="radio" name="input3" value="A">
-              <input type="radio" name="input3" value="B">
-            </td>
-            <td><tt>{{input3|json}}</tt></td>
-          </tr>
-          <tr>
-            <th>checkbox</th>
-            <td>Boolean</td>
-            <td><tt>&lt;input type="checkbox" name="input4" value="checked"&gt;</tt></td>
-            <td><input type="checkbox" name="input4" value="checked"></td>
-            <td><tt>{{input4|json}}</tt></td>
-          </tr>
-          <tr>
-            <th>pulldown</th>
-            <td>String</td>
-            <td><tt>
-              &lt;select name="input5"&gt;<br>
-              &nbsp;&nbsp;&lt;option value="c"&gt;C&lt;/option&gt;<br>
-              &nbsp;&nbsp;&lt;option value="d"&gt;D&lt;/option&gt;<br>
-              &lt;/select&gt;<br>
-            </tt></td>
-            <td>
-              <select name="input5">
-                <option value="c">C</option>
-                <option value="d">D</option>
-              </select>
-            </td>
-            <td><tt>{{input5|json}}</tt></td>
-          </tr>
-          <tr>
-            <th>multiselect</th>
-            <td>Array</td>
-            <td><tt>
-              &lt;select name="input6" multiple size="4"&gt;<br>
-              &nbsp;&nbsp;&lt;option value="e"&gt;E&lt;/option&gt;<br>
-              &nbsp;&nbsp;&lt;option value="f"&gt;F&lt;/option&gt;<br>
-              &lt;/select&gt;<br>
-            </tt></td>
-            <td>
-              <select name="input6" multiple size="4">
-                <option value="e">E</option>
-                <option value="f">F</option>
-              </select>
-            </td>
-            <td><tt>{{input6|json}}</tt></td>
-          </tr>
-        </table>
-      </doc:source>
-      <doc:scenario>
-
-        it('should exercise text', function(){
-         input('input1').enter('Carlos');
-         expect(binding('input1')).toEqual('"Carlos"');
-        });
-        it('should exercise textarea', function(){
-         input('input2').enter('Carlos');
-         expect(binding('input2')).toEqual('"Carlos"');
-        });
-        it('should exercise radio', function(){
-         expect(binding('input3')).toEqual('null');
-         input('input3').select('A');
-         expect(binding('input3')).toEqual('"A"');
-         input('input3').select('B');
-         expect(binding('input3')).toEqual('"B"');
-        });
-        it('should exercise checkbox', function(){
-         expect(binding('input4')).toEqual('false');
-         input('input4').check();
-         expect(binding('input4')).toEqual('true');
-        });
-        it('should exercise pulldown', function(){
-         expect(binding('input5')).toEqual('"c"');
-         select('input5').option('d');
-         expect(binding('input5')).toEqual('"d"');
-        });
-        it('should exercise multiselect', function(){
-         expect(binding('input6')).toEqual('[]');
-         select('input6').options('e');
-         expect(binding('input6')).toEqual('["e"]');
-         select('input6').options('e', 'f');
-         expect(binding('input6')).toEqual('["e","f"]');
-        });
-      </doc:scenario>
-    </doc:example>
- */
-
-function modelAccessor(scope, element) {
-  var expr = element.attr('name');
-  var exprFn, assignFn;
-  if (expr) {
-    exprFn = parser(expr).assignable();
-    assignFn = exprFn.assign;
-    if (!assignFn) throw new Error("Expression '" + expr + "' is not assignable.");
-    return {
-      get: function() {
-        return exprFn(scope);
-      },
-      set: function(value) {
-        if (value !== undefined) {
-          assignFn(scope, value);
-        }
-      }
-    };
-  }
-}
-
-function modelFormattedAccessor(scope, element) {
-  var accessor = modelAccessor(scope, element),
-      formatterName = element.attr('ng:format') || NOOP,
-      formatter = compileFormatter(formatterName);
-  if (accessor) {
-    return {
-      get: function() {
-        return formatter.format(scope, accessor.get());
-      },
-      set: function(value) {
-        return accessor.set(formatter.parse(scope, value));
-      }
-    };
-  }
-}
-
-function compileValidator(expr) {
-  return parser(expr).validator()();
-}
-
-function compileFormatter(expr) {
-  return parser(expr).formatter()();
-}
-
-/**
- * @workInProgress
- * @ngdoc widget
- * @name angular.widget.@ng:validate
- *
- * @description
- * The `ng:validate` attribute widget validates the user input. If the input does not pass
- * validation, the `ng-validation-error` CSS class and the `ng:error` attribute are set on the input
- * element. Check out {@link angular.validator validators} to find out more.
- *
- * @param {string} validator The name of a built-in or custom {@link angular.validator validator} to
- *     to be used.
- *
- * @element INPUT
- * @css ng-validation-error
- *
- * @example
- * This example shows how the input element becomes red when it contains invalid input. Correct
- * the input to make the error disappear.
- *
-    <doc:example>
-      <doc:source>
-        I don't validate:
-        <input type="text" name="value" value="NotANumber"><br/>
-
-        I need an integer or nothing:
-        <input type="text" name="value" ng:validate="integer"><br/>
-      </doc:source>
-      <doc:scenario>
-         it('should check ng:validate', function(){
-           expect(element('.doc-example-live :input:last').attr('className')).
-             toMatch(/ng-validation-error/);
-
-           input('value').enter('123');
-           expect(element('.doc-example-live :input:last').attr('className')).
-             not().toMatch(/ng-validation-error/);
-         });
-      </doc:scenario>
-    </doc:example>
- */
-/**
- * @workInProgress
- * @ngdoc widget
- * @name angular.widget.@ng:required
- *
- * @description
- * The `ng:required` attribute widget validates that the user input is present. It is a special case
- * of the {@link angular.widget.@ng:validate ng:validate} attribute widget.
- *
- * @element INPUT
- * @css ng-validation-error
- *
- * @example
- * This example shows how the input element becomes red when it contains invalid input. Correct
- * the input to make the error disappear.
- *
-    <doc:example>
-      <doc:source>
-        I cannot be blank: <input type="text" name="value" ng:required><br/>
-      </doc:source>
-      <doc:scenario>
-       it('should check ng:required', function(){
-         expect(element('.doc-example-live :input').attr('className')).toMatch(/ng-validation-error/);
-         input('value').enter('123');
-         expect(element('.doc-example-live :input').attr('className')).not().toMatch(/ng-validation-error/);
-       });
-      </doc:scenario>
-    </doc:example>
- */
-/**
- * @workInProgress
- * @ngdoc widget
- * @name angular.widget.@ng:format
- *
- * @description
- * The `ng:format` attribute widget formats stored data to user-readable text and parses the text
- * back to the stored form. You might find this useful, for example, if you collect user input in a
- * text field but need to store the data in the model as a list. Check out
- * {@link angular.formatter formatters} to learn more.
- *
- * @param {string} formatter The name of the built-in or custom {@link angular.formatter formatter}
- *     to be used.
- *
- * @element INPUT
- *
- * @example
- * This example shows how the user input is converted from a string and internally represented as an
- * array.
- *
-    <doc:example>
-      <doc:source>
-        Enter a comma separated list of items:
-        <input type="text" name="list" ng:format="list" value="table, chairs, plate">
-        <pre>list={{list}}</pre>
-      </doc:source>
-      <doc:scenario>
-       it('should check ng:format', function(){
-         expect(binding('list')).toBe('list=["table","chairs","plate"]');
-         input('list').enter(',,, a ,,,');
-         expect(binding('list')).toBe('list=["a"]');
-       });
-      </doc:scenario>
-    </doc:example>
- */
-function valueAccessor(scope, element) {
-  var validatorName = element.attr('ng:validate') || NOOP,
-      validator = compileValidator(validatorName),
-      requiredExpr = element.attr('ng:required'),
-      formatterName = element.attr('ng:format') || NOOP,
-      formatter = compileFormatter(formatterName),
-      format, parse, lastError, required,
-      invalidWidgets = scope.$service('$invalidWidgets') || {markValid:noop, markInvalid:noop};
-  if (!validator) throw "Validator named '" + validatorName + "' not found.";
-  format = formatter.format;
-  parse = formatter.parse;
-  if (requiredExpr) {
-    scope.$watch(requiredExpr, function(scope, newValue) {
-      required = newValue;
-      validate();
-    });
-  } else {
-    required = requiredExpr === '';
-  }
-
-  element.data($$validate, validate);
-  return {
-    get: function(){
-      if (lastError)
-        elementError(element, NG_VALIDATION_ERROR, null);
-      try {
-        var value = parse(scope, element.val());
-        validate();
-        return value;
-      } catch (e) {
-        lastError = e;
-        elementError(element, NG_VALIDATION_ERROR, e);
-      }
-    },
-    set: function(value) {
-      var oldValue = element.val(),
-          newValue = format(scope, value);
-      if (oldValue != newValue) {
-        element.val(newValue || ''); // needed for ie
-      }
-      validate();
-    }
-  };
-
-  function validate() {
-    var value = trim(element.val());
-    if (element[0].disabled || element[0].readOnly) {
-      elementError(element, NG_VALIDATION_ERROR, null);
-      invalidWidgets.markValid(element);
-    } else {
-      var error, validateScope = inherit(scope, {$element:element});
-      error = required && !value
-              ? 'Required'
-              : (value ? validator(validateScope, value) : null);
-      elementError(element, NG_VALIDATION_ERROR, error);
-      lastError = error;
-      if (error) {
-        invalidWidgets.markInvalid(element);
-      } else {
-        invalidWidgets.markValid(element);
-      }
-    }
-  }
-}
-
-function checkedAccessor(scope, element) {
-  var domElement = element[0], elementValue = domElement.value;
-  return {
-    get: function(){
-      return !!domElement.checked;
-    },
-    set: function(value){
-      domElement.checked = toBoolean(value);
-    }
-  };
-}
-
-function radioAccessor(scope, element) {
-  var domElement = element[0];
-  return {
-    get: function(){
-      return domElement.checked ? domElement.value : null;
-    },
-    set: function(value){
-      domElement.checked = value == domElement.value;
-    }
-  };
-}
-
-function optionsAccessor(scope, element) {
-  var formatterName = element.attr('ng:format') || NOOP,
-      formatter = compileFormatter(formatterName);
-  return {
-    get: function(){
-      var values = [];
-      forEach(element[0].options, function(option){
-        if (option.selected) values.push(formatter.parse(scope, option.value));
-      });
-      return values;
-    },
-    set: function(values){
-      var keys = {};
-      forEach(values, function(value){
-        keys[formatter.format(scope, value)] = true;
-      });
-      forEach(element[0].options, function(option){
-        option.selected = keys[option.value];
-      });
-    }
-  };
-}
-
-function noopAccessor() { return { get: noop, set: noop }; }
-
-/*
- * TODO: refactor
- *
- * The table below is not quite right. In some cases the formatter is on the model side
- * and in some cases it is on the view side. This is a historical artifact
- *
- * The concept of model/view accessor is useful for anyone who is trying to develop UI, and
- * so it should be exposed to others. There should be a form object which keeps track of the
- * accessors and also acts as their factory. It should expose it as an object and allow
- * the validator to publish errors to it, so that the the error messages can be bound to it.
- *
- */
-var textWidget = inputWidget('keydown change', modelAccessor, valueAccessor, initWidgetValue(), true),
-    INPUT_TYPE = {
-      'text':            textWidget,
-      'textarea':        textWidget,
-      'hidden':          textWidget,
-      'password':        textWidget,
-      'checkbox':        inputWidget('click', modelFormattedAccessor, checkedAccessor, initWidgetValue(false)),
-      'radio':           inputWidget('click', modelFormattedAccessor, radioAccessor, radioInit),
-      'select-one':      inputWidget('change', modelAccessor, valueAccessor, initWidgetValue(null)),
-      'select-multiple': inputWidget('change', modelAccessor, optionsAccessor, initWidgetValue([]))
-//      'file':            fileWidget???
-    };
-
-
-function initWidgetValue(initValue) {
-  return function (model, view) {
-    var value = view.get();
-    if (!value && isDefined(initValue)) {
-      value = copy(initValue);
-    }
-    if (isUndefined(model.get()) && isDefined(value)) {
-      model.set(value);
-    }
-  };
-}
-
-function radioInit(model, view, element) {
- var modelValue = model.get(), viewValue = view.get(), input = element[0];
- input.checked = false;
- input.name = this.$id + '@' + input.name;
- if (isUndefined(modelValue)) {
-   model.set(modelValue = null);
- }
- if (modelValue == null && viewValue !== null) {
-   model.set(viewValue);
- }
- view.set(modelValue);
-}
-
-/**
- * @workInProgress
- * @ngdoc directive
- * @name angular.directive.ng:change
- *
- * @description
- * The directive executes an expression whenever the input widget changes.
- *
- * @element INPUT
- * @param {expression} expression to execute.
- *
- * @example
- * @example
-    <doc:example>
-      <doc:source>
-        <div ng:init="checkboxCount=0; textCount=0"></div>
-        <input type="text" name="text" ng:change="textCount = 1 + textCount">
-           changeCount {{textCount}}<br/>
-        <input type="checkbox" name="checkbox" ng:change="checkboxCount = 1 + checkboxCount">
-           changeCount {{checkboxCount}}<br/>
-      </doc:source>
-      <doc:scenario>
-         it('should check ng:change', function(){
-           expect(binding('textCount')).toBe('0');
-           expect(binding('checkboxCount')).toBe('0');
-
-           using('.doc-example-live').input('text').enter('abc');
-           expect(binding('textCount')).toBe('1');
-           expect(binding('checkboxCount')).toBe('0');
-
-
-           using('.doc-example-live').input('checkbox').check();
-           expect(binding('textCount')).toBe('1');
-           expect(binding('checkboxCount')).toBe('1');
-         });
-      </doc:scenario>
-    </doc:example>
- */
-function inputWidget(events, modelAccessor, viewAccessor, initFn, textBox) {
-  return annotate('$defer', function($defer, element) {
-    var scope = this,
-        model = modelAccessor(scope, element),
-        view = viewAccessor(scope, element),
-        ngChange = element.attr('ng:change') || noop,
-        lastValue;
-    if (model) {
-      initFn.call(scope, model, view, element);
-      scope.$eval(element.attr('ng:init') || noop);
-      element.bind(events, function(event){
-        function handler(){
-          var value = view.get();
-          if (!textBox || value != lastValue) {
-            model.set(value);
-            lastValue = model.get();
-            scope.$eval(ngChange);
-          }
-        }
-        event.type == 'keydown' ? $defer(handler) : scope.$apply(handler);
-      });
-      scope.$watch(model.get, function(scope, value) {
-        if (!equals(lastValue, value)) {
-          view.set(lastValue = value);
-        }
-      });
-    }
-  });
-}
-
-function inputWidgetSelector(element){
-  this.directives(true);
-  this.descend(true);
-  return INPUT_TYPE[lowercase(element[0].type)] || noop;
-}
-
-angularWidget('input', inputWidgetSelector);
-angularWidget('textarea', inputWidgetSelector);
-
-
-/**
- * @workInProgress
- * @ngdoc directive
- * @name angular.directive.ng:options
- *
- * @description
- * Dynamically generate a list of `<option>` elements for a `<select>` element using an array or
- * an object obtained by evaluating the `ng:options` expression.
- *
- * When an item in the select menu is select, the value of array element or object property
- * represented by the selected option will be bound to the model identified by the `name` attribute
- * of the parent select element.
- *
- * Optionally, a single hard-coded `<option>` element, with the value set to an empty string, can
- * be nested into the `<select>` element. This element will then represent `null` or "not selected"
- * option. See example below for demonstration.
- *
- * Note: `ng:options` provides iterator facility for `<option>` element which must be used instead
- * of {@link angular.widget.@ng:repeat ng:repeat}. `ng:repeat` is not suitable for use with
- * `<option>` element because of the following reasons:
- *
- *   * value attribute of the option element that we need to bind to requires a string, but the
- *     source of data for the iteration might be in a form of array containing objects instead of
- *     strings
- *   * {@link angular.widget.@ng:repeat ng:repeat} unrolls after the select binds causing
- *     incorect rendering on most browsers.
- *   * binding to a value not in list confuses most browsers.
- *
- * @element select
- * @param {comprehension_expression} comprehension in one of the following forms:
- *
- *   * for array data sources:
- *     * `label` **`for`** `value` **`in`** `array`
- *     * `select` **`as`** `label` **`for`** `value` **`in`** `array`
- *     * `label`  **`group by`** `group` **`for`** `value` **`in`** `array`
- *     * `select` **`as`** `label` **`group by`** `group` **`for`** `value` **`in`** `array`
- *   * for object data sources:
- *     * `label` **`for (`**`key` **`,`** `value`**`) in`** `object`
- *     * `select` **`as`** `label` **`for (`**`key` **`,`** `value`**`) in`** `object`
- *     * `label` **`group by`** `group` **`for (`**`key`**`,`** `value`**`) in`** `object`
- *     * `select` **`as`** `label` **`group by`** `group`
- *         **`for` `(`**`key`**`,`** `value`**`) in`** `object`
- *
- * Where:
- *
- *   * `array` / `object`: an expression which evaluates to an array / object to iterate over.
- *   * `value`: local variable which will refer to each item in the `array` or each property value
- *      of `object` during iteration.
- *   * `key`: local variable which will refer to a property name in `object` during iteration.
- *   * `label`: The result of this expression will be the label for `<option>` element. The
- *     `expression` will most likely refer to the `value` variable (e.g. `value.propertyName`).
- *   * `select`: The result of this expression will be bound to the model of the parent `<select>`
- *      element. If not specified, `select` expression will default to `value`.
- *   * `group`: The result of this expression will be used to group options using the `<optgroup>`
- *      DOM element.
- *
- * @example
-    <doc:example>
-      <doc:source>
-        <script>
-        function MyCntrl(){
-          this.colors = [
-            {name:'black', shade:'dark'},
-            {name:'white', shade:'light'},
-            {name:'red', shade:'dark'},
-            {name:'blue', shade:'dark'},
-            {name:'yellow', shade:'light'}
-          ];
-          this.color = this.colors[2]; // red
-        }
-        </script>
-        <div ng:controller="MyCntrl">
-          <ul>
-            <li ng:repeat="color in colors">
-              Name: <input name="color.name">
-              [<a href ng:click="colors.$remove(color)">X</a>]
-            </li>
-            <li>
-              [<a href ng:click="colors.push({})">add</a>]
-            </li>
-          </ul>
-          <hr/>
-          Color (null not allowed):
-          <select name="color" ng:options="c.name for c in colors"></select><br>
-
-          Color (null allowed):
-          <div  class="nullable">
-            <select name="color" ng:options="c.name for c in colors">
-              <option value="">-- chose color --</option>
-            </select>
-          </div><br/>
-
-          Color grouped by shade:
-          <select name="color" ng:options="c.name group by c.shade for c in colors">
-          </select><br/>
-
-
-          Select <a href ng:click="color={name:'not in list'}">bogus</a>.<br>
-          <hr/>
-          Currently selected: {{ {selected_color:color}  }}
-          <div style="border:solid 1px black; height:20px"
-               ng:style="{'background-color':color.name}">
-          </div>
-        </div>
-      </doc:source>
-      <doc:scenario>
-         it('should check ng:options', function(){
-           expect(binding('color')).toMatch('red');
-           select('color').option('0');
-           expect(binding('color')).toMatch('black');
-           using('.nullable').select('color').option('');
-           expect(binding('color')).toMatch('null');
-         });
-      </doc:scenario>
-    </doc:example>
- */
-//                       00001111100000000000222200000000000000000000003333000000000000044444444444444444000000000555555555555555550000000666666666666666660000000000000007777
-var NG_OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?(?:\s+group\s+by\s+(.*))?\s+for\s+(?:([\$\w][\$\w\d]*)|(?:\(\s*([\$\w][\$\w\d]*)\s*,\s*([\$\w][\$\w\d]*)\s*\)))\s+in\s+(.*)$/;
-angularWidget('select', function(element){
-  this.descend(true);
-  this.directives(true);
-
-  var isMultiselect = element.attr('multiple'),
-      expression = element.attr('ng:options'),
-      onChange = expressionCompile(element.attr('ng:change') || ""),
-      match;
-
-  if (!expression) {
-    return inputWidgetSelector.call(this, element);
-  }
-  if (! (match = expression.match(NG_OPTIONS_REGEXP))) {
-    throw Error(
-      "Expected ng:options in form of '_select_ (as _label_)? for (_key_,)?_value_ in _collection_'" +
-      " but got '" + expression + "'.");
-  }
-
-  var displayFn = expressionCompile(match[2] || match[1]),
-      valueName = match[4] || match[6],
-      keyName = match[5],
-      groupByFn = expressionCompile(match[3] || ''),
-      valueFn = expressionCompile(match[2] ? match[1] : valueName),
-      valuesFn = expressionCompile(match[7]),
-      // we can't just jqLite('<option>') since jqLite is not smart enough
-      // to create it in <select> and IE barfs otherwise.
-      optionTemplate = jqLite(document.createElement('option')),
-      optGroupTemplate = jqLite(document.createElement('optgroup')),
-      nullOption = false; // if false then user will not be able to select it
-
-  return function(selectElement){
-
-    // This is an array of array of existing option groups in DOM. We try to reuse these if possible
-    // optionGroupsCache[0] is the options with no option group
-    // optionGroupsCache[?][0] is the parent: either the SELECT or OPTGROUP element
-    var optionGroupsCache = [[{element: selectElement, label:''}]],
-        scope = this,
-        model = modelAccessor(scope, element);
-
-    // find existing special options
-    forEach(selectElement.children(), function(option){
-      if (option.value == '')
-        // User is allowed to select the null.
-        nullOption = {label:jqLite(option).text(), id:''};
-    });
-    selectElement.html(''); // clear contents
-
-    selectElement.bind('change', function(){
-      var optionGroup,
-          collection = valuesFn(scope) || [],
-          key = selectElement.val(),
-          tempScope = scope.$new(),
-          value, optionElement, index, groupIndex, length, groupLength;
-
-      try {
-        if (isMultiselect) {
-          value = [];
-          for (groupIndex = 0, groupLength = optionGroupsCache.length;
-               groupIndex < groupLength;
-               groupIndex++) {
-            // list of options for that group. (first item has the parent)
-            optionGroup = optionGroupsCache[groupIndex];
-
-            for(index = 1, length = optionGroup.length; index < length; index++) {
-              if ((optionElement = optionGroup[index].element)[0].selected) {
-                if (keyName) tempScope[keyName] = key;
-                tempScope[valueName] = collection[optionElement.val()];
-                value.push(valueFn(tempScope));
-              }
-            }
-          }
-        } else {
-          if (key == '?') {
-            value = undefined;
-          } else if (key == ''){
-            value = null;
-          } else {
-            tempScope[valueName] = collection[key];
-            if (keyName) tempScope[keyName] = key;
-            value = valueFn(tempScope);
-          }
-        }
-        if (isDefined(value) && model.get() !== value) {
-          onChange(scope);
-          model.set(value);
-        }
-        scope.$root.$apply();
-      } finally {
-        tempScope = null; // TODO(misko): needs to be $destroy
-      }
-    });
-
-    scope.$watch(function(scope) {
-      var optionGroups = {'':[]}, // Temporary location for the option groups before we render them
-          optionGroupNames = [''],
-          optionGroupName,
-          optionGroup,
-          option,
-          existingParent, existingOptions, existingOption,
-          values = valuesFn(scope) || [],
-          keys = values,
-          key,
-          groupLength, length,
-          fragment,
-          groupIndex, index,
-          optionElement,
-          optionScope = scope.$new(),
-          modelValue = model.get(),
-          selected,
-          selectedSet = false, // nothing is selected yet
-          isMulti = isMultiselect,
-          lastElement,
-          element;
-
-      try {
-        if (isMulti) {
-          selectedSet = new HashMap();
-          if (modelValue && isNumber(length = modelValue.length)) {
-            for (index = 0; index < length; index++) {
-              selectedSet.put(modelValue[index], true);
-            }
-          }
-        } else if (modelValue === null || nullOption) {
-          // if we are not multiselect, and we are null then we have to add the nullOption
-          optionGroups[''].push(extend({selected:modelValue === null, id:'', label:''}, nullOption));
-          selectedSet = true;
-        }
-
-        // If we have a keyName then we are iterating over on object. Grab the keys and sort them.
-        if(keyName) {
-          keys = [];
-          for (key in values) {
-            if (values.hasOwnProperty(key))
-              keys.push(key);
-          }
-          keys.sort();
-        }
-
-        // We now build up the list of options we need (we merge later)
-        for (index = 0; length = keys.length, index < length; index++) {
-          optionScope[valueName] = values[keyName ? optionScope[keyName]=keys[index]:index];
-          optionGroupName = groupByFn(optionScope) || '';
-          if (!(optionGroup = optionGroups[optionGroupName])) {
-            optionGroup = optionGroups[optionGroupName] = [];
-            optionGroupNames.push(optionGroupName);
-          }
-          if (isMulti) {
-            selected = !!selectedSet.remove(valueFn(optionScope));
-          } else {
-            selected = modelValue === valueFn(optionScope);
-            selectedSet = selectedSet || selected; // see if at least one item is selected
-          }
-          optionGroup.push({
-              id: keyName ? keys[index] : index,   // either the index into array or key from object
-              label: displayFn(optionScope) || '', // what will be seen by the user
-              selected: selected                   // determine if we should be selected
-            });
-        }
-        optionGroupNames.sort();
-        if (!isMulti && !selectedSet) {
-          // nothing was selected, we have to insert the undefined item
-          optionGroups[''].unshift({id:'?', label:'', selected:true});
-        }
-
-        // Now we need to update the list of DOM nodes to match the optionGroups we computed above
-        for (groupIndex = 0, groupLength = optionGroupNames.length;
-             groupIndex < groupLength;
-             groupIndex++) {
-          // current option group name or '' if no group
-          optionGroupName = optionGroupNames[groupIndex];
-
-          // list of options for that group. (first item has the parent)
-          optionGroup = optionGroups[optionGroupName];
-
-          if (optionGroupsCache.length <= groupIndex) {
-            // we need to grow the optionGroups
-            optionGroupsCache.push(
-                existingOptions = [
-                  existingParent = {
-                      element: optGroupTemplate.clone().attr('label', optionGroupName),
-                      label: optionGroup.label
-                    }
-                ]
-            );
-            selectElement.append(existingParent.element);
-          } else {
-            existingOptions = optionGroupsCache[groupIndex];
-            existingParent = existingOptions[0];  // either SELECT (no group) or OPTGROUP element
-
-            // update the OPTGROUP label if not the same.
-            if (existingParent.label != optionGroupName) {
-              existingParent.element.attr('label', existingParent.label = optionGroupName);
-            }
-          }
-
-          lastElement = null;  // start at the begining
-          for(index = 0, length = optionGroup.length; index < length; index++) {
-            option = optionGroup[index];
-            if ((existingOption = existingOptions[index+1])) {
-              // reuse elements
-              lastElement = existingOption.element;
-              if (existingOption.label !== option.label) {
-                lastElement.text(existingOption.label = option.label);
-              }
-              if (existingOption.id !== option.id) {
-                lastElement.val(existingOption.id = option.id);
-              }
-              if (existingOption.selected !== option.selected) {
-                lastElement.attr('selected', option.selected);
-              }
-            } else {
-              // grow elements
-              // jQuery(v1.4.2) Bug: We should be able to chain the method calls, but
-              // in this version of jQuery on some browser the .text() returns a string
-              // rather then the element.
-              (element = optionTemplate.clone())
-                .val(option.id)
-                .attr('selected', option.selected)
-                .text(option.label);
-              existingOptions.push(existingOption = {
-                element: element,
-                label: option.label,
-                id: option.id,
-                checked: option.selected
-              });
-              if (lastElement) {
-                lastElement.after(element);
-              } else {
-                existingParent.element.append(element);
-              }
-              lastElement = element;
-            }
-          }
-          // remove any excessive OPTIONs in a group
-          index++; // increment since the existingOptions[0] is parent element not OPTION
-          while(existingOptions.length > index) {
-            existingOptions.pop().element.remove();
-          }
-        }
-        // remove any excessive OPTGROUPs from select
-        while(optionGroupsCache.length > groupIndex) {
-          optionGroupsCache.pop()[0].element.remove();
-        }
-      } finally {
-        optionScope.$destroy();
-      }
-    });
-  };
-});
-
-
-/**
- * @workInProgress
  * @ngdoc widget
  * @name angular.widget.ng:include
  *
@@ -17081,28 +19067,36 @@ angularWidget('select', function(element){
  * @example
     <doc:example>
       <doc:source jsfiddle="false">
-       <select name="url">
-        <option value="examples/ng-include/template1.html">template1.html</option>
-        <option value="examples/ng-include/template2.html">template2.html</option>
-        <option value="">(blank)</option>
-       </select>
-       url of the template: <tt><a href="{{url}}">{{url}}</a></tt>
-       <hr/>
-       <ng:include src="url"></ng:include>
+       <script>
+         function Ctrl() {
+           this.templates =
+             [ { name: 'template1.html', url: 'examples/ng-include/template1.html'}
+             , { name: 'template2.html', url: 'examples/ng-include/template2.html'} ];
+           this.template = this.templates[0];
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <select ng:model="template" ng:options="t.name for t in templates">
+          <option value="">(blank)</option>
+         </select>
+         url of the template: <tt><a href="{{template.url}}">{{template.url}}</a></tt>
+         <hr/>
+         <ng:include src="template.url"></ng:include>
+       </div>
       </doc:source>
       <doc:scenario>
-        it('should load template1.html', function(){
-         expect(element('.doc-example-live ng\\:include').text()).
+        it('should load template1.html', function() {
+         expect(element('.doc-example-live .ng-include').text()).
            toBe('Content of template1.html\n');
         });
-        it('should load template2.html', function(){
-         select('url').option('examples/ng-include/template2.html');
-         expect(element('.doc-example-live ng\\:include').text()).
+        it('should load template2.html', function() {
+         select('template').option('1');
+         expect(element('.doc-example-live .ng-include').text()).
            toBe('Content of template2.html\n');
         });
-        it('should change to blank', function(){
-         select('url').option('');
-         expect(element('.doc-example-live ng\\:include').text()).toEqual('');
+        it('should change to blank', function() {
+         select('template').option('');
+         expect(element('.doc-example-live .ng-include').text()).toEqual('');
         });
       </doc:scenario>
     </doc:example>
@@ -17124,7 +19118,7 @@ angularWidget('ng:include', function(element){
           childScope,
           oldScope;
 
-      function incrementChange(){ changeCounter++;}
+      function incrementChange() { changeCounter++;}
       this.$watch(srcExp, incrementChange);
       this.$watch(function(scope){
         var newScope = scope.$eval(scopeExp);
@@ -17133,7 +19127,7 @@ angularWidget('ng:include', function(element){
           incrementChange();
         }
       });
-      this.$watch(function(){return changeCounter;}, function(scope) {
+      this.$watch(function() {return changeCounter;}, function(scope) {
         var src = scope.$eval(srcExp),
             useScope = scope.$eval(scopeExp);
 
@@ -17161,7 +19155,6 @@ angularWidget('ng:include', function(element){
 });
 
 /**
- * @workInProgress
  * @ngdoc widget
  * @name angular.widget.ng:switch
  *
@@ -17185,36 +19178,40 @@ angularWidget('ng:include', function(element){
  * @example
     <doc:example>
       <doc:source>
-        <select name="switch">
-          <option>settings</option>
-          <option>home</option>
-          <option>other</option>
-        </select>
-        <tt>switch={{switch}}</tt>
-        </hr>
-        <ng:switch on="switch" >
-          <div ng:switch-when="settings">Settings Div</div>
-          <span ng:switch-when="home">Home Span</span>
-          <span ng:switch-default>default</span>
-        </ng:switch>
-        </code>
+        <script>
+          function Ctrl() {
+            this.items = ['settings', 'home', 'other'];
+            this.selection = this.items[0];
+          }
+        </script>
+        <div ng:controller="Ctrl">
+          <select ng:model="selection" ng:options="item for item in items">
+          </select>
+          <tt>selection={{selection}}</tt>
+          <hr/>
+          <ng:switch on="selection" >
+            <div ng:switch-when="settings">Settings Div</div>
+            <span ng:switch-when="home">Home Span</span>
+            <span ng:switch-default>default</span>
+          </ng:switch>
+        </div>
       </doc:source>
       <doc:scenario>
-        it('should start in settings', function(){
+        it('should start in settings', function() {
          expect(element('.doc-example-live ng\\:switch').text()).toEqual('Settings Div');
         });
-        it('should change to home', function(){
-         select('switch').option('home');
+        it('should change to home', function() {
+         select('selection').option('home');
          expect(element('.doc-example-live ng\\:switch').text()).toEqual('Home Span');
         });
-        it('should select deafault', function(){
-         select('switch').option('other');
+        it('should select deafault', function() {
+         select('selection').option('other');
          expect(element('.doc-example-live ng\\:switch').text()).toEqual('default');
         });
       </doc:scenario>
     </doc:example>
  */
-angularWidget('ng:switch', function (element) {
+angularWidget('ng:switch', function(element) {
   var compiler = this,
       watchExpr = element.attr("on"),
       changeExpr = element.attr('change'),
@@ -17255,7 +19252,7 @@ angularWidget('ng:switch', function (element) {
       }
     });
 
-    this.$watch(function(){return changeCounter;}, function() {
+    this.$watch(function() {return changeCounter;}, function() {
       element.html('');
       if (selectedTemplate) {
         selectedTemplate(childScope, function(caseElement) {
@@ -17298,15 +19295,13 @@ angularWidget('a', function() {
 
 
 /**
- * @workInProgress
  * @ngdoc widget
  * @name angular.widget.@ng:repeat
  *
  * @description
- * The `ng:repeat` widget instantiates a template once per item from a collection. The collection is
- * enumerated with the `ng:repeat-index` attribute, starting from 0. Each template instance gets
- * its own scope, where the given loop variable is set to the current collection item, and `$index`
- * is set to the item index or key.
+ * The `ng:repeat` widget instantiates a template once per item from a collection. Each template
+ * instance gets its own scope, where the given loop variable is set to the current collection item,
+ * and `$index` is set to the item index or key.
  *
  * Special properties are exposed on the local scope of each template instance, including:
  *
@@ -17347,7 +19342,7 @@ angularWidget('a', function() {
         </div>
       </doc:source>
       <doc:scenario>
-         it('should check ng:repeat', function(){
+         it('should check ng:repeat', function() {
            var r = using('.doc-example-live').repeater('ul li');
            expect(r.count()).toBe(2);
            expect(r.row(0)).toEqual(["1","John","25"]);
@@ -17377,75 +19372,107 @@ angularWidget('@ng:repeat', function(expression, element){
     valueIdent = match[3] || match[1];
     keyIdent = match[2];
 
-    var childScopes = [];
-    var childElements = [iterStartElement];
     var parentScope = this;
+    // Store a list of elements from previous run. This is a hash where key is the item from the
+    // iterator, and the value is an array of objects with following properties.
+    //   - scope: bound scope
+    //   - element: previous element.
+    //   - index: position
+    // We need an array of these objects since the same object can be returned from the iterator.
+    // We expect this to be a rare case.
+    var lastOrder = new HashQueueMap();
     this.$watch(function(scope){
-      var index = 0,
-          childCount = childScopes.length,
+      var index, length,
           collection = scope.$eval(rhs),
           collectionLength = size(collection, true),
-          fragment = document.createDocumentFragment(),
-          addFragmentTo = (childCount < collectionLength) ? childElements[childCount] : null,
           childScope,
-          key;
+          // Same as lastOrder but it has the current state. It will become the
+          // lastOrder on the next iteration.
+          nextOrder = new HashQueueMap(),
+          key, value, // key/value of iteration
+          array, last,       // last object information {scope, element, index}
+          cursor = iterStartElement;     // current position of the node
 
-      for (key in collection) {
-        if (collection.hasOwnProperty(key)) {
-          if (index < childCount) {
-            // reuse existing child
-            childScope = childScopes[index];
-            childScope[valueIdent] = collection[key];
-            if (keyIdent) childScope[keyIdent] = key;
-            childScope.$position = index == 0
-                ? 'first'
-                : (index == collectionLength - 1 ? 'last' : 'middle');
-            childScope.$eval();
-          } else {
-            // grow children
-            childScope = parentScope.$new();
-            childScope[valueIdent] = collection[key];
-            if (keyIdent) childScope[keyIdent] = key;
-            childScope.$index = index;
-            childScope.$position = index == 0
-                ? 'first'
-                : (index == collectionLength - 1 ? 'last' : 'middle');
-            childScopes.push(childScope);
-            linker(childScope, function(clone){
-              clone.attr('ng:repeat-index', index);
-              fragment.appendChild(clone[0]);
-              // TODO(misko): Temporary hack - maybe think about it - removed after we add fragment after $digest()
-              // This causes double $digest for children
-              // The first flush will couse a lot of DOM access (initial)
-              // Second flush shuld be noop since nothing has change hence no DOM access.
-              childScope.$digest();
-              childElements[index + 1] = clone;
-            });
+      if (!isArray(collection)) {
+        // if object, extract keys, sort them and use to determine order of iteration over obj props
+        array = [];
+        for(key in collection) {
+          if (collection.hasOwnProperty(key) && key.charAt(0) != '$') {
+            array.push(key);
           }
-          index ++;
+        }
+        array.sort();
+      } else {
+        array = collection || [];
+      }
+
+      // we are not using forEach for perf reasons (trying to avoid #call)
+      for (index = 0, length = array.length; index < length; index++) {
+        key = (collection === array) ? index : array[index];
+        value = collection[key];
+        last = lastOrder.shift(value);
+        if (last) {
+          // if we have already seen this object, then we need to reuse the
+          // associated scope/element
+          childScope = last.scope;
+          nextOrder.push(value, last);
+
+          if (index === last.index) {
+            // do nothing
+            cursor = last.element;
+          } else {
+            // existing item which got moved
+            last.index = index;
+            // This may be a noop, if the element is next, but I don't know of a good way to
+            // figure this out,  since it would require extra DOM access, so let's just hope that
+            // the browsers realizes that it is noop, and treats it as such.
+            cursor.after(last.element);
+            cursor = last.element;
+          }
+        } else {
+          // new item which we don't know about
+          childScope = parentScope.$new();
+        }
+
+        childScope[valueIdent] = value;
+        if (keyIdent) childScope[keyIdent] = key;
+        childScope.$index = index;
+        childScope.$position = index == 0
+            ? 'first'
+            : (index == collectionLength - 1 ? 'last' : 'middle');
+
+        if (!last) {
+          linker(childScope, function(clone){
+            cursor.after(clone);
+            last = {
+                scope: childScope,
+                element: (cursor = clone),
+                index: index
+              };
+            nextOrder.push(value, last);
+          });
         }
       }
 
-      //attach new nodes buffered in doc fragment
-      if (addFragmentTo) {
-        // TODO(misko): For performance reasons, we should do the addition after all other widgets
-        // have run. For this should happend after $digest() is done!
-        addFragmentTo.after(jqLite(fragment));
+      //shrink children
+      for (key in lastOrder) {
+        if (lastOrder.hasOwnProperty(key)) {
+          array = lastOrder[key];
+          while(array.length) {
+            value = array.pop();
+            value.element.remove();
+            value.scope.$destroy();
+          }
+        }
       }
 
-      // shrink children
-      while(childScopes.length > index) {
-        // can not use $destroy(true) since  there may be multiple iterators on same parent.
-        childScopes.pop().$destroy();
-        childElements.pop().remove();
-      }
+      lastOrder = nextOrder;
     });
   };
 });
 
 
 /**
- * @workInProgress
  * @ngdoc widget
  * @name angular.widget.@ng:non-bindable
  *
@@ -17468,7 +19495,7 @@ angularWidget('@ng:repeat', function(expression, element){
         <div ng:non-bindable>Ignored: {{1 + 2}}</div>
       </doc:source>
       <doc:scenario>
-       it('should check ng:non-bindable', function(){
+       it('should check ng:non-bindable', function() {
          expect(using('.doc-example-live').binding('1 + 2')).toBe('3');
          expect(using('.doc-example-live').element('div:last').text()).
            toMatch(/1 \+ 2/);
@@ -17511,20 +19538,20 @@ angularWidget("@ng:non-bindable", noop);
            function MyCtrl($route) {
              $route.when('/overview',
                { controller: OverviewCtrl,
-                 template: 'guide/dev_guide.overview.html'});
+                 template: 'partials/guide/dev_guide.overview.html'});
              $route.when('/bootstrap',
                { controller: BootstrapCtrl,
-                 template: 'guide/dev_guide.bootstrap.auto_bootstrap.html'});
+                 template: 'partials/guide/dev_guide.bootstrap.auto_bootstrap.html'});
            };
            MyCtrl.$inject = ['$route'];
 
-           function BootstrapCtrl(){}
-           function OverviewCtrl(){}
+           function BootstrapCtrl() {}
+           function OverviewCtrl() {}
          </script>
          <div ng:controller="MyCtrl">
-           <a href="#/overview">overview</a> |
-           <a href="#/bootstrap">bootstrap</a> |
-           <a href="#/undefined">undefined</a>
+           <a href="overview">overview</a> |
+           <a href="bootstrap">bootstrap</a> |
+           <a href="undefined">undefined</a>
 
            <br/>
 
@@ -17534,12 +19561,12 @@ angularWidget("@ng:non-bindable", noop);
          </div>
       </doc:source>
       <doc:scenario>
-        it('should load templates', function(){
+        it('should load templates', function() {
           element('.doc-example-live a:contains(overview)').click();
           expect(element('.doc-example-live ng\\:view').text()).toMatch(/Developer Guide: Overview/);
 
           element('.doc-example-live a:contains(bootstrap)').click();
-          expect(element('.doc-example-live ng\\:view').text()).toMatch(/Developer Guide: Initializing Angular: Automatic Initiialization/);
+          expect(element('.doc-example-live ng\\:view').text()).toMatch(/Developer Guide: Initializing Angular: Automatic Initialization/);
         });
       </doc:scenario>
     </doc:example>
@@ -17553,17 +19580,20 @@ angularWidget('ng:view', function(element) {
       var template;
       var changeCounter = 0;
 
-      this.$on('$afterRouteChange', function(){
+      this.$on('$afterRouteChange', function() {
         changeCounter++;
       });
 
-      this.$watch(function(){return changeCounter;}, function() {
+      this.$watch(function() {return changeCounter;}, function(scope, newChangeCounter) {
         var template = $route.current && $route.current.template;
         if (template) {
           //xhr's callback must be async, see commit history for more info
           $xhr('GET', template, function(code, response) {
-            element.html(response);
-            compiler.compile(element)($route.current.scope);
+            // ignore callback if another route change occured since
+            if (newChangeCounter == changeCounter) {
+              element.html(response);
+              compiler.compile(element)($route.current.scope);
+            }
           });
         } else {
           element.html('');
@@ -17669,30 +19699,39 @@ angularWidget('ng:view', function(element) {
  * @example
     <doc:example>
       <doc:source>
-        Person 1:<input type="text" name="person1" value="Igor" /><br/>
-        Person 2:<input type="text" name="person2" value="Misko" /><br/>
-        Number of People:<input type="text" name="personCount" value="1" /><br/>
+        <script>
+          function Ctrl() {
+            this.person1 = 'Igor';
+            this.person2 = 'Misko';
+            this.personCount = 1;
+          }
+        </script>
+        <div ng:controller="Ctrl">
+          Person 1:<input type="text" ng:model="person1" value="Igor" /><br/>
+          Person 2:<input type="text" ng:model="person2" value="Misko" /><br/>
+          Number of People:<input type="text" ng:model="personCount" value="1" /><br/>
 
-        <!--- Example with simple pluralization rules for en locale --->
-        Without Offset:
-        <ng:pluralize count="personCount"
-                      when="{'0': 'Nobody is viewing.',
-                             'one': '1 person is viewing.',
-                             'other': '{} people are viewing.'}">
-        </ng:pluralize><br>
+          <!--- Example with simple pluralization rules for en locale --->
+          Without Offset:
+          <ng:pluralize count="personCount"
+                        when="{'0': 'Nobody is viewing.',
+                               'one': '1 person is viewing.',
+                               'other': '{} people are viewing.'}">
+          </ng:pluralize><br>
 
-        <!--- Example with offset --->
-        With Offset(2):
-        <ng:pluralize count="personCount" offset=2
-                      when="{'0': 'Nobody is viewing.',
-                             '1': '{{person1}} is viewing.',
-                             '2': '{{person1}} and {{person2}} are viewing.',
-                             'one': '{{person1}}, {{person2}} and one other person are viewing.',
-                             'other': '{{person1}}, {{person2}} and {} other people are viewing.'}">
-        </ng:pluralize>
+          <!--- Example with offset --->
+          With Offset(2):
+          <ng:pluralize count="personCount" offset=2
+                        when="{'0': 'Nobody is viewing.',
+                               '1': '{{person1}} is viewing.',
+                               '2': '{{person1}} and {{person2}} are viewing.',
+                               'one': '{{person1}}, {{person2}} and one other person are viewing.',
+                               'other': '{{person1}}, {{person2}} and {} other people are viewing.'}">
+          </ng:pluralize>
+        </div>
       </doc:source>
       <doc:scenario>
-        it('should show correct pluralized string', function(){
+        it('should show correct pluralized string', function() {
           expect(element('.doc-example-live .ng-pluralize:first').text()).
                                              toBe('1 person is viewing.');
           expect(element('.doc-example-live .ng-pluralize:last').text()).
@@ -17723,7 +19762,7 @@ angularWidget('ng:view', function(element) {
                               toBe('Igor, Misko and 2 other people are viewing.');
         });
 
-        it('should show data-binded names', function(){
+        it('should show data-binded names', function() {
           using('.doc-example-live').input('personCount').enter('4');
           expect(element('.doc-example-live .ng-pluralize:last').text()).
               toBe('Igor, Misko and 2 other people are viewing.');
@@ -17769,16 +19808,1412 @@ angularWidget('ng:pluralize', function(element) {
 });
 'use strict';
 
+/**
+ * @ngdoc widget
+ * @name angular.widget.form
+ *
+ * @description
+ * Angular widget that creates a form scope using the
+ * {@link angular.service.$formFactory $formFactory} API. The resulting form scope instance is
+ * attached to the DOM element using the jQuery `.data()` method under the `$form` key.
+ * See {@link guide/dev_guide.forms forms} on detailed discussion of forms and widgets.
+ *
+ *
+ * # Alias: `ng:form`
+ *
+ * In angular forms can be nested. This means that the outer form is valid when all of the child
+ * forms are valid as well. However browsers do not allow nesting of `<form>` elements, for this
+ * reason angular provides `<ng:form>` alias which behaves identical to `<form>` but allows
+ * element nesting.
+ *
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.text = 'guest';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           text: <input type="text" name="input" ng:model="text" required>
+           <span class="error" ng:show="myForm.text.$error.REQUIRED">Required!</span>
+         </form>
+         <tt>text = {{text}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+         expect(binding('text')).toEqual('guest');
+         expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+         input('text').enter('');
+         expect(binding('text')).toEqual('');
+         expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularWidget('form', function(form){
+  this.descend(true);
+  this.directives(true);
+  return annotate('$formFactory', function($formFactory, formElement) {
+    var name = formElement.attr('name'),
+        parentForm = $formFactory.forElement(formElement),
+        form = $formFactory(parentForm);
+    formElement.data('$form', form);
+    formElement.bind('submit', function(event){
+      event.preventDefault();
+    });
+    if (name) {
+      this[name] = form;
+    }
+    watch('valid');
+    watch('invalid');
+    function watch(name) {
+      form.$watch('$' + name, function(scope, value) {
+        formElement[value ? 'addClass' : 'removeClass']('ng-' + name);
+      });
+    }
+  });
+});
+
+angularWidget('ng:form', angularWidget('form'));
+'use strict';
+
+
+var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+var EMAIL_REGEXP = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+var NUMBER_REGEXP = /^\s*(\-|\+)?(\d+|(\d*(\.\d*)))\s*$/;
+var INTEGER_REGEXP = /^\s*(\-|\+)?\d+\s*$/;
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.text
+ *
+ * @description
+ * Standard HTML text input with angular data binding.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.text = 'guest';
+           this.word = /^\w*$/;
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           Single word: <input type="text" name="input" ng:model="text"
+                               ng:pattern="word" required>
+           <span class="error" ng:show="myForm.input.$error.REQUIRED">
+             Required!</span>
+           <span class="error" ng:show="myForm.input.$error.PATTERN">
+             Single word only!</span>
+         </form>
+         <tt>text = {{text}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('text')).toEqual('guest');
+          expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+          input('text').enter('');
+          expect(binding('text')).toEqual('');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+
+        it('should be invalid if multi word', function() {
+          input('text').enter('hello world');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.email
+ *
+ * @description
+ * Text input with email validation. Sets the `EMAIL` validation error key if not a valid email
+ * address.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.text = 'me@example.com';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           Email: <input type="email" name="input" ng:model="text" required>
+           <span class="error" ng:show="myForm.input.$error.REQUIRED">
+             Required!</span>
+           <span class="error" ng:show="myForm.input.$error.EMAIL">
+             Not valid email!</span>
+         </form>
+         <tt>text = {{text}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+         <tt>myForm.$error.EMAIL = {{!!myForm.$error.EMAIL}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('text')).toEqual('me@example.com');
+          expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+          input('text').enter('');
+          expect(binding('text')).toEqual('');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+
+        it('should be invalid if not email', function() {
+          input('text').enter('xxx');
+          expect(binding('text')).toEqual('xxx');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('email', function() {
+  var widget = this;
+  this.$on('$validate', function(event){
+    var value = widget.$viewValue;
+    widget.$emit(!value || value.match(EMAIL_REGEXP) ? "$valid" : "$invalid", "EMAIL");
+  });
+});
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.url
+ *
+ * @description
+ * Text input with URL validation. Sets the `URL` validation error key if the content is not a
+ * valid URL.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.text = 'http://google.com';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           URL: <input type="url" name="input" ng:model="text" required>
+           <span class="error" ng:show="myForm.input.$error.REQUIRED">
+             Required!</span>
+           <span class="error" ng:show="myForm.input.$error.url">
+             Not valid url!</span>
+         </form>
+         <tt>text = {{text}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+         <tt>myForm.$error.url = {{!!myForm.$error.url}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('text')).toEqual('http://google.com');
+          expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+          input('text').enter('');
+          expect(binding('text')).toEqual('');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+
+        it('should be invalid if not url', function() {
+          input('text').enter('xxx');
+          expect(binding('text')).toEqual('xxx');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('url', function() {
+  var widget = this;
+  this.$on('$validate', function(event){
+    var value = widget.$viewValue;
+    widget.$emit(!value || value.match(URL_REGEXP) ? "$valid" : "$invalid", "URL");
+  });
+});
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.list
+ *
+ * @description
+ * Text input that converts between comma-seperated string into an array of strings.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.names = ['igor', 'misko', 'vojta'];
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           List: <input type="list" name="input" ng:model="names" required>
+           <span class="error" ng:show="myForm.list.$error.REQUIRED">
+             Required!</span>
+         </form>
+         <tt>names = {{names}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('names')).toEqual('["igor","misko","vojta"]');
+          expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+          input('names').enter('');
+          expect(binding('names')).toEqual('[]');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('list', function() {
+  function parse(viewValue) {
+    var list = [];
+    forEach(viewValue.split(/\s*,\s*/), function(value){
+      if (value) list.push(trim(value));
+    });
+    return list;
+  }
+  this.$parseView = function() {
+    isString(this.$viewValue) && (this.$modelValue = parse(this.$viewValue));
+  };
+  this.$parseModel = function() {
+    var modelValue = this.$modelValue;
+    if (isArray(modelValue)
+        && (!isString(this.$viewValue) || !equals(parse(this.$viewValue), modelValue))) {
+      this.$viewValue =  modelValue.join(', ');
+    }
+  };
+});
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.number
+ *
+ * @description
+ * Text input with number validation and transformation. Sets the `NUMBER` validation
+ * error if not a valid number.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} min Sets the `MIN` validation error key if the value entered is less then `min`.
+ * @param {string=} max Sets the `MAX` validation error key if the value entered is greater then `min`.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.value = 12;
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           Number: <input type="number" name="input" ng:model="value"
+                          min="0" max="99" required>
+           <span class="error" ng:show="myForm.list.$error.REQUIRED">
+             Required!</span>
+           <span class="error" ng:show="myForm.list.$error.NUMBER">
+             Not valid number!</span>
+         </form>
+         <tt>value = {{value}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+         expect(binding('value')).toEqual('12');
+         expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+         input('value').enter('');
+         expect(binding('value')).toEqual('');
+         expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+
+        it('should be invalid if over max', function() {
+         input('value').enter('123');
+         expect(binding('value')).toEqual('123');
+         expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('number', numericRegexpInputType(NUMBER_REGEXP, 'NUMBER'));
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.integer
+ *
+ * @description
+ * Text input with integer validation and transformation. Sets the `INTEGER`
+ * validation error key if not a valid integer.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} min Sets the `MIN` validation error key if the value entered is less then `min`.
+ * @param {string=} max Sets the `MAX` validation error key if the value entered is greater then `min`.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.value = 12;
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           Integer: <input type="integer" name="input" ng:model="value"
+                           min="0" max="99" required>
+           <span class="error" ng:show="myForm.list.$error.REQUIRED">
+             Required!</span>
+           <span class="error" ng:show="myForm.list.$error.INTEGER">
+             Not valid integer!</span>
+         </form>
+         <tt>value = {{value}}</tt><br/>
+         <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+         <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('value')).toEqual('12');
+          expect(binding('myForm.input.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty', function() {
+          input('value').enter('1.2');
+          expect(binding('value')).toEqual('12');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+
+        it('should be invalid if over max', function() {
+          input('value').enter('123');
+          expect(binding('value')).toEqual('123');
+          expect(binding('myForm.input.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('integer', numericRegexpInputType(INTEGER_REGEXP, 'INTEGER'));
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.checkbox
+ *
+ * @description
+ * HTML checkbox.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} ng:true-value The value to which the expression should be set when selected.
+ * @param {string=} ng:false-value The value to which the expression should be set when not selected.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.value1 = true;
+           this.value2 = 'YES'
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           Value1: <input type="checkbox" ng:model="value1"> <br/>
+           Value2: <input type="checkbox" ng:model="value2"
+                          ng:true-value="YES" ng:false-value="NO"> <br/>
+         </form>
+         <tt>value1 = {{value1}}</tt><br/>
+         <tt>value2 = {{value2}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should change state', function() {
+          expect(binding('value1')).toEqual('true');
+          expect(binding('value2')).toEqual('YES');
+
+          input('value1').check();
+          input('value2').check();
+          expect(binding('value1')).toEqual('false');
+          expect(binding('value2')).toEqual('NO');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('checkbox', function(inputElement) {
+  var widget = this,
+      trueValue = inputElement.attr('ng:true-value'),
+      falseValue = inputElement.attr('ng:false-value');
+
+  if (!isString(trueValue)) trueValue = true;
+  if (!isString(falseValue)) falseValue = false;
+
+  inputElement.bind('click', function() {
+    widget.$apply(function() {
+      widget.$emit('$viewChange', inputElement[0].checked);
+    });
+  });
+
+  widget.$render = function() {
+    inputElement[0].checked = widget.$viewValue;
+  };
+
+  widget.$parseModel = function() {
+    widget.$viewValue = this.$modelValue === trueValue;
+  };
+
+  widget.$parseView = function() {
+    widget.$modelValue = widget.$viewValue ? trueValue : falseValue;
+  };
+});
+
+
+/**
+ * @ngdoc inputType
+ * @name angular.inputType.radio
+ *
+ * @description
+ * HTML radio button.
+ *
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string} value The value to which the expression should be set when selected.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.color = 'blue';
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           <input type="radio" ng:model="color" value="red">  Red <br/>
+           <input type="radio" ng:model="color" value="green"> Green <br/>
+           <input type="radio" ng:model="color" value="blue"> Blue <br/>
+         </form>
+         <tt>color = {{color}}</tt><br/>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should change state', function() {
+          expect(binding('color')).toEqual('blue');
+
+          input('color').select('red');
+          expect(binding('color')).toEqual('red');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularInputType('radio', function(inputElement) {
+  var widget = this;
+
+  //correct the name
+  inputElement.attr('name', widget.$id + '@' + inputElement.attr('name'));
+  inputElement.bind('click', function() {
+    widget.$apply(function() {
+      if (inputElement[0].checked) {
+        widget.$emit('$viewChange', widget.$value);
+      }
+    });
+  });
+
+  widget.$render = function() {
+    inputElement[0].checked = isDefined(widget.$value) && (widget.$value == widget.$viewValue);
+  };
+
+  if (inputElement[0].checked) {
+    widget.$viewValue = widget.$value;
+  }
+});
+
+
+function numericRegexpInputType(regexp, error) {
+  return function(inputElement) {
+    var widget = this,
+        min = 1 * (inputElement.attr('min') || Number.MIN_VALUE),
+        max = 1 * (inputElement.attr('max') || Number.MAX_VALUE);
+
+    widget.$on('$validate', function(event){
+      var value = widget.$viewValue,
+          filled = value && trim(value) != '',
+          valid = isString(value) && value.match(regexp);
+
+      widget.$emit(!filled || valid ? "$valid" : "$invalid", error);
+      filled && (value = 1 * value);
+      widget.$emit(valid && value < min ? "$invalid" : "$valid", "MIN");
+      widget.$emit(valid && value > max ? "$invalid" : "$valid", "MAX");
+    });
+
+    widget.$parseView = function() {
+      if (widget.$viewValue.match(regexp)) {
+        widget.$modelValue = 1 * widget.$viewValue;
+      } else if (widget.$viewValue == '') {
+        widget.$modelValue = null;
+      }
+    };
+
+    widget.$parseModel = function() {
+      if (isNumber(widget.$modelValue)) {
+        widget.$viewValue = '' + widget.$modelValue;
+      }
+    };
+  };
+}
+
+
+var HTML5_INPUTS_TYPES =  makeMap(
+        "search,tel,url,email,datetime,date,month,week,time,datetime-local,number,range,color," +
+        "radio,checkbox,text,button,submit,reset,hidden,password");
+
+
+/**
+ * @ngdoc widget
+ * @name angular.widget.input
+ *
+ * @description
+ * HTML input element widget with angular data-binding. Input widget follows HTML5 input types
+ * and polyfills the HTML5 validation behavior for older browsers.
+ *
+ * The {@link angular.inputType custom angular.inputType}s provide a shorthand for declaring new
+ * inputs. This is a sharthand for text-box based inputs, and there is no need to go through the
+ * full {@link angular.service.$formFactory $formFactory} widget lifecycle.
+ *
+ *
+ * @param {string} type Widget types as defined by {@link angular.inputType}. If the
+ *    type is in the format of `@ScopeType` then `ScopeType` is loaded from the
+ *    current scope, allowing quick definition of type.
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+       <script>
+         function Ctrl() {
+           this.user = {name: 'guest', last: 'visitor'};
+         }
+       </script>
+       <div ng:controller="Ctrl">
+         <form name="myForm">
+           User name: <input type="text" name="userName" ng:model="user.name" required>
+           <span class="error" ng:show="myForm.userName.$error.REQUIRED">
+             Required!</span><br>
+           Last name: <input type="text" name="lastName" ng:model="user.last"
+             ng:minlength="3" ng:maxlength="10">
+           <span class="error" ng:show="myForm.lastName.$error.MINLENGTH">
+             Too short!</span>
+           <span class="error" ng:show="myForm.lastName.$error.MAXLENGTH">
+             Too long!</span><br>
+         </form>
+         <hr>
+         <tt>user = {{user}}</tt><br/>
+         <tt>myForm.userName.$valid = {{myForm.userName.$valid}}</tt><br>
+         <tt>myForm.userName.$error = {{myForm.userName.$error}}</tt><br>
+         <tt>myForm.lastName.$valid = {{myForm.lastName.$valid}}</tt><br>
+         <tt>myForm.userName.$error = {{myForm.lastName.$error}}</tt><br>
+         <tt>myForm.$valid = {{myForm.$valid}}</tt><br>
+         <tt>myForm.$error.REQUIRED = {{!!myForm.$error.REQUIRED}}</tt><br>
+         <tt>myForm.$error.MINLENGTH = {{!!myForm.$error.MINLENGTH}}</tt><br>
+         <tt>myForm.$error.MAXLENGTH = {{!!myForm.$error.MAXLENGTH}}</tt><br>
+       </div>
+      </doc:source>
+      <doc:scenario>
+        it('should initialize to model', function() {
+          expect(binding('user')).toEqual('{\n  \"last\":\"visitor",\n  \"name\":\"guest\"}');
+          expect(binding('myForm.userName.$valid')).toEqual('true');
+          expect(binding('myForm.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if empty when required', function() {
+          input('user.name').enter('');
+          expect(binding('user')).toEqual('{\n  \"last\":\"visitor",\n  \"name\":\"\"}');
+          expect(binding('myForm.userName.$valid')).toEqual('false');
+          expect(binding('myForm.$valid')).toEqual('false');
+        });
+
+        it('should be valid if empty when min length is set', function() {
+          input('user.last').enter('');
+          expect(binding('user')).toEqual('{\n  \"last\":\"",\n  \"name\":\"guest\"}');
+          expect(binding('myForm.lastName.$valid')).toEqual('true');
+          expect(binding('myForm.$valid')).toEqual('true');
+        });
+
+        it('should be invalid if less than required min length', function() {
+          input('user.last').enter('xx');
+          expect(binding('user')).toEqual('{\n  \"last\":\"xx",\n  \"name\":\"guest\"}');
+          expect(binding('myForm.lastName.$valid')).toEqual('false');
+          expect(binding('myForm.lastName.$error')).toMatch(/MINLENGTH/);
+          expect(binding('myForm.$valid')).toEqual('false');
+        });
+
+        it('should be valid if longer than max length', function() {
+          input('user.last').enter('some ridiculously long name');
+          expect(binding('user'))
+            .toEqual('{\n  \"last\":\"some ridiculously long name",\n  \"name\":\"guest\"}');
+          expect(binding('myForm.lastName.$valid')).toEqual('false');
+          expect(binding('myForm.lastName.$error')).toMatch(/MAXLENGTH/);
+          expect(binding('myForm.$valid')).toEqual('false');
+        });
+      </doc:scenario>
+    </doc:example>
+ */
+angularWidget('input', function(inputElement){
+  this.directives(true);
+  this.descend(true);
+  var modelExp = inputElement.attr('ng:model');
+  return modelExp &&
+    annotate('$defer', '$formFactory', function($defer, $formFactory, inputElement){
+      var form = $formFactory.forElement(inputElement),
+          // We have to use .getAttribute, since jQuery tries to be smart and use the
+          // type property. Trouble is some browser change unknown to text.
+          type = inputElement[0].getAttribute('type') || 'text',
+          TypeController,
+          modelScope = this,
+          patternMatch, widget,
+          pattern = trim(inputElement.attr('ng:pattern')),
+          minlength = parseInt(inputElement.attr('ng:minlength'), 10),
+          maxlength = parseInt(inputElement.attr('ng:maxlength'), 10),
+          loadFromScope = type.match(/^\s*\@\s*(.*)/);
+
+
+       if (!pattern) {
+         patternMatch = valueFn(true);
+       } else {
+         if (pattern.match(/^\/(.*)\/$/)) {
+           pattern = new RegExp(pattern.substr(1, pattern.length - 2));
+           patternMatch = function(value) {
+             return pattern.test(value);
+           };
+         } else {
+           patternMatch = function(value) {
+             var patternObj = modelScope.$eval(pattern);
+             if (!patternObj || !patternObj.test) {
+               throw new Error('Expected ' + pattern + ' to be a RegExp but was ' + patternObj);
+             }
+             return patternObj.test(value);
+           };
+         }
+       }
+
+      type = lowercase(type);
+      TypeController = (loadFromScope
+              ? (assertArgFn(this.$eval(loadFromScope[1]), loadFromScope[1])).$unboundFn
+              : angularInputType(type)) || noop;
+
+      if (!HTML5_INPUTS_TYPES[type]) {
+        try {
+          // jquery will not let you so we have to go to bare metal
+          inputElement[0].setAttribute('type', 'text');
+        } catch(e){
+          // also turns out that ie8 will not allow changing of types, but since it is not
+          // html5 anyway we can ignore the error.
+        }
+      }
+
+      !TypeController.$inject && (TypeController.$inject = []);
+      widget = form.$createWidget({
+          scope: modelScope,
+          model: modelExp,
+          onChange: inputElement.attr('ng:change'),
+          alias: inputElement.attr('name'),
+          controller: TypeController,
+          controllerArgs: [inputElement]});
+
+      watchElementProperty(this, widget, 'value', inputElement);
+      watchElementProperty(this, widget, 'required', inputElement);
+      watchElementProperty(this, widget, 'readonly', inputElement);
+      watchElementProperty(this, widget, 'disabled', inputElement);
+
+      widget.$pristine = !(widget.$dirty = false);
+
+      widget.$on('$validate', function() {
+        var $viewValue = trim(widget.$viewValue),
+            inValid = widget.$required && !$viewValue,
+            tooLong = maxlength && $viewValue && $viewValue.length > maxlength,
+            tooShort = minlength && $viewValue && $viewValue.length < minlength,
+            missMatch = $viewValue && !patternMatch($viewValue);
+
+        if (widget.$error.REQUIRED != inValid){
+          widget.$emit(inValid ? '$invalid' : '$valid', 'REQUIRED');
+        }
+        if (widget.$error.PATTERN != missMatch){
+          widget.$emit(missMatch ? '$invalid' : '$valid', 'PATTERN');
+        }
+        if (widget.$error.MINLENGTH != tooShort){
+          widget.$emit(tooShort ? '$invalid' : '$valid', 'MINLENGTH');
+        }
+        if (widget.$error.MAXLENGTH != tooLong){
+          widget.$emit(tooLong ? '$invalid' : '$valid', 'MAXLENGTH');
+        }
+      });
+
+      forEach(['valid', 'invalid', 'pristine', 'dirty'], function(name) {
+        widget.$watch('$' + name, function(scope, value) {
+          inputElement[value ? 'addClass' : 'removeClass']('ng-' + name);
+        });
+      });
+
+      inputElement.bind('$destroy', function() {
+        widget.$destroy();
+      });
+
+      if (type != 'checkbox' && type != 'radio') {
+        // TODO (misko): checkbox / radio does not really belong here, but until we can do
+        // widget registration with CSS, we are hacking it this way.
+        widget.$render = function() {
+          inputElement.val(widget.$viewValue || '');
+        };
+
+        inputElement.bind('keydown change', function(event){
+          var key = event.keyCode;
+          if (/*command*/   key != 91 &&
+              /*modifiers*/ !(15 < key && key < 19) &&
+              /*arrow*/     !(37 < key && key < 40)) {
+            $defer(function() {
+              widget.$dirty = !(widget.$pristine = false);
+              var value = trim(inputElement.val());
+              if (widget.$viewValue !== value ) {
+                widget.$emit('$viewChange', value);
+              }
+            });
+          }
+        });
+      }
+    });
+});
+
+
+/**
+ * @ngdoc widget
+ * @name angular.widget.textarea
+ *
+ * @description
+ * HTML textarea element widget with angular data-binding. The data-binding and validation
+ * properties of this element are exactly the same as those of the
+ * {@link angular.widget.input input element}.
+ *
+ * @param {string} type Widget types as defined by {@link angular.inputType}. If the
+ *    type is in the format of `@ScopeType` then `ScopeType` is loaded from the
+ *    current scope, allowing quick definition of type.
+ * @param {string} ng:model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the widgets is published.
+ * @param {string=} required Sets `REQUIRED` validation error key if the value is not entered.
+ * @param {number=} ng:minlength Sets `MINLENGTH` validation error key if the value is shorter than
+ *    minlength.
+ * @param {number=} ng:maxlength Sets `MAXLENGTH` validation error key if the value is longer than
+ *    maxlength.
+ * @param {string=} ng:pattern Sets `PATTERN` validation error key if the value does not match the
+ *    RegExp pattern expression. Expected value is `/regexp/` for inline patterns or `regexp` for
+ *    patterns defined as scope expressions.
+ * @param {string=} ng:change Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ */
+angularWidget('textarea', angularWidget('input'));
+
+
+function watchElementProperty(modelScope, widget, name, element) {
+  var bindAttr = fromJson(element.attr('ng:bind-attr') || '{}'),
+      match = /\s*{{(.*)}}\s*/.exec(bindAttr[name]),
+      isBoolean = BOOLEAN_ATTR[name];
+  widget['$' + name] = isBoolean
+    ? ( // some browsers return true some '' when required is set without value.
+        isString(element.prop(name)) || !!element.prop(name) ||
+        // this is needed for ie9, since it will treat boolean attributes as false
+        !!element[0].attributes[name])
+    : element.attr(name);
+  if (bindAttr[name] && match) {
+    modelScope.$watch(match[1], function(scope, value){
+      widget['$' + name] = isBoolean ? !!value : value;
+      widget.$emit('$validate');
+    });
+  }
+}
+'use strict';
+
+/**
+ * @ngdoc widget
+ * @name angular.widget.select
+ *
+ * @description
+ * HTML `SELECT` element with angular data-binding.
+ *
+ * # `ng:options`
+ *
+ * Optionally `ng:options` attribute can be used to dynamically generate a list of `<option>`
+ * elements for a `<select>` element using an array or an object obtained by evaluating the
+ * `ng:options` expression.
+ *
+ * When an item in the select menu is select, the value of array element or object property
+ * represented by the selected option will be bound to the model identified by the `name` attribute
+ * of the parent select element.
+ *
+ * Optionally, a single hard-coded `<option>` element, with the value set to an empty string, can
+ * be nested into the `<select>` element. This element will then represent `null` or "not selected"
+ * option. See example below for demonstration.
+ *
+ * Note: `ng:options` provides iterator facility for `<option>` element which must be used instead
+ * of {@link angular.widget.@ng:repeat ng:repeat}. `ng:repeat` is not suitable for use with
+ * `<option>` element because of the following reasons:
+ *
+ *   * value attribute of the option element that we need to bind to requires a string, but the
+ *     source of data for the iteration might be in a form of array containing objects instead of
+ *     strings
+ *   * {@link angular.widget.@ng:repeat ng:repeat} unrolls after the select binds causing
+ *     incorect rendering on most browsers.
+ *   * binding to a value not in list confuses most browsers.
+ *
+ * @param {string} name assignable expression to data-bind to.
+ * @param {string=} required The widget is considered valid only if value is entered.
+ * @param {comprehension_expression=} ng:options in one of the following forms:
+ *
+ *   * for array data sources:
+ *     * `label` **`for`** `value` **`in`** `array`
+ *     * `select` **`as`** `label` **`for`** `value` **`in`** `array`
+ *     * `label`  **`group by`** `group` **`for`** `value` **`in`** `array`
+ *     * `select` **`as`** `label` **`group by`** `group` **`for`** `value` **`in`** `array`
+ *   * for object data sources:
+ *     * `label` **`for (`**`key` **`,`** `value`**`) in`** `object`
+ *     * `select` **`as`** `label` **`for (`**`key` **`,`** `value`**`) in`** `object`
+ *     * `label` **`group by`** `group` **`for (`**`key`**`,`** `value`**`) in`** `object`
+ *     * `select` **`as`** `label` **`group by`** `group`
+ *         **`for` `(`**`key`**`,`** `value`**`) in`** `object`
+ *
+ * Where:
+ *
+ *   * `array` / `object`: an expression which evaluates to an array / object to iterate over.
+ *   * `value`: local variable which will refer to each item in the `array` or each property value
+ *      of `object` during iteration.
+ *   * `key`: local variable which will refer to a property name in `object` during iteration.
+ *   * `label`: The result of this expression will be the label for `<option>` element. The
+ *     `expression` will most likely refer to the `value` variable (e.g. `value.propertyName`).
+ *   * `select`: The result of this expression will be bound to the model of the parent `<select>`
+ *      element. If not specified, `select` expression will default to `value`.
+ *   * `group`: The result of this expression will be used to group options using the `<optgroup>`
+ *      DOM element.
+ *
+ * @example
+    <doc:example>
+      <doc:source>
+        <script>
+        function MyCntrl() {
+          this.colors = [
+            {name:'black', shade:'dark'},
+            {name:'white', shade:'light'},
+            {name:'red', shade:'dark'},
+            {name:'blue', shade:'dark'},
+            {name:'yellow', shade:'light'}
+          ];
+          this.color = this.colors[2]; // red
+        }
+        </script>
+        <div ng:controller="MyCntrl">
+          <ul>
+            <li ng:repeat="color in colors">
+              Name: <input ng:model="color.name">
+              [<a href ng:click="colors.$remove(color)">X</a>]
+            </li>
+            <li>
+              [<a href ng:click="colors.push({})">add</a>]
+            </li>
+          </ul>
+          <hr/>
+          Color (null not allowed):
+          <select ng:model="color" ng:options="c.name for c in colors"></select><br>
+
+          Color (null allowed):
+          <div  class="nullable">
+            <select ng:model="color" ng:options="c.name for c in colors">
+              <option value="">-- chose color --</option>
+            </select>
+          </div><br/>
+
+          Color grouped by shade:
+          <select ng:model="color" ng:options="c.name group by c.shade for c in colors">
+          </select><br/>
+
+
+          Select <a href ng:click="color={name:'not in list'}">bogus</a>.<br>
+          <hr/>
+          Currently selected: {{ {selected_color:color}  }}
+          <div style="border:solid 1px black; height:20px"
+               ng:style="{'background-color':color.name}">
+          </div>
+        </div>
+      </doc:source>
+      <doc:scenario>
+         it('should check ng:options', function() {
+           expect(binding('color')).toMatch('red');
+           select('color').option('0');
+           expect(binding('color')).toMatch('black');
+           using('.nullable').select('color').option('');
+           expect(binding('color')).toMatch('null');
+         });
+      </doc:scenario>
+    </doc:example>
+ */
+
+
+                       //00001111100000000000222200000000000000000000003333000000000000044444444444444444000000000555555555555555550000000666666666666666660000000000000007777
+var NG_OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?(?:\s+group\s+by\s+(.*))?\s+for\s+(?:([\$\w][\$\w\d]*)|(?:\(\s*([\$\w][\$\w\d]*)\s*,\s*([\$\w][\$\w\d]*)\s*\)))\s+in\s+(.*)$/;
+
+
+angularWidget('select', function(element){
+  this.directives(true);
+  this.descend(true);
+  return element.attr('ng:model') && annotate('$formFactory', function($formFactory, selectElement){
+    var modelScope = this,
+        match,
+        form = $formFactory.forElement(selectElement),
+        multiple = selectElement.attr('multiple'),
+        optionsExp = selectElement.attr('ng:options'),
+        modelExp = selectElement.attr('ng:model'),
+        widget = form.$createWidget({
+          scope: this,
+          model: modelExp,
+          onChange: selectElement.attr('ng:change'),
+          alias: selectElement.attr('name'),
+          controller: optionsExp ? Options : (multiple ? Multiple : Single)});
+
+    selectElement.bind('$destroy', function() { widget.$destroy(); });
+
+    widget.$pristine = !(widget.$dirty = false);
+
+    watchElementProperty(modelScope, widget, 'required', selectElement);
+    watchElementProperty(modelScope, widget, 'readonly', selectElement);
+    watchElementProperty(modelScope, widget, 'disabled', selectElement);
+
+    widget.$on('$validate', function() {
+      var valid = !widget.$required || !!widget.$modelValue;
+      if (valid && multiple && widget.$required) valid = !!widget.$modelValue.length;
+      if (valid !== !widget.$error.REQUIRED) {
+        widget.$emit(valid ? '$valid' : '$invalid', 'REQUIRED');
+      }
+    });
+
+    widget.$on('$viewChange', function() {
+      widget.$pristine = !(widget.$dirty = true);
+    });
+
+    forEach(['valid', 'invalid', 'pristine', 'dirty'], function(name) {
+      widget.$watch('$' + name, function(scope, value) {
+        selectElement[value ? 'addClass' : 'removeClass']('ng-' + name);
+      });
+    });
+
+    ////////////////////////////
+
+    function Multiple() {
+      var widget = this;
+
+      this.$render = function() {
+        var items = new HashMap(this.$viewValue);
+        forEach(selectElement.children(), function(option){
+          option.selected = isDefined(items.get(option.value));
+        });
+      };
+
+      selectElement.bind('change', function() {
+        widget.$apply(function() {
+          var array = [];
+          forEach(selectElement.children(), function(option){
+            if (option.selected) {
+              array.push(option.value);
+            }
+          });
+          widget.$emit('$viewChange', array);
+        });
+      });
+
+    }
+
+    function Single() {
+      var widget = this;
+
+      widget.$render = function() {
+        selectElement.val(widget.$viewValue);
+      };
+
+      selectElement.bind('change', function() {
+        widget.$apply(function() {
+          widget.$emit('$viewChange', selectElement.val());
+        });
+      });
+
+      widget.$viewValue = selectElement.val();
+    }
+
+    function Options() {
+      var widget = this,
+          match;
+
+      if (! (match = optionsExp.match(NG_OPTIONS_REGEXP))) {
+        throw Error(
+          "Expected ng:options in form of '_select_ (as _label_)? for (_key_,)?_value_ in _collection_'" +
+          " but got '" + optionsExp + "'.");
+      }
+
+      var widgetScope = this,
+          displayFn = expressionCompile(match[2] || match[1]),
+          valueName = match[4] || match[6],
+          keyName = match[5],
+          groupByFn = expressionCompile(match[3] || ''),
+          valueFn = expressionCompile(match[2] ? match[1] : valueName),
+          valuesFn = expressionCompile(match[7]),
+          // we can't just jqLite('<option>') since jqLite is not smart enough
+          // to create it in <select> and IE barfs otherwise.
+          optionTemplate = jqLite(document.createElement('option')),
+          optGroupTemplate = jqLite(document.createElement('optgroup')),
+          nullOption = false, // if false then user will not be able to select it
+          // This is an array of array of existing option groups in DOM. We try to reuse these if possible
+          // optionGroupsCache[0] is the options with no option group
+          // optionGroupsCache[?][0] is the parent: either the SELECT or OPTGROUP element
+          optionGroupsCache = [[{element: selectElement, label:''}]];
+
+      // find existing special options
+      forEach(selectElement.children(), function(option) {
+        if (option.value == '') {
+          // developer declared null option, so user should be able to select it
+          nullOption = jqLite(option).remove();
+          // compile the element since there might be bindings in it
+          compile(nullOption)(modelScope);
+        }
+      });
+      selectElement.html(''); // clear contents
+
+      selectElement.bind('change', function() {
+        widgetScope.$apply(function() {
+          var optionGroup,
+              collection = valuesFn(modelScope) || [],
+              key = selectElement.val(),
+              tempScope = inherit(modelScope),
+              value, optionElement, index, groupIndex, length, groupLength;
+
+          if (multiple) {
+            value = [];
+            for (groupIndex = 0, groupLength = optionGroupsCache.length;
+            groupIndex < groupLength;
+            groupIndex++) {
+              // list of options for that group. (first item has the parent)
+              optionGroup = optionGroupsCache[groupIndex];
+
+              for(index = 1, length = optionGroup.length; index < length; index++) {
+                if ((optionElement = optionGroup[index].element)[0].selected) {
+                  if (keyName) tempScope[keyName] = key;
+                  tempScope[valueName] = collection[optionElement.val()];
+                  value.push(valueFn(tempScope));
+                }
+              }
+            }
+          } else {
+            if (key == '?') {
+              value = undefined;
+            } else if (key == ''){
+              value = null;
+            } else {
+              tempScope[valueName] = collection[key];
+              if (keyName) tempScope[keyName] = key;
+              value = valueFn(tempScope);
+            }
+          }
+          if (isDefined(value) && modelScope.$viewVal !== value) {
+            widgetScope.$emit('$viewChange', value);
+          }
+        });
+      });
+
+      widgetScope.$watch(render);
+      widgetScope.$render = render;
+
+      function render() {
+        var optionGroups = {'':[]}, // Temporary location for the option groups before we render them
+            optionGroupNames = [''],
+            optionGroupName,
+            optionGroup,
+            option,
+            existingParent, existingOptions, existingOption,
+            modelValue = widget.$modelValue,
+            values = valuesFn(modelScope) || [],
+            keys = keyName ? sortedKeys(values) : values,
+            groupLength, length,
+            groupIndex, index,
+            optionScope = inherit(modelScope),
+            selected,
+            selectedSet = false, // nothing is selected yet
+            lastElement,
+            element;
+
+        if (multiple) {
+          selectedSet = new HashMap(modelValue);
+        } else if (modelValue === null || nullOption) {
+          // if we are not multiselect, and we are null then we have to add the nullOption
+          optionGroups[''].push({selected:modelValue === null, id:'', label:''});
+          selectedSet = true;
+        }
+
+        // We now build up the list of options we need (we merge later)
+        for (index = 0; length = keys.length, index < length; index++) {
+             optionScope[valueName] = values[keyName ? optionScope[keyName]=keys[index]:index];
+             optionGroupName = groupByFn(optionScope) || '';
+          if (!(optionGroup = optionGroups[optionGroupName])) {
+            optionGroup = optionGroups[optionGroupName] = [];
+            optionGroupNames.push(optionGroupName);
+          }
+          if (multiple) {
+            selected = selectedSet.remove(valueFn(optionScope)) != undefined;
+          } else {
+            selected = modelValue === valueFn(optionScope);
+            selectedSet = selectedSet || selected; // see if at least one item is selected
+          }
+          optionGroup.push({
+            id: keyName ? keys[index] : index,   // either the index into array or key from object
+            label: displayFn(optionScope) || '', // what will be seen by the user
+            selected: selected                   // determine if we should be selected
+          });
+        }
+        if (!multiple && !selectedSet) {
+          // nothing was selected, we have to insert the undefined item
+          optionGroups[''].unshift({id:'?', label:'', selected:true});
+        }
+
+        // Now we need to update the list of DOM nodes to match the optionGroups we computed above
+        for (groupIndex = 0, groupLength = optionGroupNames.length;
+             groupIndex < groupLength;
+             groupIndex++) {
+          // current option group name or '' if no group
+          optionGroupName = optionGroupNames[groupIndex];
+
+          // list of options for that group. (first item has the parent)
+          optionGroup = optionGroups[optionGroupName];
+
+          if (optionGroupsCache.length <= groupIndex) {
+            // we need to grow the optionGroups
+            existingParent = {
+              element: optGroupTemplate.clone().attr('label', optionGroupName),
+              label: optionGroup.label
+            };
+            existingOptions = [existingParent];
+            optionGroupsCache.push(existingOptions);
+            selectElement.append(existingParent.element);
+          } else {
+            existingOptions = optionGroupsCache[groupIndex];
+            existingParent = existingOptions[0];  // either SELECT (no group) or OPTGROUP element
+
+            // update the OPTGROUP label if not the same.
+            if (existingParent.label != optionGroupName) {
+              existingParent.element.attr('label', existingParent.label = optionGroupName);
+            }
+          }
+
+          lastElement = null;  // start at the begining
+          for(index = 0, length = optionGroup.length; index < length; index++) {
+            option = optionGroup[index];
+            if ((existingOption = existingOptions[index+1])) {
+              // reuse elements
+              lastElement = existingOption.element;
+              if (existingOption.label !== option.label) {
+                lastElement.text(existingOption.label = option.label);
+              }
+              if (existingOption.id !== option.id) {
+                lastElement.val(existingOption.id = option.id);
+              }
+              if (existingOption.element.selected !== option.selected) {
+                lastElement.prop('selected', (existingOption.selected = option.selected));
+              }
+            } else {
+              // grow elements
+
+              // if it's a null option
+              if (option.id === '' && nullOption) {
+                // put back the pre-compiled element
+                element = nullOption;
+              } else {
+                // jQuery(v1.4.2) Bug: We should be able to chain the method calls, but
+                // in this version of jQuery on some browser the .text() returns a string
+                // rather then the element.
+                (element = optionTemplate.clone())
+                    .val(option.id)
+                    .attr('selected', option.selected)
+                    .text(option.label);
+              }
+
+              existingOptions.push(existingOption = {
+                  element: element,
+                  label: option.label,
+                  id: option.id,
+                  selected: option.selected
+              });
+              if (lastElement) {
+                lastElement.after(element);
+              } else {
+                existingParent.element.append(element);
+              }
+              lastElement = element;
+            }
+          }
+          // remove any excessive OPTIONs in a group
+          index++; // increment since the existingOptions[0] is parent element not OPTION
+          while(existingOptions.length > index) {
+            existingOptions.pop().element.remove();
+          }
+        }
+        // remove any excessive OPTGROUPs from select
+        while(optionGroupsCache.length > groupIndex) {
+          optionGroupsCache.pop()[0].element.remove();
+        }
+      };
+    }
+  });
+});
+'use strict';
+
 var browserSingleton;
 
-angularService('$browser', function($log){
+angularService('$browser', function($log, $sniffer) {
   if (!browserSingleton) {
     browserSingleton = new Browser(window, jqLite(window.document), jqLite(window.document.body),
-                                   XHR, $log);
-    browserSingleton.bind();
+                                   XHR, $log, $sniffer);
   }
   return browserSingleton;
-}, {$inject:['$log']});
+}, {$inject: ['$log', '$sniffer']});
 
 
 extend(angular, {
@@ -17912,7 +21347,7 @@ angular.scenario.matcher = angular.scenario.matcher || function(name, fn) {
  *
  * @param {Object=} config Config options
  */
-angular.scenario.setUpAndRun = function (config) {
+angular.scenario.setUpAndRun = function(config) {
   var href = window.location.href;
   var body = _jQuery(document.body);
   var output = [];
@@ -18043,10 +21478,12 @@ function callerFile(offset) {
  * Triggers a browser event. Attempts to choose the right event if one is
  * not specified.
  *
- * @param {Object} Either a wrapped jQuery/jqLite node or a DOMElement
- * @param {string} Optional event type.
+ * @param {Object} element Either a wrapped jQuery/jqLite node or a DOMElement
+ * @param {string} type Optional event type.
+ * @param {Array.<string>=} keys Optional list of pressed keys
+ *        (valid values: 'alt', 'meta', 'shift', 'ctrl')
  */
-function browserTrigger(element, type) {
+function browserTrigger(element, type, keys) {
   if (element && !element.nodeName) element = element[0];
   if (!element) return;
   if (!type) {
@@ -18063,13 +21500,19 @@ function browserTrigger(element, type) {
         'radio':           'click',
         'select-one':      'change',
         'select-multiple': 'change'
-    }[element.type] || 'click';
+    }[lowercase(element.type)] || 'click';
   }
   if (lowercase(nodeName_(element)) == 'option') {
     element.parentNode.value = element.value;
     element = element.parentNode;
     type = 'change';
   }
+
+  keys = keys || [];
+  function pressed(key) {
+    return indexOf(keys, key) !== -1;
+  }
+
   if (msie < 9) {
     switch(element.type) {
       case 'radio':
@@ -18083,7 +21526,9 @@ function browserTrigger(element, type) {
     // forcing the browser to compute the element position (by reading its CSS)
     // puts the element in consistent state.
     element.style.posLeft;
-    element.fireEvent('on' + type);
+
+    // TODO(vojta): create event objects with pressed keys to get it working on IE<9
+    var ret = element.fireEvent('on' + type);
     if (lowercase(element.type) == 'submit') {
       while(element) {
         if (lowercase(element.nodeName) == 'form') {
@@ -18093,10 +21538,31 @@ function browserTrigger(element, type) {
         element = element.parentNode;
       }
     }
+    return ret;
   } else {
-    var evnt = document.createEvent('MouseEvents');
-    evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, element);
+    var evnt = document.createEvent('MouseEvents'),
+        originalPreventDefault = evnt.preventDefault,
+        iframe = _jQuery('#application iframe')[0],
+        appWindow = iframe ? iframe.contentWindow : window,
+        fakeProcessDefault = true,
+        finalProcessDefault;
+
+    // igor: temporary fix for https://bugzilla.mozilla.org/show_bug.cgi?id=684208
+    appWindow.angular['ff-684208-preventDefault'] = false;
+    evnt.preventDefault = function() {
+      fakeProcessDefault = false;
+      return originalPreventDefault.apply(evnt, arguments);
+    };
+
+    evnt.initMouseEvent(type, true, true, window, 0, 0, 0, 0, 0, pressed('ctrl'), pressed('alt'),
+                        pressed('shift'), pressed('meta'), 0, element);
+
     element.dispatchEvent(evnt);
+    finalProcessDefault = !(appWindow.angular['ff-684208-preventDefault'] || !fakeProcessDefault)
+
+    delete appWindow.angular['ff-684208-preventDefault'];
+
+    return finalProcessDefault;
   }
 }
 
@@ -18113,9 +21579,14 @@ function browserTrigger(element, type) {
   var parentTrigger = fn.trigger;
   fn.trigger = function(type) {
     if (/(click|change|keydown)/.test(type)) {
-      return this.each(function(index, node) {
-        browserTrigger(node, type);
+      var processDefaults = [];
+      this.each(function(index, node) {
+        processDefaults.push(browserTrigger(node, type));
       });
+
+      // this is not compatible with jQuery - we return an array of returned values,
+      // so that scenario runner know whether JS code has preventDefault() of the event or not...
+      return processDefaults;
     }
     return parentTrigger.apply(this, arguments);
   };
@@ -18184,7 +21655,7 @@ angular.scenario.Application.prototype.getFrame_ = function() {
  * @return {Object} the window of the frame
  */
 angular.scenario.Application.prototype.getWindow_ = function() {
-  var contentWindow = this.getFrame_().attr('contentWindow');
+  var contentWindow = this.getFrame_().prop('contentWindow');
   if (!contentWindow)
     throw 'Frame window is not accessible.';
   return contentWindow;
@@ -19262,11 +22733,14 @@ angular.scenario.dsl('sleep', function() {
  *    browser().navigateTo(url) Loads the url into the frame
  *    browser().navigateTo(url, fn) where fn(url) is called and returns the URL to navigate to
  *    browser().reload() refresh the page (reload the same URL)
- *    browser().location().href() the full URL of the page
- *    browser().location().hash() the full hash in the url
- *    browser().location().path() the full path in the url
- *    browser().location().hashSearch() the hashSearch Object from angular
- *    browser().location().hashPath() the hashPath string from angular
+ *    browser().window.href() window.location.href
+ *    browser().window.path() window.location.pathname
+ *    browser().window.search() window.location.search
+ *    browser().window.hash() window.location.hash without # prefix
+ *    browser().location().url() see angular.service.$location#url
+ *    browser().location().path() see angular.service.$location#path
+ *    browser().location().search() see angular.service.$location#search
+ *    browser().location().hash() see angular.service.$location#hash
  */
 angular.scenario.dsl('browser', function() {
   var chain = {};
@@ -19293,42 +22767,60 @@ angular.scenario.dsl('browser', function() {
     });
   };
 
-  chain.location = function() {
+  chain.window = function() {
     var api = {};
 
     api.href = function() {
-      return this.addFutureAction('browser url', function($window, $document, done) {
+      return this.addFutureAction('window.location.href', function($window, $document, done) {
         done(null, $window.location.href);
       });
     };
 
-    api.hash = function() {
-      return this.addFutureAction('browser url hash', function($window, $document, done) {
-        done(null, $window.location.hash.replace('#', ''));
-      });
-    };
-
     api.path = function() {
-      return this.addFutureAction('browser url path', function($window, $document, done) {
+      return this.addFutureAction('window.location.path', function($window, $document, done) {
         done(null, $window.location.pathname);
       });
     };
 
     api.search = function() {
-      return this.addFutureAction('browser url search', function($window, $document, done) {
-        done(null, $window.angular.scope().$service('$location').search);
+      return this.addFutureAction('window.location.search', function($window, $document, done) {
+        done(null, $window.location.search);
       });
     };
 
-    api.hashSearch = function() {
-      return this.addFutureAction('browser url hash search', function($window, $document, done) {
-        done(null, $window.angular.scope().$service('$location').hashSearch);
+    api.hash = function() {
+      return this.addFutureAction('window.location.hash', function($window, $document, done) {
+        done(null, $window.location.hash.replace('#', ''));
       });
     };
 
-    api.hashPath = function() {
-      return this.addFutureAction('browser url hash path', function($window, $document, done) {
-        done(null, $window.angular.scope().$service('$location').hashPath);
+    return api;
+  };
+
+  chain.location = function() {
+    var api = {};
+
+    api.url = function() {
+      return this.addFutureAction('$location.url()', function($window, $document, done) {
+        done(null, $window.angular.scope().$service('$location').url());
+      });
+    };
+
+    api.path = function() {
+      return this.addFutureAction('$location.path()', function($window, $document, done) {
+        done(null, $window.angular.scope().$service('$location').path());
+      });
+    };
+
+    api.search = function() {
+      return this.addFutureAction('$location.search()', function($window, $document, done) {
+        done(null, $window.angular.scope().$service('$location').search());
+      });
+    };
+
+    api.hash = function() {
+      return this.addFutureAction('$location.hash()', function($window, $document, done) {
+        done(null, $window.angular.scope().$service('$location').hash());
       });
     };
 
@@ -19408,7 +22900,7 @@ angular.scenario.dsl('input', function() {
 
   chain.enter = function(value) {
     return this.addFutureAction("input '" + this.name + "' enter '" + value + "'", function($window, $document, done) {
-      var input = $document.elements(':input[name="$1"]', this.name);
+      var input = $document.elements('[ng\\:model="$1"]', this.name).filter(':input');
       input.val(value);
       input.trigger('keydown');
       done();
@@ -19417,7 +22909,7 @@ angular.scenario.dsl('input', function() {
 
   chain.check = function() {
     return this.addFutureAction("checkbox '" + this.name + "' toggle", function($window, $document, done) {
-      var input = $document.elements(':checkbox[name="$1"]', this.name);
+      var input = $document.elements('[ng\\:model="$1"]', this.name).filter(':checkbox');
       input.trigger('click');
       done();
     });
@@ -19426,7 +22918,7 @@ angular.scenario.dsl('input', function() {
   chain.select = function(value) {
     return this.addFutureAction("radio button '" + this.name + "' toggle '" + value + "'", function($window, $document, done) {
       var input = $document.
-        elements(':radio[name$="@$1"][value="$2"]', this.name, value);
+        elements('[ng\\:model="$1"][value="$2"]', this.name, value).filter(':radio');
       input.trigger('click');
       done();
     });
@@ -19434,7 +22926,7 @@ angular.scenario.dsl('input', function() {
 
   chain.val = function() {
     return this.addFutureAction("return input val", function($window, $document, done) {
-      var input = $document.elements(':input[name="$1"]', this.name);
+      var input = $document.elements('[ng\\:model="$1"]', this.name).filter(':input');
       done(null,input.val());
     });
   };
@@ -19496,8 +22988,16 @@ angular.scenario.dsl('select', function() {
 
   chain.option = function(value) {
     return this.addFutureAction("select '" + this.name + "' option '" + value + "'", function($window, $document, done) {
-      var select = $document.elements('select[name="$1"]', this.name);
-      select.val(value);
+      var select = $document.elements('select[ng\\:model="$1"]', this.name);
+      var option = select.find('option[value="' + value + '"]');
+      if (option.length) {
+        select.val(value);
+      } else {
+        option = select.find('option:contains("' + value + '")');
+        if (option.length) {
+          select.val(option.val());
+        }
+      }
       select.trigger('change');
       done();
     });
@@ -19506,7 +23006,7 @@ angular.scenario.dsl('select', function() {
   chain.options = function() {
     var values = arguments;
     return this.addFutureAction("select '" + this.name + "' options '" + values + "'", function($window, $document, done) {
-      var select = $document.elements('select[multiple][name="$1"]', this.name);
+      var select = $document.elements('select[multiple][ng\\:model="$1"]', this.name);
       select.val(values);
       select.trigger('change');
       done();
@@ -19530,7 +23030,7 @@ angular.scenario.dsl('select', function() {
  *    element(selector, label).{method}(key, value) sets the value (as defined by jQuery, ex. attr)
  */
 angular.scenario.dsl('element', function() {
-  var KEY_VALUE_METHODS = ['attr', 'css'];
+  var KEY_VALUE_METHODS = ['attr', 'css', 'prop'];
   var VALUE_METHODS = [
     'val', 'text', 'html', 'height', 'innerHeight', 'outerHeight', 'width',
     'innerWidth', 'outerWidth', 'position', 'scrollLeft', 'scrollTop', 'offset'
@@ -19551,8 +23051,9 @@ angular.scenario.dsl('element', function() {
     return this.addFutureAction("element '" + this.label + "' click", function($window, $document, done) {
       var elements = $document.elements();
       var href = elements.attr('href');
-      elements.trigger('click');
-      if (href && elements[0].nodeName.toUpperCase() === 'A') {
+      var eventProcessDefault = elements.trigger('click')[0];
+
+      if (href && elements[0].nodeName.toUpperCase() === 'A' && eventProcessDefault) {
         this.application.navigateTo(href, function() {
           done();
         }, done);
@@ -19570,26 +23071,28 @@ angular.scenario.dsl('element', function() {
 
   angular.forEach(KEY_VALUE_METHODS, function(methodName) {
     chain[methodName] = function(name, value) {
-      var futureName = "element '" + this.label + "' get " + methodName + " '" + name + "'";
-      if (angular.isDefined(value)) {
-        futureName = "element '" + this.label + "' set " + methodName + " '" + name + "' to " + "'" + value + "'";
-      }
+      var args = arguments,
+          futureName = (args.length == 1)
+              ? "element '" + this.label + "' get " + methodName + " '" + name + "'"
+              : "element '" + this.label + "' set " + methodName + " '" + name + "' to " + "'" + value + "'";
+
       return this.addFutureAction(futureName, function($window, $document, done) {
         var element = $document.elements();
-        done(null, element[methodName].call(element, name, value));
+        done(null, element[methodName].apply(element, args));
       });
     };
   });
 
   angular.forEach(VALUE_METHODS, function(methodName) {
     chain[methodName] = function(value) {
-      var futureName = "element '" + this.label + "' " + methodName;
-      if (angular.isDefined(value)) {
-        futureName = "element '" + this.label + "' set " + methodName + " to '" + value + "'";
-      }
+      var args = arguments,
+          futureName = (args.length == 0)
+              ? "element '" + this.label + "' " + methodName
+              : futureName = "element '" + this.label + "' set " + methodName + " to '" + value + "'";
+
       return this.addFutureAction(futureName, function($window, $document, done) {
         var element = $document.elements();
-        done(null, element[methodName].call(element, value));
+        done(null, element[methodName].apply(element, args));
       });
     };
   });
@@ -19658,7 +23161,7 @@ angular.scenario.output('html', function(context, runner, model) {
 
   context.append(
     '<div id="header">' +
-    '  <h1><span class="angular">&lt;angular/&gt;</span>: Scenario Test Runner</h1>' +
+    '  <h1><span class="angular">AngularJS</span>: Scenario Test Runner</h1>' +
     '  <ul id="status-legend" class="status-display">' +
     '    <li class="status-error">0 Errors</li>' +
     '    <li class="status-failure">0 Failures</li>' +
@@ -19894,5 +23397,5 @@ if (config.autotest) {
 }
 })(window, document);
 
-angular.element(document).find('head').append('<style type="text/css">@charset "UTF-8";\n\n[ng\\:cloak], .ng-cloak {\n  display: none;\n}\n\n.ng-format-negative {\n  color: red;\n}\n\n.ng-exception {\n  border: 2px solid #FF0000;\n  font-family: "Courier New", Courier, monospace;\n  font-size: smaller;\n  white-space: pre;\n}\n\n.ng-validation-error {\n  border: 2px solid #FF0000;\n}\n\n\n/*****************\n * TIP\n *****************/\n#ng-callout {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  outline: 0;\n  font-size: 13px;\n  font-weight: normal;\n  font-family: Verdana, Arial, Helvetica, sans-serif;\n  vertical-align: baseline;\n  background: transparent;\n  text-decoration: none;\n}\n\n#ng-callout .ng-arrow-left{\n  background-image: url("data:image/gif;base64,R0lGODlhCwAXAKIAAMzMzO/v7/f39////////wAAAAAAAAAAACH5BAUUAAQALAAAAAALABcAAAMrSLoc/AG8FeUUIN+sGebWAnbKSJodqqlsOxJtqYooU9vvk+vcJIcTkg+QAAA7");\n  background-repeat: no-repeat;\n  background-position: left top;\n  position: absolute;\n  z-index:101;\n  left:-12px;\n  height:23px;\n  width:10px;\n  top:-3px;\n}\n\n#ng-callout .ng-arrow-right{\n  background-image: url("data:image/gif;base64,R0lGODlhCwAXAKIAAMzMzO/v7/f39////////wAAAAAAAAAAACH5BAUUAAQALAAAAAALABcAAAMrCLTcoM29yN6k9socs91e5X3EyJloipYrO4ohTMqA0Fn2XVNswJe+H+SXAAA7");\n  background-repeat: no-repeat;\n  background-position: left top;\n  position: absolute;\n  z-index:101;\n  height:23px;\n  width:11px;\n    top:-2px;\n}\n\n#ng-callout {\n  position: absolute;\n  z-index:100;\n  border: 2px solid #CCCCCC;\n  background-color: #fff;\n}\n\n#ng-callout .ng-content{\n  padding:10px 10px 10px 10px;\n  color:#333333;\n}\n\n#ng-callout .ng-title{\n  background-color: #CCCCCC;\n  text-align: left;\n  padding-left: 8px;\n  padding-bottom: 5px;\n  padding-top: 2px;\n  font-weight:bold;\n}\n\n\n/*****************\n * indicators\n *****************/\n.ng-input-indicator-wait {\n  background-image: url("data:image/png;base64,R0lGODlhEAAQAPQAAP///wAAAPDw8IqKiuDg4EZGRnp6egAAAFhYWCQkJKysrL6+vhQUFJycnAQEBDY2NmhoaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAAFdyAgAgIJIeWoAkRCCMdBkKtIHIngyMKsErPBYbADpkSCwhDmQCBethRB6Vj4kFCkQPG4IlWDgrNRIwnO4UKBXDufzQvDMaoSDBgFb886MiQadgNABAokfCwzBA8LCg0Egl8jAggGAA1kBIA1BAYzlyILczULC2UhACH5BAkKAAAALAAAAAAQABAAAAV2ICACAmlAZTmOREEIyUEQjLKKxPHADhEvqxlgcGgkGI1DYSVAIAWMx+lwSKkICJ0QsHi9RgKBwnVTiRQQgwF4I4UFDQQEwi6/3YSGWRRmjhEETAJfIgMFCnAKM0KDV4EEEAQLiF18TAYNXDaSe3x6mjidN1s3IQAh+QQJCgAAACwAAAAAEAAQAAAFeCAgAgLZDGU5jgRECEUiCI+yioSDwDJyLKsXoHFQxBSHAoAAFBhqtMJg8DgQBgfrEsJAEAg4YhZIEiwgKtHiMBgtpg3wbUZXGO7kOb1MUKRFMysCChAoggJCIg0GC2aNe4gqQldfL4l/Ag1AXySJgn5LcoE3QXI3IQAh+QQJCgAAACwAAAAAEAAQAAAFdiAgAgLZNGU5joQhCEjxIssqEo8bC9BRjy9Ag7GILQ4QEoE0gBAEBcOpcBA0DoxSK/e8LRIHn+i1cK0IyKdg0VAoljYIg+GgnRrwVS/8IAkICyosBIQpBAMoKy9dImxPhS+GKkFrkX+TigtLlIyKXUF+NjagNiEAIfkECQoAAAAsAAAAABAAEAAABWwgIAICaRhlOY4EIgjH8R7LKhKHGwsMvb4AAy3WODBIBBKCsYA9TjuhDNDKEVSERezQEL0WrhXucRUQGuik7bFlngzqVW9LMl9XWvLdjFaJtDFqZ1cEZUB0dUgvL3dgP4WJZn4jkomWNpSTIyEAIfkECQoAAAAsAAAAABAAEAAABX4gIAICuSxlOY6CIgiD8RrEKgqGOwxwUrMlAoSwIzAGpJpgoSDAGifDY5kopBYDlEpAQBwevxfBtRIUGi8xwWkDNBCIwmC9Vq0aiQQDQuK+VgQPDXV9hCJjBwcFYU5pLwwHXQcMKSmNLQcIAExlbH8JBwttaX0ABAcNbWVbKyEAIfkECQoAAAAsAAAAABAAEAAABXkgIAICSRBlOY7CIghN8zbEKsKoIjdFzZaEgUBHKChMJtRwcWpAWoWnifm6ESAMhO8lQK0EEAV3rFopIBCEcGwDKAqPh4HUrY4ICHH1dSoTFgcHUiZjBhAJB2AHDykpKAwHAwdzf19KkASIPl9cDgcnDkdtNwiMJCshACH5BAkKAAAALAAAAAAQABAAAAV3ICACAkkQZTmOAiosiyAoxCq+KPxCNVsSMRgBsiClWrLTSWFoIQZHl6pleBh6suxKMIhlvzbAwkBWfFWrBQTxNLq2RG2yhSUkDs2b63AYDAoJXAcFRwADeAkJDX0AQCsEfAQMDAIPBz0rCgcxky0JRWE1AmwpKyEAIfkECQoAAAAsAAAAABAAEAAABXkgIAICKZzkqJ4nQZxLqZKv4NqNLKK2/Q4Ek4lFXChsg5ypJjs1II3gEDUSRInEGYAw6B6zM4JhrDAtEosVkLUtHA7RHaHAGJQEjsODcEg0FBAFVgkQJQ1pAwcDDw8KcFtSInwJAowCCA6RIwqZAgkPNgVpWndjdyohACH5BAkKAAAALAAAAAAQABAAAAV5ICACAimc5KieLEuUKvm2xAKLqDCfC2GaO9eL0LABWTiBYmA06W6kHgvCqEJiAIJiu3gcvgUsscHUERm+kaCxyxa+zRPk0SgJEgfIvbAdIAQLCAYlCj4DBw0IBQsMCjIqBAcPAooCBg9pKgsJLwUFOhCZKyQDA3YqIQAh+QQJCgAAACwAAAAAEAAQAAAFdSAgAgIpnOSonmxbqiThCrJKEHFbo8JxDDOZYFFb+A41E4H4OhkOipXwBElYITDAckFEOBgMQ3arkMkUBdxIUGZpEb7kaQBRlASPg0FQQHAbEEMGDSVEAA1QBhAED1E0NgwFAooCDWljaQIQCE5qMHcNhCkjIQAh+QQJCgAAACwAAAAAEAAQAAAFeSAgAgIpnOSoLgxxvqgKLEcCC65KEAByKK8cSpA4DAiHQ/DkKhGKh4ZCtCyZGo6F6iYYPAqFgYy02xkSaLEMV34tELyRYNEsCQyHlvWkGCzsPgMCEAY7Cg04Uk48LAsDhRA8MVQPEF0GAgqYYwSRlycNcWskCkApIyEAOwAAAAAAAAAAAA==");\n  background-position: right;\n  background-repeat: no-repeat;\n}\n</style>');
+angular.element(document).find('head').append('<style type="text/css">@charset "UTF-8";\n\n[ng\\:cloak], .ng-cloak {\n  display: none;\n}\n\n.ng-format-negative {\n  color: red;\n}\n\nng\\:form {\n  display: block;\n}\n</style>');
 angular.element(document).find('head').append('<style type="text/css">@charset "UTF-8";\n/* CSS Document */\n\n/** Structure */\nbody {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  font-size: 14px;\n}\n\n#system-error {\n  font-size: 1.5em;\n  text-align: center;\n}\n\n#json, #xml {\n  display: none;\n}\n\n#header {\n  position: fixed;\n  width: 100%;\n}\n\n#specs {\n  padding-top: 50px;\n}\n\n#header .angular {\n  font-family: Courier New, monospace;\n  font-weight: bold;\n}\n\n#header h1 {\n  font-weight: normal;\n  float: left;\n  font-size: 30px;\n  line-height: 30px;\n  margin: 0;\n  padding: 10px 10px;\n  height: 30px;\n}\n\n#application h2,\n#specs h2 {\n  margin: 0;\n  padding: 0.5em;\n  font-size: 1.1em;\n}\n\n#status-legend {\n  margin-top: 10px;\n  margin-right: 10px;\n}\n\n#header,\n#application,\n.test-info,\n.test-actions li {\n  overflow: hidden;\n}\n\n#application {\n  margin: 10px;\n}\n\n#application iframe {\n  width: 100%;\n  height: 758px;\n}\n\n#application .popout {\n  float: right;\n}\n\n#application iframe {\n  border: none;\n}\n\n.tests li,\n.test-actions li,\n.test-it li,\n.test-it ol,\n.status-display {\n  list-style-type: none;\n}\n\n.tests,\n.test-it ol,\n.status-display {\n  margin: 0;\n  padding: 0;\n}\n\n.test-info {\n  margin-left: 1em;\n  margin-top: 0.5em;\n  border-radius: 8px 0 0 8px;\n  -webkit-border-radius: 8px 0 0 8px;\n  -moz-border-radius: 8px 0 0 8px;\n  cursor: pointer;\n}\n\n.test-info:hover .test-name {\n  text-decoration: underline;\n}\n\n.test-info .closed:before {\n  content: \'\\25b8\\00A0\';\n}\n\n.test-info .open:before {\n  content: \'\\25be\\00A0\';\n  font-weight: bold;\n}\n\n.test-it ol {\n  margin-left: 2.5em;\n}\n\n.status-display,\n.status-display li {\n  float: right;\n}\n\n.status-display li {\n  padding: 5px 10px;\n}\n\n.timer-result,\n.test-title {\n  display: inline-block;\n  margin: 0;\n  padding: 4px;\n}\n\n.test-actions .test-title,\n.test-actions .test-result {\n  display: table-cell;\n  padding-left: 0.5em;\n  padding-right: 0.5em;\n}\n\n.test-actions {\n  display: table;\n}\n\n.test-actions li {\n  display: table-row;\n}\n\n.timer-result {\n  width: 4em;\n  padding: 0 10px;\n  text-align: right;\n  font-family: monospace;\n}\n\n.test-it pre,\n.test-actions pre {\n  clear: left;\n  color: black;\n  margin-left: 6em;\n}\n\n.test-describe {\n  padding-bottom: 0.5em;\n}\n\n.test-describe .test-describe {\n  margin: 5px 5px 10px 2em;\n}\n\n.test-actions .status-pending .test-title:before {\n  content: \'\\00bb\\00A0\';\n}\n\n.scrollpane {\n   max-height: 20em;\n   overflow: auto;\n}\n\n/** Colors */\n\n#header {\n  background-color: #F2C200;\n}\n\n#specs h2 {\n  border-top: 2px solid #BABAD1;\n}\n\n#specs h2,\n#application h2 {\n  background-color: #efefef;\n}\n\n#application {\n  border: 1px solid #BABAD1;\n}\n\n.test-describe .test-describe {\n  border-left: 1px solid #BABAD1;\n  border-right: 1px solid #BABAD1;\n  border-bottom: 1px solid #BABAD1;\n}\n\n.status-display {\n  border: 1px solid #777;\n}\n\n.status-display .status-pending,\n.status-pending .test-info {\n  background-color: #F9EEBC;\n}\n\n.status-display .status-success,\n.status-success .test-info {\n  background-color: #B1D7A1;\n}\n\n.status-display .status-failure,\n.status-failure .test-info {\n  background-color: #FF8286;\n}\n\n.status-display .status-error,\n.status-error .test-info {\n  background-color: black;\n  color: white;\n}\n\n.test-actions .status-success .test-title {\n  color: #30B30A;\n}\n\n.test-actions .status-failure .test-title {\n  color: #DF0000;\n}\n\n.test-actions .status-error .test-title {\n  color: black;\n}\n\n.test-actions .timer-result {\n  color: #888;\n}\n</style>');
