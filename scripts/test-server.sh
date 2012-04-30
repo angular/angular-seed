@@ -10,5 +10,4 @@ echo "http://localhost:$PORT"
 java -jar "$BASE_DIR/../test/lib/jstestdriver/JsTestDriver.jar" \
      --port $PORT \
      --browserTimeout 20000 \
-     --config "$BASE_DIR/../config/jsTestDriver.conf" \
-     --basePath "$BASE_DIR/.."
+     --config "$BASE_DIR/../config/jsTestDriver.conf"
