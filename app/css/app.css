@@ -1,9 +1,13 @@
 /* app css stylesheet */
 
+body {
+  padding: 2em;
+}
+
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
+  margin: 0 0 2em 0;
   padding: 0 0 0.5em;
 }
 
