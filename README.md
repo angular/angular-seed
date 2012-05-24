@@ -104,7 +104,8 @@ fetch the changes and merge them into your project with git.
       css/              --> css files
         app.css         --> default stylesheet
       img/              --> image files
-      index.html        --> app layout file (the main html template file of the app)
+      index-production.html  --> app layout file to be used in production environment; it will be processed during the build script
+      index.html        --> app layout file (the main html template file of the app) to be used during development
       js/               --> javascript files
         controllers.js  --> application controllers
         filters.js      --> custom angular filters
@@ -112,17 +113,23 @@ fetch the changes and merge them into your project with git.
         widgets.js      --> custom angular widgets
       lib/              --> angular and 3rd party javascript libraries
         angular/
-          angular.js            --> the latest angular js
-          angular.min.js        --> the latest minified angular js
-          angular-*.js  --> angular add-on modules
-          version.txt           --> version number
+          angular.js      --> the latest angular js
+          angular.min.js  --> the latest minified angular js
+          angular-*.js    --> angular add-on modules
+          version.txt     --> version number
       partials/         --> angular view partials (partial html templates)
         partial1.html
         partial2.html
 
+    build/              --> scripts needed to build the production version of the application
+      app.prefix        --> the text that will be used as a prefix for every built artifact
+      output/           --> contains the artifacts created by the build process
+
     config/jsTestDriver.conf    --> config file for JsTestDriver
 
     logs/               --> JSTD and other logs go here (git-ignored)
+    
+    Makefile            --> implements the various steps of the build process
 
     scripts/            --> handy shell/js/ruby scripts
       test-server.bat   --> starts JSTD server (windows)
@@ -146,6 +153,8 @@ fetch the changes and merge them into your project with git.
         jstestdriver/           --> JSTD - JavaScript test runner
       unit/                     --> unit level specs/tests
         controllersSpec.js      --> specs for controllers
+
+    version.txt         --> current version of the application; used during the build process
 
 ## Contact
 
