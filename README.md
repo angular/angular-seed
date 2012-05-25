@@ -49,6 +49,27 @@ out what is the best way to host the static files to comply with the same origin
 applicable. Usually this is done by hosting the files by the backend server or through
 reverse-proxying the backend server(s) and a webserver(s).
 
+To build a production version of your app you can use the `make` utility and the included `Makefile`.
+Simply execute the command `make` from the root directory of the project; this will build a production
+version of the application inside the `build/output` directory. The build process will create a
+`myApp` directory with the same structure of the `app` directory that you use during development.
+
+Inside the `myApp/css` directory, all the library css files will be minified inside a single
+`lib.min.css` file and all your custom css files will be minified inside a single `myApp.min.css`
+file. Inside the `myApp/js` directory, all the library js files will be minified inside a single
+`lib.min.js` file and all your custom js files will be minified inside a single `myApp.min.js` file.
+
+Inside the `Makefile` file there are some variables that you can set to customize the results of the
+build process:
+
+* `APP_NAME`: is the name of your production app, it will be used to set the name of the built
+artifacts (the name of the directory containing the production version of the app and the name of the
+minified files)
+* `LIBJSFILES`: the list of js files that will be minified inside the `lib.min.js` file
+* `JSFILES`: the list of js files that will be minified inside the `myApp.min.js` file
+* `LIBCSSFILES`: the list of css files that will be minified inside the `lib.min.css` file
+* `CSSFILES`: the list of css files that will be minified inside the `myApp.min.css` file
+
 
 ### Running unit tests
 
@@ -104,7 +125,8 @@ fetch the changes and merge them into your project with git.
       css/              --> css files
         app.css         --> default stylesheet
       img/              --> image files
-      index-production.html  --> app layout file to be used in production environment; it will be processed during the build script
+      index-production.html  --> app layout file to be used in production environment; it will be processed during
+                                 the build script; it references the minified versions of CSS and Javascript files
       index.html        --> app layout file (the main html template file of the app) to be used during development
       js/               --> javascript files
         controllers.js  --> application controllers

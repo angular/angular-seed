@@ -1,31 +1,5 @@
-# The system generated date in YYYY-MM-DD format
-DATE = $(shell date "+%Y-%m-%d")
-
-# The command to replace the @DATE in the files with the actual date
-SED_DATE = sed "s/@DATE/${DATE}/"
-
-# The version according to the source file
-VER = $(shell cat version.txt)
-
-# The command to replace the @VERSION in the files with the actual version
-SED_VER = sed "s/@VERSION/${VER}/"
-
 # The name of the App to create
 APP_NAME = "myApp"
-
-# The command to replace the @APP_NAME in the files with the actual App Name
-SED_APP_NAME = sed "s/@APP_NAME/${APP_NAME}/"
-
-# The output folder for the finished files
-OUTPUT = build/output
-OUTPUT_CSS = ${APP_NAME}/css
-OUTPUT_JS = ${APP_NAME}/js
-
-# The filenames
-LIBJS = ${OUTPUT_JS}/lib.min.js
-JS = ${OUTPUT_JS}/${APP_NAME}.min.js
-LIBCSS = ${OUTPUT_CSS}/lib.min.css
-CSS = ${OUTPUT_CSS}/${APP_NAME}.min.css
 
 # The files to include when compiling the Library JS files
 LIBJSFILES =        app/lib/angular/angular.min.js
@@ -42,6 +16,32 @@ LIBCSSFILES =       app/css/bootstrap.min.css
 
 # The files to include when compiling the CSS files
 CSSFILES =          app/css/app.css
+
+# The command to replace the @APP_NAME in the files with the actual App Name
+SED_APP_NAME = sed "s/@APP_NAME/${APP_NAME}/"
+
+# The system generated date in YYYY-MM-DD format
+DATE = $(shell date "+%Y-%m-%d %H:%M")
+
+# The command to replace the @DATE in the files with the actual date
+SED_DATE = sed "s/@DATE/${DATE}/"
+
+# The version according to the source file
+VER = $(shell cat version.txt)
+
+# The command to replace the @VERSION in the files with the actual version
+SED_VER = sed "s/@VERSION/${VER}/"
+
+# The output folder for the finished files
+OUTPUT = build/output
+OUTPUT_CSS = ${APP_NAME}/css
+OUTPUT_JS = ${APP_NAME}/js
+
+# The filenames
+LIBJS = ${OUTPUT_JS}/lib.min.js
+JS = ${OUTPUT_JS}/${APP_NAME}.min.js
+LIBCSS = ${OUTPUT_CSS}/lib.min.css
+CSS = ${OUTPUT_CSS}/${APP_NAME}.min.css
 
 # By default, this is what get executed when make is called without any arguments.
 all: init libjs js libcss css html notify
