@@ -105,30 +105,39 @@ fetch the changes and merge them into your project with git.
         app.css         --> default stylesheet
       img/              --> image files
       index.html        --> app layout file (the main html template file of the app)
+      index-async.html  --> app layout file (the main html template file of the app) -- asynchronous version
       js/               --> javascript files
+        app.js          --> declare app level module which depends on filters, and services
         controllers.js  --> application controllers
+        directives.js   --> custom angular directives
         filters.js      --> custom angular filters
         services.js     --> custom angular services
-        widgets.js      --> custom angular widgets
       lib/              --> angular and 3rd party javascript libraries
         angular/
-          angular.js            --> the latest angular js
-          angular.min.js        --> the latest minified angular js
+          angular.js    --> the latest angular js
+          angular.min.js--> the latest minified angular js
           angular-*.js  --> angular add-on modules
-          version.txt           --> version number
+          version.txt   --> version number
       partials/         --> angular view partials (partial html templates)
         partial1.html
         partial2.html
 
-    config/jsTestDriver.conf    --> config file for JsTestDriver
+    config/
+      jsTestDriver-scenario.conf      --> config file for JsTestDriver (end-to-end server)
+      jsTestDriver.conf               --> config file for JsTestDriver (unit tests)
+      jstd-scenario-adapter-config.js --> configuration for jstd scenario adapter
 
     logs/               --> JSTD and other logs go here (git-ignored)
 
     scripts/            --> handy shell/js/ruby scripts
-      test-server.bat   --> starts JSTD server (windows)
-      test-server.sh    --> starts JSTD server (*nix)
-      test.bat          --> runs all unit tests (windows)
-      test.sh           --> runs all unit tests (*nix)
+      test-server.bat   --> starts JSTD server (windows) -- end-to-end tests
+      test-server.sh    --> starts JSTD server (*nix) -- end-to-end tests
+      test.bat          --> runs all unit tests (windows) -- end-to-end tests
+      test.sh           --> runs all unit tests (*nix) -- end-to-end tests
+      test-server.bat   --> starts JSTD server (windows) -- unit tests
+      test-server.sh    --> starts JSTD server (*nix) -- unit tests
+      test.bat          --> runs all unit tests (windows) -- unit tests
+      test.sh           --> runs all unit tests (*nix) -- unit tests
       watchr.rb         --> config script for continuous testing with watchr
       web-server.js     --> simple development webserver based on node.js
 
@@ -140,12 +149,16 @@ fetch the changes and merge them into your project with git.
         angular/                --> angular testing libraries
           angular-mocks.js      --> mocks that replace certain angular services in tests
           angular-scenario.js   --> angular's scenario (end-to-end) test runner library
+          jstd-scenario-adapter.js  --> JSTestDriver adapter for angular scenario tests
           version.txt           --> version file
         jasmine/                --> Pivotal's Jasmine - an elegant BDD-style testing framework
         jasmine-jstd-adapter/   --> bridge between JSTD and Jasmine
         jstestdriver/           --> JSTD - JavaScript test runner
       unit/                     --> unit level specs/tests
         controllersSpec.js      --> specs for controllers
+        directivessSpec.js      --> specs for directives
+        filtersSpec.js          --> specs for filters
+        servicesSpec.js         --> specs for services
 
 ## Contact
 
