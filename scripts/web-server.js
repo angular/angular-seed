@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var sys = require('sys'),
+var sys = require('util'),
     http = require('http'),
     fs = require('fs'),
     url = require('url'),
