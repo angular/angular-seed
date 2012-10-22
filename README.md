@@ -94,6 +94,7 @@ fetch the changes and merge them into your project with git.
     app/                --> all of the files to be used in production
       css/              --> css files
         app.css         --> default stylesheet
+        normalize.css   --> browser reset css
       img/              --> image files
       index.html        --> app layout file (the main html template file of the app)
       index-async.html  --> just like index.html, but loads js files asynchronously
