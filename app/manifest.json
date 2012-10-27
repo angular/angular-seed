@@ -1,0 +1,19 @@
+{
+  "name": "Angular Seed - In Chrome Extensions",
+  "version": "1.1",
+  "description": "To debug and run Angular seed without a server",
+  
+  "app": {
+    "launch": {
+      "local_path": "index.html"
+    }
+  },
+  "offline_enabled": true,
+  "permissions": [
+    "unlimitedStorage"
+  ],
+   "icons": { 
+  },
+   "manifest_version" : 2,
+  "content_security_policy" : "default-src 'self'; "
+}
