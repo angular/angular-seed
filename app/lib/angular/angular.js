@@ -4648,7 +4648,7 @@ function $DocumentProvider(){
  * The default implementation simply delegates to `$log.error` which logs it into
  * the browser console.
  *
- * In unit tests, if `angular-mocks.js` is loaded, this service is overridden by
+ * In unit tests, if `angular-modules.js` is loaded, this service is overridden by
  * {@link ngMock.$exceptionHandler mock $exceptionHandler}
  *
  * @param {Error} exception Exception associated with the error.

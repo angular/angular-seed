@@ -1,12 +1,10 @@
 'use strict';
 
-/* Controllers */
+taggedList.controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
+    $scope.items = taggedListService.fetch();
 
-
-function MyCtrl1() {}
-MyCtrl1.$inject = [];
-
-
-function MyCtrl2() {
-}
-MyCtrl2.$inject = [];
+    $scope.addItem = function () {
+        $scope.items.push({text:$scope.itemText, done:false});
+        $scope.itemText = '';
+    };
+}]);
