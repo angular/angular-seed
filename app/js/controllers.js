@@ -4,7 +4,10 @@ taggedList.controller('TaggedListController', ['$scope', 'taggedListService', fu
     $scope.items = taggedListService.fetch();
 
     $scope.addItem = function () {
-        $scope.items.push({text:$scope.itemText, done:false});
-        $scope.itemText = '';
+        if ($scope.newItem && $scope.newItem.trim()) {
+            var item = {text:$scope.newItem, done:false};
+            taggedListService.add(item);
+            $scope.newItem = '';
+        }
     };
 }]);

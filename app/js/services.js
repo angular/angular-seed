@@ -11,6 +11,9 @@ taggedList.factory('taggedListService', function () {
     return {
         fetch:function () {
             return items;
+        },
+        add: function(item) {
+            items.push(item);
         }
     };
 });
