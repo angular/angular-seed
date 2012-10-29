@@ -10,13 +10,22 @@
 <h2>List</h2>
 
 <div ng-controller="TaggedListController">
-    <ul class="unstyled">
-        <li ng-repeat="item in items">
-            <input type="checkbox" ng-model="item.done">
-            <span class="done-{{item.done}}">{{item.text}}</span>
-            <button class="btn btn-small" ng-click="removeItem(item)">X</button>
-        </li>
-    </ul>
+    <table class="table">
+        <tr ng-repeat="item in items">
+            <td>
+                <input type="checkbox" ng-model="item.done">
+            </td>
+            <td>
+                <span class="done-{{item.done}}">{{item.text}}</span>
+            </td>
+            <td>
+                <label ng-repeat='category in item.categories'>{{category}}</label>
+            </td>
+            <td>
+                <a class="btn btn-small" href="#" ng-click="removeItem(item)"><i class="icon-remove-sign"></i></a>
+            </td>
+        </tr>
+    </table>
     <form ng-submit="addItem()">
         <input type="text" ng-model="newItem" size="30"
                placeholder="add new item here">
@@ -29,6 +38,7 @@
 -->
 <script src="lib/angular/angular.js"></script>
 <script src="js/app.js"></script>
+<script src="js/objects.js"></script>
 <script src="js/services.js"></script>
 <script src="js/controllers.js"></script>
 <script src="js/filters.js"></script>

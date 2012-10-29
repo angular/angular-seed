@@ -4,12 +4,10 @@ taggedList.controller('TaggedListController', ['$scope', 'taggedListService', fu
     $scope.items = taggedListService.fetch();
 
     $scope.addItem = function () {
-        var newItem = $scope.newItem && $scope.newItem.trim();
+        var text = $scope.newItem && $scope.newItem.trim();
 
-        if (newItem) {
-            var item = {text:newItem, done:false};
-            taggedListService.add(item);
-
+        if (text) {
+            taggedListService.add(Item.createNewItem(text));
             $scope.newItem = '';
         }
     };

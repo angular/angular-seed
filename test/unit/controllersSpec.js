@@ -38,7 +38,7 @@ describe('TaggedListController', function () {
         expect(scope.items.length).toBe(0);
     });
 
-    iit('should remove item', function() {
+    it('should remove item', function() {
         expect(scope.items.length).toBe(0);
 
         scope.newItem = 'new item';
@@ -47,5 +47,15 @@ describe('TaggedListController', function () {
         scope.removeItem(scope.items[0]);
 
         expect(scope.items.length).toBe(0);
+    });
+
+    it('should create tag with #', function() {
+        scope.newItem = 'new item #category1';
+        scope.addItem();
+
+        expect(scope.items.length).toBe(1);
+        expect(scope.items[0].text).toBe('new item');
+        expect(scope.items[0].categories.length).toBe(1);
+        expect(scope.items[0].categories[0]).toBe('category1');
     });
 });
