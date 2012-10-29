@@ -18,6 +18,7 @@ describe('TaggedListController', function () {
         scope.newItem = 'new item';
         scope.addItem();
         expect(scope.items.length).toBe(1);
+        expect(scope.items[0].text === 'new item');
         expect(scope.newItem).toBe('');
     });
 
@@ -34,6 +35,17 @@ describe('TaggedListController', function () {
 
         scope.newItem = '  ';
         scope.addItem();
+        expect(scope.items.length).toBe(0);
+    });
+
+    iit('should remove item', function() {
+        expect(scope.items.length).toBe(0);
+
+        scope.newItem = 'new item';
+        scope.addItem();
+
+        scope.removeItem(scope.items[0]);
+
         expect(scope.items.length).toBe(0);
     });
 });

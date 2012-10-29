@@ -14,6 +14,7 @@
         <li ng-repeat="item in items">
             <input type="checkbox" ng-model="item.done">
             <span class="done-{{item.done}}">{{item.text}}</span>
+            <button class="btn btn-small" ng-click="removeItem(item)">X</button>
         </li>
     </ul>
     <form ng-submit="addItem()">
