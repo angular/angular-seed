@@ -1,13 +1,14 @@
 'use strict';
 
 taggedList.controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
-    $scope.items = taggedListService.fetch();
+    $scope.items = taggedListService.getItems();
+    $scope.tags = taggedListService.getTags();
 
     $scope.addItem = function () {
         var text = $scope.newItem && $scope.newItem.trim();
 
         if (text) {
-            taggedListService.add(Item.createNewItem(text));
+            taggedListService.addItem(Item.createNewItem(text));
             $scope.newItem = '';
         }
     };

@@ -1,19 +1,21 @@
-var Item = function (text, done, categories) {
+var Item = function (text, done, tags) {
     this.text = text;
     this.done = done;
-    this.categories = categories;
+    this.tags = tags;
 };
-
 Item.createNewItem = function(text) {
 
-    var words = text.trim().split(' ');
-    var categories = [];
-    angular.forEach(words, function(word){
-       if (word.charAt(0) === '#') {
-           categories.push(word.replace('#', ''));
-           text = text.replace(word, '').trim();
-       }
-    });
+  var words = text.trim().split(' ');
+  var tags = [];
+  angular.forEach(words, function(word){
+    if (word.charAt(0) === '#') {
+      var tag = word.replace('#', '');
+      if (tags.indexOf(tag) === -1) {
+        tags.push(tag); 
+      }           
+      text = text.replace(word, '').trim();
+    }
+  });
 
-    return new Item(text, false, categories);
+  return new Item(text, false, tags);
 };
