@@ -3,11 +3,12 @@
 taggedList.factory('taggedListService', function () {
 
     var items = [
-        {text:'first item', done:false },
-        {text:'next item', done:true},
-        {text:'third item', done:false}
+        new Item('first item', false, ['category1']),
+        new Item('next item', true, ['category2']),
+        new Item('third item', true, []),
     ];
-    var tags = [];
+             
+    var tags = ['category1', 'category2'];
 
     return {
         getItems:function () {

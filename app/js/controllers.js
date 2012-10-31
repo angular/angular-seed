@@ -3,6 +3,7 @@
 taggedList.controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
     $scope.items = taggedListService.getItems();
     $scope.tags = taggedListService.getTags();
+    $scope.currentTag =null;
 
     $scope.addItem = function () {
         var text = $scope.newItem && $scope.newItem.trim();
@@ -20,5 +21,15 @@ taggedList.controller('TaggedListController', ['$scope', 'taggedListService', fu
                 return;
             }
         });
+    };
+
+    $scope.setCurrentTag = function(currentTag) {
+        $scope.currentTag = null;
+        angular.forEach($scope.tags, function(tag){
+            if (tag === currentTag) {
+                $scope.currentTag = tag;
+                return;
+            }
+        });  
     };
 }]);

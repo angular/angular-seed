@@ -94,18 +94,39 @@ describe('TaggedListController', function () {
         expect(scope.tags[0]).toBe('tag1');        
     });
 
-    it('should list the items by tag', function(){
-
+    it('should have no current tag by default', function() {
+       expect(scope.currentTag).toBe(null);
     });
 
-    it('should list the items for all tags', function(){
+    it('should set the current tag', function(){
+        addItem('item1 #tag1');
+        addItem('item2 #tag1');
+        addItem('item3 #tag2');
+
+        scope.setCurrentTag('tag1');
+        expect(scope.currentTag).toBe('tag1');
     });
 
-    it('should order the item by tag', function(){
+    it('should not set the current tag if tag is not present', function(){
+        addItem('item1 #tag1');
+        
+        scope.setCurrentTag('tag2');
+        expect(scope.currentTag).toBe(null);
+
+        scope.setCurrentTag('tag1');
+        expect(scope.currentTag).toBe('tag1');
+
+        scope.setCurrentTag('tag3');
+        expect(scope.currentTag).toBe(null);
     });
 
-    it('', function(){
-    });
+    it('should list the items by tag', function(){});
+    
+    it('should list the items for all tags', function(){});
+
+    it('should order the item by tag', function(){});
+
+    it('', function(){});
 
     function addItem(text) {
         scope.newItem = text;
