@@ -27,9 +27,9 @@
         </tr>
     </table>
     <form ng-submit="addItem()">
-        <input type="text" ng-model="newItem" size="30"
+        <input name="newItem" type="text" ng-model="newItem" size="30"
                placeholder="add new item here">
-        <input class="btn-primary" type="submit" value="add">
+        <button id="btnAdd" class="btn-primary" type="submit">add</button>
     </form>
 </div>
 
