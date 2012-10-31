@@ -94,6 +94,19 @@ describe('TaggedListController', function () {
         expect(scope.tags[0]).toBe('tag1');        
     });
 
+    it('should list the items by tag', function(){
+
+    });
+
+    it('should list the items for all tags', function(){
+    });
+
+    it('should order the item by tag', function(){
+    });
+
+    it('', function(){
+    });
+
     function addItem(text) {
         scope.newItem = text;
         scope.addItem();
