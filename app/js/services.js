@@ -1,7 +1,6 @@
 'use strict';
 
-taggedList.factory('taggedListService', function () {
-
+angular.module('taggedList.service', []).factory('taggedListService', function () {
     var items = [
         new Item('first item', false, ['category1']),
         new Item('next item', true, ['category2']),

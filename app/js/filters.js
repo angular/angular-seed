@@ -1,6 +1,6 @@
 'use strict';
 
-taggedList.filter('byTag', function(){
+angular.module('taggedList.filter', []).filter('byTag', function(){
     return function(items, tag) {
         if (!tag) {
             return items;

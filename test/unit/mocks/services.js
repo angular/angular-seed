@@ -1,7 +1,5 @@
 'use strict';
-
-mocks.services.factory('taggedListService', function () {
-
+angular.module('taggedList.mock.service', []).factory('taggedListService', function () {
     var items = [];
     var tags = [];
 

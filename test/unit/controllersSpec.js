@@ -5,7 +5,7 @@
 describe('TaggedListController', function () {
     var scope, taggedListController;
 
-    beforeEach(module('taggedList', 'mocks.services'));
+    beforeEach(module('taggedList.controller', 'taggedList.mock.service'));
 
     beforeEach(inject(function ($rootScope, $controller) {
         scope = $rootScope.$new();
@@ -94,6 +94,14 @@ describe('TaggedListController', function () {
         expect(scope.tags[0]).toBe('tag1');        
     });
 
+    it('should remove the global tag if no more item of this tag exist', function() {
+        addItem('new item #category1');
+        expect(scope.tags.length).toBe(1);
+
+        scope.removeItem(scope.items[0]);
+        expect(scope.tags.length).toBe(0);
+    });
+
     it('should have no current tag by default', function() {
        expect(scope.currentTag).toBe(null);
     });
@@ -119,8 +127,6 @@ describe('TaggedListController', function () {
         scope.setCurrentTag('tag3');
         expect(scope.currentTag).toBe(null);
     });
-
-    it('', function(){});
 
     function addItem(text) {
         scope.newItem = text;

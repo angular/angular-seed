@@ -3,7 +3,7 @@
 describe('filter', function() {
     var filter, items;
 
-    beforeEach(module('taggedList'));
+    beforeEach(module('taggedList.filter'));
 
     beforeEach(inject(function (byTagFilter) {
         filter = byTagFilter;

@@ -1,6 +1,6 @@
 'use strict';
 
-taggedList.controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
+angular.module('taggedList.controller', ['taggedList.service']).controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
     $scope.items = taggedListService.getItems();
     $scope.tags = taggedListService.getTags();
     $scope.currentTag = null;
@@ -15,11 +15,30 @@ taggedList.controller('TaggedListController', ['$scope', 'taggedListService', fu
     };
 
     $scope.removeItem = function(itemToRemove) {
+        var globalTagsToRemove = [];
+        angular.forEach(itemToRemove.tags, function(tag) {
+            globalTagsToRemove.push(tag);
+        });
+
         angular.forEach($scope.items, function(item, key) {
             if (item === itemToRemove) {
                 $scope.items.splice(key, 1);
-                return;
             }
+            else {
+                angular.forEach(itemToRemove.tags, function(tag, index) {
+                    if (item.hasTag(tag)) {
+                        globalTagsToRemove.splice(index, 1);
+                    }
+                });
+            }
+        });
+
+        angular.forEach(globalTagsToRemove, function(globalTagToRemove){
+            angular.forEach($scope.tags, function(tag, index){
+                if (tag === globalTagToRemove) {
+                    $scope.tags.splice(index, 1);
+                }
+            })
         });
     };
 
