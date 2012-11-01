@@ -3,7 +3,7 @@
 taggedList.controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
     $scope.items = taggedListService.getItems();
     $scope.tags = taggedListService.getTags();
-    $scope.currentTag =null;
+    $scope.currentTag = null;
 
     $scope.addItem = function () {
         var text = $scope.newItem && $scope.newItem.trim();

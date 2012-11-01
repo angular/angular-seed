@@ -2,7 +2,7 @@
 <html lang="en" ng-app="taggedList">
 <head>
     <meta charset="utf-8">
-    <title>My AngularJS App</title>
+    <title>Tagged List App</title>
     <link rel="stylesheet" href="css/bootstrap.css"/>
     <link rel="stylesheet" href="css/app.css"/>
 </head>
@@ -17,7 +17,7 @@
     </div>
 
     <table class="table">
-        <tr ng-repeat="item in items">
+        <tr ng-repeat="item in items | byTag:currentTag">
             <td>
                 <input type="checkbox" ng-model="item.done">
             </td>

@@ -120,12 +120,6 @@ describe('TaggedListController', function () {
         expect(scope.currentTag).toBe(null);
     });
 
-    it('should list the items by tag', function(){});
-    
-    it('should list the items for all tags', function(){});
-
-    it('should order the item by tag', function(){});
-
     it('', function(){});
 
     function addItem(text) {
