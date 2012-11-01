@@ -128,6 +128,22 @@ describe('TaggedListController', function () {
         expect(scope.currentTag).toBe(null);
     });
 
+    it('should count the number of item per global tag', function(){
+        addItem('item1 #tag1');
+        addItem('item2 #tag2');
+        addItem('item3 #tag1 #tag2');
+        addItem('item4 #tag3');
+
+        expect(scope.itemPerTag().length).toBe(4);
+        expect(scope.itemPerTag('tag1').length).toBe(2);
+        expect(scope.itemPerTag('tag2').length).toBe(2);
+        expect(scope.itemPerTag('tag3').length).toBe(1);
+    });
+
+    it('should be possible to filter the untagged item', function(){
+
+    });
+
     function addItem(text) {
         scope.newItem = text;
         scope.addItem();

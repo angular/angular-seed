@@ -51,4 +51,19 @@ angular.module('taggedList.controller', ['taggedList.service']).controller('Tagg
             }
         });  
     };
+
+    $scope.itemPerTag = function(tag) {
+        if (!tag) {
+            return $scope.items;
+        }
+        else {
+            var items = [];
+            angular.forEach($scope.items, function(item) {
+                if (item.hasTag(tag)) {
+                    items.push(item);
+                }
+            });
+            return items;
+        }
+    };
 }]);

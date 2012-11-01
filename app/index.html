@@ -11,8 +11,9 @@
 
 <div ng-controller="TaggedListController">
     <div>
+        <a href="" ng-click="setCurrentTag()">All</a> ({{itemPerTag().length}})
         <div ng-repeat="tag in tags">
-            <a href="" ng-click="setCurrentTag(tag)">{{tag}}</a>
+            <a href="" ng-click="setCurrentTag(tag)">{{tag}}</a>  ({{itemPerTag(tag).length}})
         </div>        
     </div>
 
