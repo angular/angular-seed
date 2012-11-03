@@ -4,6 +4,9 @@ angular.module('taggedList.controller', ['taggedList.service']).controller('Tagg
     $scope.items = taggedListService.getItems();
     $scope.tags = taggedListService.getTags();
     $scope.currentTag = null;
+    $scope.today = new Date();
+    $scope.yesterday = new Date();
+    $scope.yesterday.setDate($scope.yesterday.getDate() - 1);
 
     $scope.addItem = function () {
         var text = $scope.newItem && $scope.newItem.trim();

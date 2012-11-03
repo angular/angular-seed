@@ -1,16 +1,17 @@
 'use strict';
 
 angular.module('taggedList.service', []).factory('taggedListService', function () {
-    var items = [
-        new Item('first item', false, ['category1']),
-        new Item('next item', true, ['category2']),
-        new Item('third item', true, []),
-    ];
-             
-    var tags = ['category1', 'category2'];
+    var items = [];
+    var tags = [];
 
     return {
         getItems:function () {
+            this.items = [];
+            this.addItem(new Item('first item', false, ['tag1']));
+            this.addItem(new Item('next item', false, ['tag2']));
+            this.addItem(new Item('third item', false, []));
+            this.addItem(new Item('fourth item', false, ['tag1', 'tag2']));
+
             return items;
         },
         getTags: function() {
