@@ -1,12 +1,18 @@
 'use strict';
 
-angular.module('taggedList.controller', ['taggedList.service']).controller('TaggedListController', ['$scope', 'taggedListService', function ($scope, taggedListService) {
+angular.module('taggedList.controller', ['taggedList.service']).controller('TaggedListController', 
+    ['$scope', '$location', 'taggedListService', function ($scope, $location, taggedListService) {
+
     $scope.items = taggedListService.getItems();
     $scope.tags = taggedListService.getTags();
     $scope.currentTag = null;
     $scope.today = new Date();
     $scope.yesterday = new Date();
     $scope.yesterday.setDate($scope.yesterday.getDate() - 1);
+
+    $scope.createNewItem = function() {
+        $location.url('new');
+    };
 
     $scope.addItem = function () {
         var text = $scope.newItem && $scope.newItem.trim();
