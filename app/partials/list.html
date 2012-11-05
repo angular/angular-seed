@@ -1,0 +1,56 @@
+<div class="container-fluid" ng-controller="TaggedListController">
+    <h2>Tagged List App</h2>
+
+    <div class="row-fluid">
+        <div class="span3">
+            <div class="well sidebar-nav">
+                <ul class="nav nav-list">
+                    <li><button class="btn btn-primary" ng-click="createNewItem()">Add</button></li>
+                    <li class="nav nav-header">Tags</li>
+                    <li ng-class="{active: !currentTag}">
+                        <a href="" ng-click="setCurrentTag()">All ({{itemPerTag().length}})</a>
+                    </li>
+                    <li ng-class="{active: currentTag==tag}" ng-repeat="tag in tags">
+                        <a href="" ng-click="setCurrentTag(tag)">{{tag}} ({{itemPerTag(tag).length}})</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="well sidebar-nav">
+                <ul class="nav nav-list">
+                    <li class="nav nav-header">Date</li>
+                    <li class="active"><a href="">{{today | date}}</a></li>
+                    <li><a href="">{{yesterday | date}}</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="span9">
+            <table class="table">
+                <tr>
+                    <th></th>
+                    <th>Item</th>
+                    <th>Tag</th>
+                    <th>Remove</th>
+                </tr>
+                <tr ng-repeat="item in items | byTag:currentTag">
+                    <td>
+                        <input type="checkbox" ng-model="item.done">
+                    </td>
+                    <td>
+                        <span class="done-{{item.done}}">{{item.text}}</span>
+                    </td>
+                    <td>
+                        <span class="badge" ng-repeat='tag in item.tags'>{{tag}} </span>
+                    </td>
+                    <td>
+                        <a class="btn btn-small" href="#" ng-click="removeItem(item)"><i class="icon-remove-sign"></i></a>
+                    </td>
+                </tr>
+            </table>
+            <form ng-submit="addItem()">
+                <input name="newItem" type="text" ng-model="newItem" size="30"
+                       placeholder="add new item here">
+                <button id="btnAdd" class="btn-primary" type="submit">add</button>
+            </form>
+        </div>
+    </div>
+</div>

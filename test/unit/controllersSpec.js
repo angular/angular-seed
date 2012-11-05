@@ -2,30 +2,156 @@
 
 /* jasmine specs for controllers go here */
 
-describe('MyCtrl1', function(){
-  var myCtrl1;
+describe('TaggedListController', function () {
+    var scope, taggedListController;
 
-  beforeEach(function(){
-    myCtrl1 = new MyCtrl1();
-  });
+    beforeEach(module('taggedList.controller', 'taggedList.mock.service'));
 
+    beforeEach(inject(function ($rootScope, $controller) {
+        scope = $rootScope.$new();
+        taggedListController = $controller('TaggedListController', {$scope:scope});
+    }));
+    
+    function addItem(text) {
+        scope.newItem = text;
+        scope.addItem();
+    }
 
-  it('should ....', function() {
-    //spec body
-  });
-});
+    describe('Item', function() {
+        it('should save the added item', function() {
+            expect(scope.items.length).toBe(0);
 
+            addItem('new item');        
+            expect(scope.items.length).toBe(1);
+            expect(scope.items[0].text === 'new item');
+            expect(scope.newItem).toBe('');
+        });
 
-describe('MyCtrl2', function(){
-  var myCtrl2;
+        it('should not add empty item', function() {
+            expect(scope.items.length).toBe(0);
 
+            addItem(null);        
+            expect(scope.items.length).toBe(0);
 
-  beforeEach(function(){
-    myCtrl2 = new MyCtrl2();
-  });
+            addItem('');        
+            expect(scope.items.length).toBe(0);
 
+            addItem('  ');        
+            expect(scope.items.length).toBe(0);
+        });
 
-  it('should ....', function() {
-    //spec body
-  });
+        it('should remove item', function() {
+            expect(scope.items.length).toBe(0);
+
+            addItem('new item');
+            
+            scope.removeItem(scope.items[0]);
+
+            expect(scope.items.length).toBe(0);
+        });
+    });
+    
+    describe('ItemTag', function(){
+        it('should create tag with #', function() {
+            addItem('new item #tag1');
+                    
+            expect(scope.items[0].text).toBe('new item');
+            expect(scope.items[0].tags.length).toBe(1);
+            expect(scope.items[0].tags[0]).toBe('tag1');
+        });
+
+        it('should create tag with all # element', function() {
+            addItem('new item #tag1 #tag2');
+            
+            expect(scope.items[0].text).toBe('new item');
+            expect(scope.items[0].tags.length).toBe(2);
+            expect(scope.items[0].tags[0]).toBe('tag1'); 
+            expect(scope.items[0].tags[1]).toBe('tag2'); 
+        });
+
+        it('should not create multiple tag with the same name', function() {
+            addItem('new item #tag1 #tag1');
+            
+            expect(scope.items[0].text).toBe('new item');
+            expect(scope.items[0].tags.length).toBe(1);
+            expect(scope.items[0].tags[0]).toBe('tag1');
+        });
+    });
+
+    describe('GlobalTag', function(){
+        it('should create a global tag for newly created tag in item', function() {
+            expect(scope.tags.length).toBe(0);
+            
+            addItem('new item #tag1');
+            expect(scope.tags.length).toBe(1);
+            expect(scope.tags[0]).toBe('tag1');
+        });
+
+        it('should create a global tag for every newly created tag in item', function(){
+            addItem('newly item #tag1');
+            addItem('other item #tag2');
+
+            expect(scope.tags.length).toBe(2);
+            expect(scope.tags[0]).toBe('tag1');
+            expect(scope.tags[1]).toBe('tag2');
+        });
+
+        it('should not create multiple global tag with the same name', function(){
+            addItem('newly item #tag1');
+            addItem('other item #tag1');
+
+            expect(scope.tags.length).toBe(1);
+            expect(scope.tags[0]).toBe('tag1');        
+        });
+
+        it('should remove the global tag if no more item of this tag exist', function() {
+            addItem('new item #category1');
+            expect(scope.tags.length).toBe(1);
+
+            scope.removeItem(scope.items[0]);
+            expect(scope.tags.length).toBe(0);
+        });
+    });
+
+    describe('CurrentTag', function(){
+        it('should have no current tag by default', function() {
+           expect(scope.currentTag).toBe(null);
+        });
+
+        it('should set the current tag', function(){
+            addItem('item1 #tag1');
+            addItem('item2 #tag1');
+            addItem('item3 #tag2');
+
+            scope.setCurrentTag('tag1');
+            expect(scope.currentTag).toBe('tag1');
+        });
+
+        it('should not set the current tag if tag is not present', function(){
+            addItem('item1 #tag1');
+            
+            scope.setCurrentTag('tag2');
+            expect(scope.currentTag).toBe(null);
+
+            scope.setCurrentTag('tag1');
+            expect(scope.currentTag).toBe('tag1');
+
+            scope.setCurrentTag('tag3');
+            expect(scope.currentTag).toBe(null);
+        });
+    });
+    
+    describe('ItemsPerTag', function(){
+        it('should count the number of item per global tag', function(){
+            addItem('item1 #tag1');
+            addItem('item2 #tag2');
+            addItem('item3 #tag1 #tag2');
+            addItem('item4 #tag3');
+
+            expect(scope.itemPerTag().length).toBe(4);
+            expect(scope.itemPerTag('tag1').length).toBe(2);
+            expect(scope.itemPerTag('tag2').length).toBe(2);
+            expect(scope.itemPerTag('tag3').length).toBe(1);
+        });
+    });
 });

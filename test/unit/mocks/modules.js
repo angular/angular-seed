@@ -1,0 +1,1 @@
+angular.module('taggedList.mock', ['taggedList.mock.service']);

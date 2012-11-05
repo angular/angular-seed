@@ -12,7 +12,7 @@
  * @name angular.mock
  * @description
  *
- * Namespace from 'angular-mocks.js' which contains testing related code.
+ * Namespace from 'angular-modules.js' which contains testing related code.
  */
 angular.mock = {};
 

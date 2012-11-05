@@ -1,10 +1,18 @@
 'use strict';
 
-/* Filters */
-
-angular.module('myApp.filters', []).
-  filter('interpolate', ['version', function(version) {
-    return function(text) {
-      return String(text).replace(/\%VERSION\%/mg, version);
-    }
-  }]);
+angular.module('taggedList.filter', []).filter('byTag', function(){
+    return function(items, tag) {
+        if (!tag) {
+            return items;
+        }
+        else {
+            var itemsByTag = [];
+            angular.forEach(items, function(item) {
+               if (item.hasTag(tag)) {
+                   itemsByTag.push(item);
+               }
+            });
+            return itemsByTag;
+        }
+    };
+});
