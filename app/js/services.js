@@ -1,32 +1,50 @@
 'use strict';
-
-angular.module('taggedList.service', []).factory('taggedListService', function () {
-    var items = [];
-    var tags = [];
+angular.module('taggedList.service', ['taggedList.dao']).factory('taggedListService', function (itemDao) {
+    var taggedList = new TaggedList();
+    taggedList.items = itemDao.query();
 
     return {
-        getItems:function () {
-            if (!items.length) {
-                items = [];
-                this.addItem(new Item('first item', false, ['tag1']));
-                this.addItem(new Item('next item', false, ['tag2']));
-                this.addItem(new Item('third item', false, []));
-                this.addItem(new Item('fourth item', false, ['tag1', 'tag2']));
-            }
-            
-            return items;
+        getItems: function () {
+            return taggedList.items;
         },
         getTags: function() {
-            return tags;
+            return taggedList.tags;
         },
         addItem: function(item) {
             angular.forEach(item.tags, function(tag){
-                if (tags.indexOf(tag) === -1) {
-                    tags.push(tag);
-                }
+                if (taggedList.tags.indexOf(tag) == -1) {
+                    taggedList.tags.push(tag);
+                }               
             });                 
 
-            items.push(item);
-        }    
+            taggedList.items.push(item);
+            itemDao.save(item);
+        },
+        removeItem: function(itemToRemove){
+            var globalTagsToRemove = itemToRemove.tags;
+            
+            taggedList.items.forEach(function(item, key) {
+                if (item === itemToRemove) {
+                    taggedList.items.splice(key, 1);
+                }
+                else {
+                    angular.forEach(itemToRemove.tags, function(tag, index) {
+                        if (item.hasTag(tag)) {
+                            globalTagsToRemove.splice(index, 1);
+                        }
+                    });
+                }
+            });
+
+            globalTagsToRemove.forEach(function(globalTagToRemove){
+                angular.forEach(taggedList.tags, function(tag, index){
+                    if (tag === globalTagToRemove) {
+                        taggedList.tags.splice(index, 1);
+                    }
+                })
+            });
+
+            itemDao.remove(itemToRemove);
+        }
     };
 });

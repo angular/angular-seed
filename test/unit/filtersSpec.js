@@ -8,11 +8,11 @@ describe('filter', function() {
     beforeEach(inject(function (byTagFilter) {
         filter = byTagFilter;
         items = [
-            new Item('item1', false, []),
-            new Item('item2', false, ['category1']),
-            new Item('item3', false, ['category2']),
-            new Item('item4', false, ['category1', 'category2']),
-            new Item('item5', false, ['category3'])
+            new Item('item1', []),
+            new Item('item2', ['tag1']),
+            new Item('item3', ['tag2']),
+            new Item('item4', ['tag1', 'tag2']),
+            new Item('item5', ['tag3'])
         ];
     }));
 
@@ -23,9 +23,9 @@ describe('filter', function() {
         });
 
         it('should return items that match the selected tag', function() {
-            expect(filter(items, 'category1').length).toBe(2);
-            expect(filter(items, 'category2').length).toBe(2);
-            expect(filter(items, 'category3').length).toBe(1);
+            expect(filter(items, 'tag1').length).toBe(2);
+            expect(filter(items, 'tag2').length).toBe(2);
+            expect(filter(items, 'tag3').length).toBe(1);
         });
     });
 });
