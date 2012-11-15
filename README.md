@@ -30,6 +30,7 @@ You can pick one of these options:
 
 * serve this repository with your webserver
 * install node.js and run `scripts/web-server.js`
+* install vert.x and run `vertx run scripts/vertx-server.js` the app will be available at `http://localhost:8080/`
 
 Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
 your browser.
