@@ -123,6 +123,7 @@ fetch the changes and merge them into your project with git.
       test.bat          --> autotests unit tests with Testacular (windows)
       test.sh           --> autotests unit tests with Testacular (*nix)
       web-server.js     --> simple development webserver based on node.js
+      vertx-server.js   --> simple development webserver based on vert.x
 
     test/               --> test source files and libraries
       e2e/              -->
