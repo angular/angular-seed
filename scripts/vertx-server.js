@@ -1,7 +1,7 @@
 load('vertx.js');
 
 var webServerConf = { 
-  web_root: "../app/",
+  web_root: "app/",
   port: 8080,
   host: 'localhost'
 };
