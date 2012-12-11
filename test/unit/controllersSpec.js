@@ -5,9 +5,11 @@
 describe('MyCtrl1', function(){
   var myCtrl1;
 
-  beforeEach(function(){
-    myCtrl1 = new MyCtrl1();
-  });
+  beforeEach(module('myApp'));
+  
+  beforeEach(inject(function($controller){
+    $controller('MyCtrl1', {});
+  }));
 
 
   it('should ....', function() {
@@ -20,9 +22,11 @@ describe('MyCtrl2', function(){
   var myCtrl2;
 
 
-  beforeEach(function(){
-    myCtrl2 = new MyCtrl2();
-  });
+  beforeEach(module('myApp'));
+  
+  beforeEach(inject(function($controller){
+    $controller('MyCtrl2', {});
+  }));
 
 
   it('should ....', function() {
