@@ -50,6 +50,16 @@ applicable. Usually this is done by hosting the files by the backend server or t
 reverse-proxying the backend server(s) and a webserver(s).
 
 
+### Continuous deployment
+
+On CloudBees you can setup a build that runs (by default) your unit tests on Jenkins, and then deploys the seed application: 
+<a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/angular-js-clickstart/master/clickstart.json"><img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
+
+This can serve as a starting point for continuous deployment of your app. 
+
+
+
+
 ### Running unit tests
 
 We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
