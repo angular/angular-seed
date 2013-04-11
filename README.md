@@ -29,7 +29,8 @@ Clone the angular-seed repository and start hacking...
 You can pick one of these options:
 
 * serve this repository with your webserver
-* install node.js and run `scripts/web-server.js`
+* install node.js and run `scripts/web-server.js` 
+* install vert.x and run `vertx run scripts/vertx-server.js` from the root of the project and the app will be available at port 8080 by default.
 
 Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
 your browser.
@@ -130,6 +131,7 @@ fetch the changes and merge them into your project with git.
       test.bat          --> autotests unit tests with Karma (windows)
       test.sh           --> autotests unit tests with Karma (*nix)
       web-server.js     --> simple development webserver based on node.js
+      vertx-server.js   --> simple development webserver based on vert.x
 
     test/               --> test source files and libraries
       e2e/              -->
