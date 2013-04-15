@@ -10,11 +10,29 @@ files = [
   'test/unit/**/*.js'
 ];
 
-autoWatch = true;
+autoWatch = false;
 
 browsers = ['Chrome'];
 
-junitReporter = {
-  outputFile: 'test_out/unit.xml',
-  suite: 'unit'
+
+preprocessors = {
+    '**/js/Column.js': 'coverage',
+    '**/js/Table.js': 'coverage',
+    '**/js/Utilities.js': 'coverage'
 };
+
+reporters = ['junit','progress','coverage'];
+
+
+junitReporter = {
+    outputFile: 'test_out/unit.xml',
+    suite: 'unit'
+};
+
+coverageReporter = {
+    type : 'html',
+    dir : 'test_out/'
+};
+
+
+
