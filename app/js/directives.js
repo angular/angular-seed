@@ -1,11 +1,30 @@
 'use strict';
 
 /* Directives */
+var directiveModule = angular.module('myApp.directives', []);
 
+directiveModule.directive("treeGrid", function(){
 
-angular.module('myApp.directives', []).
-  directive('appVersion', ['version', function(version) {
-    return function(scope, elm, attrs) {
-      elm.text(version);
+    return {
+        restrict:'E',
+        replace:true,
+        scope: {
+            items:"="
+        },
+        templateUrl:'tree-grid.html',
+        link: function(scope, element, attrs){
+           console.log(scope.items)
+        }
+    }
+});
+
+directiveModule.directive('treeGridRow', function(){
+    return {
+        restrict:'E',
+        scope:{
+            item:"="
+        },
+        templateUrl:'tree-grid-row.html'
     };
-  }]);
+});
+

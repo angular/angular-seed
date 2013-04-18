@@ -3,9 +3,11 @@
 /* Controllers */
 
 angular.module('myApp.controllers', []).
-  controller('MyCtrl1', [function() {
+    controller("TaskCtrl", ['$scope', function ($scope){
 
-  }])
-  .controller('MyCtrl2', [function() {
-
-  }]);
+    $scope.tasks = [
+        {title: "create github repo", status: "Completed"},
+        {title: "fillout readme.md", status: "Not Started"},
+        {title: "create treeGrid directive with minimal data", status: "In Progress"}
+    ]
+}]);
