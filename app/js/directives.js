@@ -18,6 +18,37 @@ directiveModule.directive("treeGrid", function(){
     }
 });
 
+directiveModule.directive('treeGridHeaderRow', function(){
+    return {
+        restrict:'E',
+        scope:{
+            item:"="
+        },
+        templateUrl:'tree-grid-header-row.html',
+        link : function(scope){
+            var fieldNames = [];
+
+            for(var key in scope.item){
+                fieldNames[fieldNames.length] = key;
+            }
+
+            scope.fieldNames = fieldNames;
+            console.log(scope.fieldNames)
+        }
+    };
+
+});
+
+directiveModule.directive('treeGridHeaderCell', function(){
+    return {
+        restrict:'E',
+        scope:{
+            field:"@"
+        },
+        templateUrl:'tree-grid-header-cell.html'
+    };
+});
+
 directiveModule.directive('treeGridRow', function(){
     return {
         restrict:'E',
@@ -32,7 +63,7 @@ directiveModule.directive('treeGridCell', function(){
     return {
         restrict:'E',
         scope:{
-            field:"="
+            field:"@"
         },
         templateUrl:'tree-grid-cell.html'
     };
