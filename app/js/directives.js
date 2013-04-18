@@ -9,7 +9,8 @@ directiveModule.directive("treeGrid", function(){
         restrict:'E',
         replace:true,
         scope: {
-            items:"="
+            items:"=",
+            columns:"="
         },
         templateUrl:'tree-grid.html',
         link: function(scope, element, attrs){
@@ -22,19 +23,9 @@ directiveModule.directive('treeGridHeaderRow', function(){
     return {
         restrict:'E',
         scope:{
-            item:"="
+            columns:"="
         },
-        templateUrl:'tree-grid-header-row.html',
-        link : function(scope){
-            var fieldNames = [];
-
-            for(var key in scope.item){
-                fieldNames[fieldNames.length] = key;
-            }
-
-            scope.fieldNames = fieldNames;
-            console.log(scope.fieldNames)
-        }
+        templateUrl:'tree-grid-header-row.html'
     };
 
 });
@@ -43,7 +34,7 @@ directiveModule.directive('treeGridHeaderCell', function(){
     return {
         restrict:'E',
         scope:{
-            field:"@"
+            column:"="
         },
         templateUrl:'tree-grid-header-cell.html'
     };
