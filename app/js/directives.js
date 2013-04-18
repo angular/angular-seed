@@ -22,6 +22,7 @@ directiveModule.directive("treeGrid", function(){
 directiveModule.directive('treeGridHeaderRow', function(){
     return {
         restrict:'E',
+        replace:'true',
         scope:{
             columns:"="
         },
@@ -33,6 +34,7 @@ directiveModule.directive('treeGridHeaderRow', function(){
 directiveModule.directive('treeGridHeaderCell', function(){
     return {
         restrict:'E',
+        replace:'true',
         scope:{
             column:"="
         },
@@ -43,6 +45,7 @@ directiveModule.directive('treeGridHeaderCell', function(){
 directiveModule.directive('treeGridRow', function(){
     return {
         restrict:'E',
+        replace:'true',
         scope:{
             item:"="
         },
@@ -53,6 +56,7 @@ directiveModule.directive('treeGridRow', function(){
 directiveModule.directive('treeGridCell', function(){
     return {
         restrict:'E',
+        replace:'true',
         scope:{
             field:"@"
         },
