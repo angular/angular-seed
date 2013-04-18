@@ -59,4 +59,6 @@ angular.module('myApp.controllers', []).
 
         return tasks;
     }
+
+    $scope.lotsOTasks = $scope.buildTasks(100);
 }]);
