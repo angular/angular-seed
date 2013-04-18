@@ -3,8 +3,29 @@
 /* Directives */
 var directiveModule = angular.module('myApp.directives', []);
 
-directiveModule.directive("treeGrid", function(){
+directiveModule.directive('ngFocus', ['$parse', function($parse) {
+    return function(scope, element, attr) {
+        var fn = $parse(attr['ngFocus']);
+        element.bind('focus', function(event) {
+            scope.$apply(function() {
+                fn(scope, {$event:event});
+            });
+        });
+    }
+}]);
 
+directiveModule.directive('ngBlur', ['$parse', function($parse) {
+    return function(scope, element, attr) {
+        var fn = $parse(attr['ngBlur']);
+        element.bind('blur', function(event) {
+            scope.$apply(function() {
+                fn(scope, {$event:event});
+            });
+        });
+    }
+}]);
+
+directiveModule.directive("treeGrid", function(){
     return {
         restrict:'E',
         replace:true,
@@ -54,12 +75,31 @@ directiveModule.directive('treeGridRow', function(){
 });
 
 directiveModule.directive('treeGridCell', function(){
+
     return {
         restrict:'E',
         replace:'true',
         scope:{
             field:"@"
         },
-        templateUrl:'tree-grid-cell.html'
+        templateUrl:'tree-grid-cell.html',
+
+        link: function(scope, element){
+
+            scope.shouldShow = false;
+
+            scope.handleClick = function(event){
+                scope.shouldShow = true;
+            };
+
+            scope.showInput = function(){
+                return scope.shouldShow;
+            };
+
+            scope.blurInput = function(e){
+               scope.shouldShow = false;
+            }
+
+        }
     };
 });

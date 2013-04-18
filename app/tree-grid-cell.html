@@ -1,1 +1,4 @@
-<div>{{field}}</div>
+<div ng-click="handleClick($event)">
+    <div ng-show="!showInput()">{{field}}</div>
+    <div><input type='text' ng-model='field' ng-show="showInput()" ng-blur="blurInput()"/></div>
+</div>
