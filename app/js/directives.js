@@ -28,3 +28,12 @@ directiveModule.directive('treeGridRow', function(){
     };
 });
 
+directiveModule.directive('treeGridCell', function(){
+    return {
+        restrict:'E',
+        scope:{
+            field:"="
+        },
+        templateUrl:'tree-grid-cell.html'
+    };
+});
