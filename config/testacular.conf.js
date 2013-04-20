@@ -1,13 +1,13 @@
 basePath = '../';
 
 files = [
-  JASMINE,
-  JASMINE_ADAPTER,
-  'app/lib/angular/angular.js',
-  'app/lib/angular/angular-*.js',
-  'test/lib/angular/angular-mocks.js',
-  'app/js/**/*.js',
-  'test/unit/**/*.js'
+    JASMINE,
+    JASMINE_ADAPTER,
+    'app/lib/angular/angular.js',
+    'app/lib/angular/angular-*.js',
+    'test/lib/angular/angular-mocks.js',
+    'app/js/**/*.js',
+    'test/unit/**/*.js'
 ];
 
 autoWatch = false;
@@ -18,10 +18,11 @@ browsers = ['Chrome'];
 preprocessors = {
     '**/js/Column.js': 'coverage',
     '**/js/Table.js': 'coverage',
-    '**/js/Utilities.js': 'coverage'
+    '**/js/Utilities.js': 'coverage',
+    '**/js/Filters.js': 'coverage'
 };
 
-reporters = ['junit','progress','coverage'];
+reporters = ['junit', 'progress', 'coverage'];
 
 
 junitReporter = {
@@ -30,8 +31,8 @@ junitReporter = {
 };
 
 coverageReporter = {
-    type : 'html',
-    dir : 'test_out/'
+    type: 'html',
+    dir: 'test_out/'
 };
 
 
