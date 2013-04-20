@@ -5,6 +5,7 @@
 describe('Column Module', function () {
     beforeEach(module('SmartTable.Column', function ($provide) {
         $provide.constant('DefaultColumnConfiguration', {defaultValue: 'default', value: 'defaultValue'});
+        $provide.provider('Column', ColumnProvider);
     }));
 
 
