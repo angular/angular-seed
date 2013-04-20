@@ -2,34 +2,46 @@
 
 /* Column module */
 
-var columnModule = angular.module('SmartTable.Column', []);
-columnModule.constant('DefaultColumnConfiguration', {
+var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('DefaultColumnConfiguration', {
     isSortable: true,
-    map:'',
-    label:'',
-    sortPredicate:''
+    map: '',
+    label: '',
+    sortPredicate: '',
+    formatFunction: '',
+    formatName: '',
+    formatParameter: ''
 });
-columnModule.provider('Column', function () {
-    var column = function (config) {
-        if (!(this instanceof column)) {
-            return new column(config);
+
+
+function ColumnProvider(DefaultColumnConfiguration) {
+
+    function Column(config) {
+        if (!(this instanceof Column)) {
+            return new Column(config);
         }
         angular.extend(this, config);
-    };
+    }
 
     this.setDefaultOption = function (option) {
-        angular.extend(column.prototype, option);
+        angular.extend(Column.prototype, option);
     };
 
-    column.prototype.getConfigValue = function (configProperty) {
+    Column.prototype.getConfigValue = function (configProperty) {
         if (this[configProperty] !== undefined) {
             return this[configProperty];
         }
         throw new Error('config property ' + configProperty + ' does not exist');
     };
 
-    this.$get = ['DefaultColumnConfiguration', function (defaultConfig) {
-        this.setDefaultOption(defaultConfig);
-        return column;
-    }];
-});
+
+    this.setDefaultOption(DefaultColumnConfiguration);
+
+
+    this.$get = function () {
+        return Column;
+    };
+}
+
+ColumnProvider.$inject = ['DefaultColumnConfiguration'];
+smartTableColumnModule.provider('Column', ColumnProvider);
+
