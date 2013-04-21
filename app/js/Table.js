@@ -7,28 +7,97 @@
 angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters'])
     .constant('DefaultTableConfiguration', {
         selectionMode: 'single',
-        tableTitle: '',
-        dataCollection: '',
-        columns: '',
-        sortFunction: ''
-    })
-    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'DefaultTableConfiguration', 'ArrayUtility', function (scope, Column, filter, defaultConfig, array) {
+        isGlobalSearchActivated: true
 
-        //set default value
+
+        // sortAlgorithm: '',
+        // filterAlgorithm:''
+    })
+    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'DefaultTableConfiguration', 'ArrayUtility', function (scope, Column, filter, defaultConfig, arrayUtility) {
+
         angular.extend(scope, defaultConfig);
 
-
         scope.columns = [];
-        scope.dataCollection = [];
-        scope.displayedCollection = scope.dataCollection;
-        scope.tableTitle = '';
+        scope.displayedCollection = scope.dataCollection || [];
 
-        var sortFunction;
-
+        var
+            filterAlgorithm,
+            sortAlgorithm,
+            predicate = {},
+            lastColumnSort;
 
         /**
-         * 'select'/'unselect' a entry in an array by setting isSelected on the datarow Model (TODO check if it would be better not to 'pollute' the dataModel itself
-         * and use a wrapper/decorator for all the stuff related to the table features). Select one/multiple rows depending on the selectionMode
+         * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
+         * @param column
+         */
+        this.sortBy = function (column) {
+            var index = scope.columns.indexOf(column);
+            if (index !== -1) {
+                if (column.isSortable === true) {
+                    column.sortPredicate = column.sortPredicate || column.map;
+                    column.reverse = column.reverse !== true;
+                    lastColumnSort = column;
+                }
+            }
+
+            scope.displayedCollection = pipe(scope.dataCollection);
+        };
+
+        /**
+         * sort an array according to the current column configuration (predicate, reverese)
+         * @param array
+         * @param column
+         * @returns {*}
+         */
+        function sortDataRow(array, column) {
+            var sortAlgo = (sortAlgorithm && angular.isFunction(sortAlgorithm)) || filter('orderBy');
+            if (column) {
+                return arrayUtility.sort(array, sortAlgo, column.sortPredicate, column.reverse);
+            } else {
+                return array;
+            }
+        }
+
+        /**
+         * set the filter predicate used for searching
+         * @param input
+         * @param column
+         */
+        this.search = function (input, column) {
+
+            //update column and global predicate
+            if (column && scope.columns.indexOf(column) !== -1) {
+                predicate['$'] = '';
+                column.filterPredicate = input;
+            } else {
+                for (var j = 0, l = scope.columns.length; j < l; j++) {
+                    scope.columns[j].filterPredicate = '';
+                }
+                predicate['$'] = input;
+            }
+
+            for (var j = 0, l = scope.columns.length; j < l; j++) {
+                predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
+            }
+
+            scope.displayedCollection = pipe(scope.dataCollection);
+
+        };
+
+        /**
+         * combine sort and search operation
+         * @param array
+         * @returns {*}
+         */
+        function pipe(array) {
+            var filterAlgo = (filterAlgorithm && angular.isFunction(filterAlgorithm)) || filter('filter');
+            //filter and sort are commutative
+            return sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
+        }
+
+        //TODO check if it would be better not to 'pollute' the dataModel itself and use a wrapper/decorator for all the stuff related to the table features like we do for column (then we could emit event)
+        /**
+         * 'select'/'unselect' an entry in an array by setting isSelected on the datarow Model. Select one/multiple rows depending on the selectionMode
          * @param array the data array where we can select/unselect values
          * @param selectionMode 'single', 'multiple' or equivalent to 'none'
          * @param index of the item to select in the array
@@ -36,11 +105,11 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          */
         function selectDataRow(array, selectionMode, index, select) {
 
+            var dataRow;
+
             if ((!angular.isArray(array)) || (selectionMode !== 'multiple' && selectionMode !== 'single')) {
                 return;
             }
-
-            var dataRow;
 
             if (index >= 0 && index < array.length) {
                 dataRow = array[index];
@@ -69,7 +138,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          */
         this.insertColumn = function (columnConfig, index) {
             var column = new Column(columnConfig);
-            array.insertAt(scope.columns, index, column);
+            arrayUtility.insertAt(scope.columns, index, column);
         };
 
         /**
@@ -77,7 +146,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @param columnIndex index of the column to be removed
          */
         this.removeColumn = function (columnIndex) {
-            array.removeAt(scope.columns, columnIndex);
+            arrayUtility.removeAt(scope.columns, columnIndex);
         };
 
         /**
@@ -86,28 +155,9 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @param newIndex index of the column after the column is moved
          */
         this.moveColumn = function (oldIndex, newIndex) {
-            array.moveAt(scope.columns, oldIndex, newIndex);
+            arrayUtility.moveAt(scope.columns, oldIndex, newIndex);
         };
 
-        /**
-         * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
-         * @param column
-         */
-        this.sortBy = function (column) {
-            var index = scope.columns.indexOf(column);
-            if (index !== -1) {
-                if (column.isSortable === true) {
-                    column.sortPredicate = column.sortPredicate || column.map;
-                    column.reverse = column.reverse !== true;
-                    //if custom sorting function
-                    if (sortFunction) {
-                        scope.displayedCollection = sortFunction(scope.displayedCollection, column.sortPredicate, column.reverse);
-                    } else {
-                        scope.displayedCollection = filter('orderBy')(scope.displayedCollection, column.sortPredicate, column.reverse);
-                    }
-                }
-            }
-        };
 
         /*///////////
          ROW API
@@ -130,7 +180,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*} item just removed or undefined
          */
         this.removeDataRow = function (rowIndex) {
-            array.removeAt(scope.displayedCollection, rowIndex);
+            arrayUtility.removeAt(scope.displayedCollection, rowIndex);
         };
 
         /**
@@ -139,7 +189,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @param newIndex
          */
         this.moveDataRow = function (oldIndex, newIndex) {
-            array.moveAt(scope.displayedCollection, oldIndex, newIndex);
+            arrayUtility.moveAt(scope.displayedCollection, oldIndex, newIndex);
         };
     }]);
 
