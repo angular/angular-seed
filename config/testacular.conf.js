@@ -19,7 +19,8 @@ preprocessors = {
     '**/js/Column.js': 'coverage',
     '**/js/Table.js': 'coverage',
     '**/js/Utilities.js': 'coverage',
-    '**/js/Filters.js': 'coverage'
+    '**/js/Filters.js': 'coverage',
+    '**/js/Directives.js': 'coverage'
 };
 
 reporters = ['junit', 'progress', 'coverage'];

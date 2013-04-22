@@ -28,19 +28,5 @@ describe('Column Module', function () {
             expect(column.otherValue).toEqual('otherValue');
 
         }));
-
-        it('should return an existing config property or throw an exception', inject(function (Column) {
-            var column = new Column();
-            expect(column.getConfigValue('defaultValue')).toEqual('default');
-
-            try {
-                column.getConfigValue('dummy');
-
-                //we should never reach here
-                expect(true).toBe(false);
-            } catch (e) {
-                expect(e.message).toEqual('config property ' + 'dummy' + ' does not exist');
-            }
-        }));
     });
 });

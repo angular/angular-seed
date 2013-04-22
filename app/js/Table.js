@@ -8,8 +8,6 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
     .constant('DefaultTableConfiguration', {
         selectionMode: 'single',
         isGlobalSearchActivated: true
-
-
         // sortAlgorithm: '',
         // filterAlgorithm:''
     })
@@ -18,7 +16,8 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
         angular.extend(scope, defaultConfig);
 
         scope.columns = [];
-        scope.displayedCollection = scope.dataCollection || [];
+        scope.dataCollection = scope.dataCollection || [];
+        scope.displayedCollection = scope.dataCollection;
 
         var
             filterAlgorithm,
@@ -180,7 +179,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*} item just removed or undefined
          */
         this.removeDataRow = function (rowIndex) {
-            arrayUtility.removeAt(scope.displayedCollection, rowIndex);
+            arrayUtility.removeAt(scope.dataCollection, rowIndex);
         };
 
         /**

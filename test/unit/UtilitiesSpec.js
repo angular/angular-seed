@@ -3,9 +3,7 @@
 
 describe('utilityModule Module', function () {
 
-    var array,
-        selectionMode,
-        selectFactory;
+    var array;
 
     beforeEach(module('SmartTable.Utilities', function () {
 
@@ -60,13 +58,13 @@ describe('utilityModule Module', function () {
             expect(array.length).toBe(2);
         }));
 
-
         it('should move an item from a lower index to an higher one', inject(function (ArrayUtility) {
             ArrayUtility.moveAt(array, 0, 2);
             expect(array.length).toBe(3);
             expect(array[0].id).toBe(1);
             expect(array[2].id).toBe(0);
         }));
+
         it('should move an item from a higher index to an lower one', inject(function (ArrayUtility) {
             ArrayUtility.moveAt(array, 2, 1);
             expect(array.length).toBe(3);
@@ -88,6 +86,105 @@ describe('utilityModule Module', function () {
                 {id: 2}
             ]);
         }));
+
+        describe('sort array', function () {
+            var
+                predicate,
+                reverse;
+
+            beforeEach(function () {
+                predicate = '';
+                reverse = '';
+                array = [
+                    {id: 0, name: 'laurent'},
+                    {id: 2, name: 'blandine'},
+                    {id: 1, name: 'francoise'}
+                ];
+            });
+
+
+            it('should return the array as it was if now algorithm is provided', inject(function (ArrayUtility) {
+                expect(ArrayUtility.sort(array, 'whaterver', predicate, reverse)).toEqual(array);
+            }));
+
+            it('should sort array with provided algorithm', inject(function ($filter, ArrayUtility) {
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual($filter('orderBy')(array, predicate, false));
+                expect(ArrayUtility.sort(array), $filter('orderBy'), predicate, reverse).toEqual(array); //(no predicate has been provided
+
+                predicate = 'id';
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual($filter('orderBy')(array, 'id', false));
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual([
+                    {id: 0, name: 'laurent'},
+                    {id: 1, name: 'francoise'},
+                    {id: 2, name: 'blandine'}
+                ]);
+
+                var sortMock = {
+                    sortAlgo: function (array, predicate, reverse) {
+                        return array;
+                    }
+                };
+                predicate = 'id';
+                reverse = true;
+                spyOn(sortMock, 'sortAlgo');
+                ArrayUtility.sort(array, sortMock.sortAlgo, predicate, reverse);
+                expect(sortMock.sortAlgo).toHaveBeenCalledWith(array, 'id', true);
+
+            }));
+
+            it('should sort with reverse =true only if it is explicit set', inject(function ($filter, ArrayUtility) {
+                predicate = 'id';
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual($filter('orderBy')(array, 'id', false));
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual([
+                    {id: 0, name: 'laurent'},
+                    {id: 1, name: 'francoise'},
+                    {id: 2, name: 'blandine'}
+                ]);
+                reverse = 'whatever';
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual($filter('orderBy')(array, 'id', false));
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual([
+                    {id: 0, name: 'laurent'},
+                    {id: 1, name: 'francoise'},
+                    {id: 2, name: 'blandine'}
+                ]);
+                reverse = true;
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual($filter('orderBy')(array, 'id', true));
+                expect(ArrayUtility.sort(array, $filter('orderBy'), predicate, reverse)).toEqual([
+                    {id: 2, name: 'blandine'},
+                    {id: 1, name: 'francoise'},
+                    {id: 0, name: 'laurent'}
+                ]);
+            }));
+        });
+        describe('filter utility', function () {
+            var predicate;
+            beforeEach(function () {
+                predicate = '';
+                array = [
+                    {id: 0, name: 'laurent'},
+                    {id: 2, name: 'blandine'},
+                    {id: 1, name: 'francoise'}
+                ];
+            });
+
+            it('should use provided algorithm or return input array', inject(function ($filter, ArrayUtility) {
+                expect(ArrayUtility.filter(array, 'whatever', predicate)).toEqual(array);
+                var filterMock = {
+                    filterAlgo: function (array, predicate) {
+                        return [array[0]];
+                    }
+                };
+                spyOn(filterMock, 'filterAlgo').andCallThrough();
+                predicate = 'whatever';
+                var returnedArray = ArrayUtility.filter(array, filterMock.filterAlgo, predicate);
+                expect(filterMock.filterAlgo).toHaveBeenCalledWith(array, 'whatever');
+                expect(returnedArray.length).toBe(1);
+                expect(returnedArray).toEqual([
+                    {id: 0, name: 'laurent'}
+                ]);
+            }));
+
+        });
 
     });
 });

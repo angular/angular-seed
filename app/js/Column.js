@@ -9,7 +9,9 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
     sortPredicate: '',
     formatFunction: '',
     formatName: '',
-    formatParameter: ''
+    formatParameter: '',
+    filterPredicate: '',
+    templateUrl: ''
 });
 
 
@@ -26,16 +28,7 @@ function ColumnProvider(DefaultColumnConfiguration) {
         angular.extend(Column.prototype, option);
     };
 
-    Column.prototype.getConfigValue = function (configProperty) {
-        if (this[configProperty] !== undefined) {
-            return this[configProperty];
-        }
-        throw new Error('config property ' + configProperty + ' does not exist');
-    };
-
-
     this.setDefaultOption(DefaultColumnConfiguration);
-
 
     this.$get = function () {
         return Column;

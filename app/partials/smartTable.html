@@ -1,18 +1,24 @@
-<table class="smart-table">
-    <thead>
-    <tr class="smart-table-title-row" ng-show="tableTitle!=''">
-        <td class="smart-table-header-title" colspan="{{columns.length}}">{{tableTitle}}</td>
-    </tr>
-    <tr class="smart-table-header-row">
-        <th ng-repeat="column in columns" class="smart-table-header-cell" scope="col">{{column.label}}</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr ng-repeat="dataRow in displayedCollection" class="smart-table-data-row">
-        <td ng-repeat="column in columns" class="smart-table-data-cell">
-            {{dataRow[column.map] | format:column['formatFunction']:column['formatName']:column['formatParameter']}}
-        </td>
-    </tr>
-    </tbody>
-    <tfoot></tfoot>
-</table>
+<div class="smart-table-container">
+    <table class="smart-table">
+        <thead>
+        <tr class="smart-table-title-row" ng-show="tableTitle!=''">
+            <td class="smart-table-header-title" colspan="{{columns.length}}">{{tableTitle}}</td>
+        </tr>
+        <tr class="smart-table-global-search-row" ng-show="isGlobalSearchActivated">
+            <td class="smart-table-global-search" column-span="{{columns.length}}" colspan="{{columnSpan}}">
+            </td>
+        </tr>
+        <tr class="smart-table-header-row">
+            <th ng-repeat="column in columns" class="smart-table-header-cell" scope="col">{{column.label}}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="dataRow in displayedCollection" class="smart-table-data-row">
+            <td ng-repeat="column in columns" class="smart-table-data-cell">
+
+            </td>
+        </tr>
+        </tbody>
+        <tfoot></tfoot>
+    </table>
+</div>

@@ -44,10 +44,44 @@ angular.module('SmartTable.Utilities', [])
             }
         };
 
+        /**
+         * sort arrayRef according to sortAlgorithm following predicate and reverse
+         * @param arrayRef
+         * @param sortAlgorithm
+         * @param predicate
+         * @param reverse
+         * @returns {*}
+         */
+        var sort = function (arrayRef, sortAlgorithm, predicate, reverse) {
+
+            if (!sortAlgorithm || !angular.isFunction(sortAlgorithm)) {
+                return arrayRef;
+            } else {
+                return sortAlgorithm(arrayRef, predicate, reverse === true);//excpet if reverse is true it will take it as false
+            }
+        };
+
+        /**
+         * filter arrayRef according with filterAlgorithm and predicate
+         * @param arrayRef
+         * @param filterAlgorithm
+         * @param predicate
+         * @returns {*}
+         */
+        var filter = function (arrayRef, filterAlgorithm, predicate) {
+            if (!filterAlgorithm || !angular.isFunction(filterAlgorithm)) {
+                return arrayRef;
+            } else {
+                return filterAlgorithm(arrayRef, predicate);
+            }
+        };
+
         return {
             removeAt: removeAt,
             insertAt: insertAt,
-            moveAt: moveAt
+            moveAt: moveAt,
+            sort: sort,
+            filter: filter
         };
     });
 
