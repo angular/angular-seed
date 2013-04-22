@@ -7,35 +7,41 @@ angular.module('SmartTable.directives', [])
     .directive('smartTable', ['$log', function (log) {
         return {
             restrict: 'E',
-            scope: {},
+            scope: {
+                columnCollection: '=columns',
+                dataCollection: '=rows',
+                tableTitle: '@'
+            },
             replace: 'true',
             templateUrl: 'partials/smartTable.html',
             controller: 'TableCtrl',
             link: function (scope, element, attr, ctrl) {
 
-                //TODO for the moment we assign the table ctrl scope here
-                scope.displayedCollection = scope.dataCollection = [
-                    {firstName: 'Laurent', lastName: 'Renard', birthDate: new Date('1987-05-21'), balance: 7656},
-                    {firstName: 'Blandine', lastName: 'Faivre', birthDate: new Date('1987-04-25'), balance: 2323},
-                    {firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: -2343.908}
-                ];
+                //insert columns from column config
+                if (scope.columnCollection) {
+                    for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
+                        ctrl.insertColumn(scope.columnCollection[i]);
+                    }
+                } else {
+                    //or guess data Structure
+                    if (scope.dataCollection && scope.dataCollection.length > 0) {
+                        var templateObject = scope.dataCollection[0];
+                        angular.forEach(templateObject, function (value, key) {
+                            ctrl.insertColumn({label: key, map: key});
+                        });
+                    }
+                }
 
+                //if item are added or removed into the data model from outside the grid
+                scope.$watch('dataCollection.length', function (oldValue, newValue) {
+                    if (oldValue !== newValue) {
+                        ctrl.sortBy();//it will trigger the refresh... some hack ?
+                    }
+                });
 
-                scope.columns = [];
-
-                ctrl.insertColumn({label: 'FirsName', map: 'firstName', sortPredicate: function (item) {
-                    return item.firstName[item.firstName.length - 1];
-                }});
-                ctrl.insertColumn({label: 'LastName', map: 'lastName'});
-                ctrl.insertColumn({label: 'birth date', map: 'birthDate', formatName: 'date'});
-                ctrl.insertColumn({label: 'Balance', map: 'balance'});
-
-                scope.tableTitle = 'super table';
-                //   scope.selectionMode='multiple';
             }
         };
     }])
-
     .directive('smartTableDataRow', function () {
 
         return {
@@ -59,7 +65,6 @@ angular.module('SmartTable.directives', [])
             }
         }
     })
-
     .directive('smartTableHeaderCell', function () {
         return {
             restrict: 'C',
@@ -73,4 +78,78 @@ angular.module('SmartTable.directives', [])
 
             }
         }
-    });
+    })
+    .directive('smartTableGlobalSearch', function () {
+        return {
+            restrict: 'C',
+            require: '^smartTable',
+            scope: {
+                columnSpan: '@'
+            },
+            templateUrl: 'partials/globalSearchCell.html',
+            replace: false,
+            link: function (scope, element, attr, ctrl) {
+
+                scope.searchValue = '';
+
+                scope.$watch('searchValue', function (value) {
+                    ctrl.search(value);
+                });
+            }
+        }
+    })
+    .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', function (filter, http, templateCache, compile) {
+        return {
+            restrict: 'C',
+            terminal: true,
+            compile: function (element, attr) {
+
+                return function (scope, element) {
+                    var column = scope.column,
+                        row = scope.dataRow,
+                        format = filter('format'),
+                        childScope;
+
+                    //can be useful for child directives
+                    scope.formatedValue = format(row[column.map], column.formatFunction, column.formatName, column.formatParameter)
+
+                    function defaultContent() {
+                        //clear content
+                        element.html('');
+
+                        //append formatedValue
+                        element.text(scope.formatedValue);
+                    }
+
+                    scope.$watch('column.templateUrl', function (value) {
+
+                        if (value) {
+                            //we have to load the template (and cache it) : a kind of ngInclude
+                            http.get(value, {cache: templateCache}).success(function (response) {
+
+                                //create a scope
+                                childScope = scope.$new();
+                                //compile the element with its new content and new scope
+                                element.html(response);
+                                compile(element.contents())(childScope);
+                            }).error(defaultContent);
+
+                        } else {
+                            //else append the formated value
+                            defaultContent();
+                        }
+                    });
+                };
+            }
+        };
+    }])
+    .directive('youpi', function () {
+        return {
+            restrict: 'C',
+            link: function (scope, element, attr) {
+                if (scope.dataRow) {
+                    element.text(scope.dataRow.birthDate < new Date('1980/01/01') ? 'old' : 'young');
+                }
+            }
+        }
+    })
