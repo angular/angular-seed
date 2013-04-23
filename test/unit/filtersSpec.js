@@ -36,38 +36,38 @@ describe('filter', function () {
 
         it('should behave like date filter', function () {
             input = new Date('2013/04/20');
-            expect(format(input, undefined, 'date', parameter)).toEqual(filter('date')(input, parameter));
+            expect(format(input, 'date', parameter)).toEqual(filter('date')(input, parameter));
             parameter = 'MMMM';
-            expect(format(input, undefined, 'date', parameter)).toEqual(filter('date')(input, parameter));
+            expect(format(input, 'date', parameter)).toEqual(filter('date')(input, parameter));
         });
 
         it('should behave like currency filter', function () {
             input = 2000;
-            expect(format(input, undefined, 'currency', parameter)).toEqual(filter('currency')(input, parameter));
+            expect(format(input, 'currency', parameter)).toEqual(filter('currency')(input, parameter));
             parameter = '$';
-            expect(format(input, undefined, 'currency', parameter)).toEqual(filter('currency')(input), parameter);
+            expect(format(input, 'currency', parameter)).toEqual(filter('currency')(input), parameter);
         });
 
         it('should behave like json filter', function () {
             input = {prop: 'value'};
-            expect(format(input, undefined, 'json')).toEqual(filter('json')(input));
+            expect(format(input, 'json')).toEqual(filter('json')(input));
         });
 
         it('should behave like lowercase filter', function () {
             input = 'SldsrRS';
-            expect(format(input, undefined, 'lowercase', parameter)).toEqual(filter('lowercase')(input, parameter));
+            expect(format(input, 'lowercase', parameter)).toEqual(filter('lowercase')(input, parameter));
         });
 
         it('should behave like uppercase filter', function () {
             input = 'SldsrRS';
-            expect(format(input, undefined, 'uppercase', parameter)).toEqual(filter('uppercase')(input, parameter));
+            expect(format(input, 'uppercase', parameter)).toEqual(filter('uppercase')(input, parameter));
         });
 
         it('should behave like number filter', function () {
             input = 3434.34343;
-            expect(format(input, undefined, 'number', parameter)).toEqual(filter('number')(input, parameter));
+            expect(format(input, 'number', parameter)).toEqual(filter('number')(input, parameter));
             parameter = 2;
-            expect(format(input, undefined, 'number', parameter)).toEqual(filter('number')(input, parameter));
+            expect(format(input, 'number', parameter)).toEqual(filter('number')(input, parameter));
         });
 
         it('should use the provided function', function () {
@@ -76,8 +76,8 @@ describe('filter', function () {
                 return value[parameter - 1];
             };
             input = 'abcdefghij';
-            expect(format(input, customFunction, 'any', 2)).toEqual('b');
-            expect(format(input, customFunction, 'uppercase', 3)).toEqual('c');
+            expect(format(input, customFunction, 2)).toEqual('b');
+            expect(format(input, customFunction, 3)).toEqual('c');
         })
     });
 });
