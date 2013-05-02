@@ -1,0 +1,30 @@
+{
+    "name": "Smart-Table",
+    "version": "0.0.0",
+    "description": "a table for AngularJS",
+    "main": "index.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lorenzofox3/angular-seed.git"
+    },
+    "keywords": [
+        "table",
+        "grid",
+        "angularjs"
+    ],
+    "author": "Laurent Renard",
+    "license": "MIT",
+    "readmeFilename": "README.md",
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-contrib-concat": "~0.3.0",
+        "grunt-contrib-clean": "~0.4.1",
+        "grunt-contrib-yuidoc": "~0.4.0"
+    }
+}

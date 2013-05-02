@@ -1,12 +1,10 @@
-'use strict';
-
 /*table module */
 
 //TODO be able to register function on remove/add column and rows or use the scope to emit the events
 
 angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters'])
     .constant('DefaultTableConfiguration', {
-        selectionMode: 'single',
+        selectionMode: 'none',
         isGlobalSearchActivated: true
         // sortAlgorithm: '',
         // filterAlgorithm:''
@@ -25,14 +23,24 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             predicate = {},
             lastColumnSort;
 
+//        scope.$watch('displayedCollection', function (val) {
+//            this.pipe(scope.displayedCollection);
+//        }, true);
+
         /**
          * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
+         * @method sortBy
          * @param column
          */
         this.sortBy = function (column) {
             var index = scope.columns.indexOf(column);
             if (index !== -1) {
                 if (column.isSortable === true) {
+                    // reset the last column used
+                    if (lastColumnSort && lastColumnSort !== column) {
+                        lastColumnSort.reverse = false;
+                    }
+
                     column.sortPredicate = column.sortPredicate || column.map;
                     column.reverse = column.reverse !== true;
                     lastColumnSort = column;
@@ -66,13 +74,13 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
 
             //update column and global predicate
             if (column && scope.columns.indexOf(column) !== -1) {
-                predicate['$'] = '';
+                predicate.$ = '';
                 column.filterPredicate = input;
             } else {
                 for (var j = 0, l = scope.columns.length; j < l; j++) {
                     scope.columns[j].filterPredicate = '';
                 }
-                predicate['$'] = input;
+                predicate.$ = input;
             }
 
             for (var j = 0, l = scope.columns.length; j < l; j++) {
@@ -179,7 +187,8 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*} item just removed or undefined
          */
         this.removeDataRow = function (rowIndex) {
-            arrayUtility.removeAt(scope.dataCollection, rowIndex);
+            var toRemove = arrayUtility.removeAt(scope.displayedCollection, rowIndex);
+            arrayUtility.removeAt(scope.dataCollection, scope.dataCollection.indexOf(toRemove));
         };
 
         /**

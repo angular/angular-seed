@@ -1,8 +1,4 @@
-'use strict';
-
 /* Directives */
-
-
 angular.module('SmartTable.directives', [])
     .directive('smartTable', ['$log', function (log) {
         return {
@@ -98,58 +94,129 @@ angular.module('SmartTable.directives', [])
             }
         }
     })
+    //a customisable cell (see templateUrl) and editable
     .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', function (filter, http, templateCache, compile) {
         return {
             restrict: 'C',
             terminal: true,
-            compile: function (element, attr) {
+            link: function (scope, element) {
+                var
+                    column = scope.column,
+                    row = scope.dataRow,
+                    format = filter('format'),
+                    childScope;
 
-                return function (scope, element) {
-                    var column = scope.column,
-                        row = scope.dataRow,
-                        format = filter('format'),
-                        childScope;
+                //can be useful for child directives
+                scope.formatedValue = format(row[column.map], column.formatFunction, column.formatParameter);
 
-                    //can be useful for child directives
-                    scope.formatedValue = format(row[column.map], column.formatFunction, column.formatName, column.formatParameter)
-
-                    function defaultContent() {
-                        //clear content
-                        element.html('');
-
-                        //append formatedValue
+                function defaultContent() {
+                    //clear content
+                    if (column.isEditable) {
+                        element.html('<editable-cell row="dataRow" column="column" type="column.type" value="dataRow[column.map]"></editable-cell>');
+                        compile(element.contents())(scope);
+                    } else {
                         element.text(scope.formatedValue);
                     }
+                }
 
-                    scope.$watch('column.templateUrl', function (value) {
+                scope.$watch('column.templateUrl', function (value) {
 
-                        if (value) {
-                            //we have to load the template (and cache it) : a kind of ngInclude
-                            http.get(value, {cache: templateCache}).success(function (response) {
+                    if (value) {
+                        //we have to load the template (and cache it) : a kind of ngInclude
+                        http.get(value, {cache: templateCache}).success(function (response) {
 
-                                //create a scope
-                                childScope = scope.$new();
-                                //compile the element with its new content and new scope
-                                element.html(response);
-                                compile(element.contents())(childScope);
-                            }).error(defaultContent);
+                            //create a scope
+                            childScope = scope.$new();
+                            //compile the element with its new content and new scope
+                            element.html(response);
+                            compile(element.contents())(childScope);
+                        }).error(defaultContent);
 
-                        } else {
-                            //else append the formated value
-                            defaultContent();
-                        }
-                    });
-                };
+                    } else {
+                        defaultContent();
+                    }
+                });
             }
         };
     }])
-    .directive('youpi', function () {
+//directive that allow type to be bound in input
+    .
+    directive('inputType', ['$parse', function (parse) {
         return {
-            restrict: 'C',
-            link: function (scope, element, attr) {
-                if (scope.dataRow) {
-                    element.text(scope.dataRow.birthDate < new Date('1980/01/01') ? 'old' : 'young');
-                }
+            restrict: 'A',
+            priority: 9999,
+            link: function (scope, ielement, iattr) {
+                //force the type to be set before inputDirective is called
+                var getter = parse(iattr.type),
+                    type = getter(scope);
+                iattr.$set('type', type);
             }
-        }
-    })
+        };
+    }])
+//    //Kai Gorner solution to bug (see https://groups.google.com/forum/?fromgroups=#!topic/angular/pRc5pu3bWQ0)
+//    .directive('proxyValidity', function () {
+//        return {
+//            require: 'ngModel',
+//            link: function ($scope, $element, $attrs, modelCtrl) {
+//                if (typeof $element.prop('validity') === 'undefined')
+//                    return;
+//
+//                $element.bind('input', function (e) {
+//                    var validity = $element.prop('validity');
+//                    $scope.$apply(function () {
+//                        modelCtrl.$setValidity('badInput', !validity.badInput);
+//                    });
+//                });
+//            }
+//        };
+//    })
+    //an editable content in the context of a cell (see row, column)
+    .directive('editableCell', function () {
+        return {
+            restrict: 'E',
+            require: '^smartTable',
+            templateUrl: 'partials/editableCell.html',
+            scope: {
+                row: '=',
+                column: '=',
+                type: '='
+            },
+            replace: true,
+            link: function (scope, element, attrs, ctrl) {
+                var form = angular.element(element.children()[1]),
+                    input = angular.element(form.children()[0]);
+
+                //init values
+                scope.isEditMode = false;
+                scope.value = scope.row[scope.column.map];
+
+                scope.submit = function () {
+                    //update model if valid
+                    if (scope.myForm.$valid === true) {
+                        scope.row[scope.column.map] = scope.value;
+                        ctrl.sortBy();//it will trigger the refresh... some hack ? (ie it will sort, filter, etc with the new value)
+                    }
+                    scope.isEditMode = false;
+                };
+
+                scope.toggleEditMode = function ($event) {
+                    scope.isEditMode = true;
+                    $event.stopPropagation();
+                };
+
+                scope.$watch('isEditMode', function (newValue, oldValue) {
+                    if (newValue) {
+                        input[0].select();
+                        input[0].focus();
+                    }
+                });
+
+                input.bind('blur', function () {
+                    scope.$apply(function () {
+                        scope.submit();
+                    });
+                });
+            }
+        };
+    });
+

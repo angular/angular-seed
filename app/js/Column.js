@@ -1,14 +1,13 @@
-'use strict';
-
 /* Column module */
 
 var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('DefaultColumnConfiguration', {
     isSortable: true,
+    isEditable: false,
+    type: 'text',
     map: '',
     label: '',
     sortPredicate: '',
     formatFunction: '',
-    formatName: '',
     formatParameter: '',
     filterPredicate: '',
     templateUrl: ''

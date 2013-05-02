@@ -1,35 +1,67 @@
 /* app css stylesheet */
 
 .menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+    list-style: none;
+    border-bottom: 0.1em solid black;
+    margin-bottom: 2em;
+    padding: 0 0 0.5em;
 }
 
 .menu:before {
-  content: "[";
+    content: "[";
 }
 
 .menu:after {
-  content: "]";
+    content: "]";
 }
 
 .menu > li {
-  display: inline;
+    display: inline;
 }
 
 .menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
+    content: "|";
+    padding-right: 0.3em;
 }
 
 .menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
+    content: "";
+    padding: 0;
 }
 
-
-.smart-table-data-row.selected{
+.smart-table-data-row.selected {
     background: darkgray;
 }
+
+/*.smart-table{*/
+/*table-layout: fixed;*/
+/*border-collapse: collapse;*/
+/*width: 750px;*/
+/*}*/
+
+/*.smart-table-container{*/
+/*overflow: hidden;*/
+/*height: 300px;*/
+/*width: 600px;*/
+/*clear: both;*/
+/*}*/
+
+/*.smart-table tbody{*/
+/*display: block;*/
+/*width: 100%;*/
+/*overflow: scroll;*/
+/*}*/
+
+/*.smart-table tr{*/
+/*display: table-row;*/
+/*}*/
+
+/*.smart-table th{*/
+/*display: inline-block;*/
+/*width: 200px;*/
+/*}*/
+/*.smart-table td{*/
+/*border: 1px solid lightskyblue;*/
+/*width: 200px;*/
+/*display: table-cell;*/
+/*}*/

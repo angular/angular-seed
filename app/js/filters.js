@@ -1,5 +1,3 @@
-'use strict';
-
 /* Filters */
 
 angular.module('SmartTable.filters', []).
@@ -13,9 +11,9 @@ angular.module('SmartTable.filters', []).
                 returnFunction = formatFunction;
             } else {
                 returnFunction = defaultfilters.indexOf(formatFunction) !== -1 ? filter(formatFunction) : function (value) {
-                    return value
+                    return value;
                 };
             }
             return returnFunction(value, filterParameter);
-        }
+        };
     }]);
