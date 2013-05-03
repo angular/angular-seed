@@ -4,10 +4,13 @@
 
 angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters'])
     .constant('DefaultTableConfiguration', {
-        selectionMode: 'none',
-        isGlobalSearchActivated: true
-        // sortAlgorithm: '',
-        // filterAlgorithm:''
+        selectionMode: 'multiple',
+        isGlobalSearchActivated: true,
+        displaySelectionCheckbox: true,
+
+        //just to remind available option
+        sortAlgorithm: '',
+        filterAlgorithm: ''
     })
     .controller('TableCtrl', ['$scope', 'Column', '$filter', 'DefaultTableConfiguration', 'ArrayUtility', function (scope, Column, filter, defaultConfig, arrayUtility) {
 
@@ -22,10 +25,6 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             sortAlgorithm,
             predicate = {},
             lastColumnSort;
-
-//        scope.$watch('displayedCollection', function (val) {
-//            this.pipe(scope.displayedCollection);
-//        }, true);
 
         /**
          * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
@@ -178,6 +177,22 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             var index = scope.displayedCollection.indexOf(dataRow);
             if (index !== -1) {
                 selectDataRow(scope.displayedCollection, scope.selectionMode, index, dataRow.isSelected !== true);
+            }
+        };
+
+        /**
+         * select/unselect all the currently displayed raw
+         * @param value if true select, else unselect
+         */
+        this.toggleSelectionAll = function (value) {
+            var i = 0,
+                l = scope.displayedCollection.length;
+
+            if (scope.selectionMode !== 'multiple') {
+                return;
+            }
+            for (; i < l; i++) {
+                selectDataRow(scope.displayedCollection, scope.selectionMode, i, value === true);
             }
         };
 

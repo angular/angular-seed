@@ -4,13 +4,17 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
     isSortable: true,
     isEditable: false,
     type: 'text',
+
+    //it is useless to have that empty stirngs, but it reminds what is available
     map: '',
     label: '',
     sortPredicate: '',
     formatFunction: '',
     formatParameter: '',
     filterPredicate: '',
-    templateUrl: ''
+    templateUrl: '',
+    headerClass: '',
+    cellClass: ''
 });
 
 
