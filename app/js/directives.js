@@ -1,6 +1,12 @@
 /* Directives */
 angular.module('SmartTable.directives', [])
-    .directive('smartTable', ['$log', function (log) {
+    .constant('templateUrlList', {
+        smartTable: 'partials/smartTable.html',
+        smartTableGlobalSearch: 'partials/globalSearchCell.html',
+        editableCell: 'partials/editableCell.html',
+        selectionCheckbox: 'partials/selectionCheckbox.html'
+    })
+    .directive('smartTable', ['templateUrlList', function (templateList) {
         return {
             restrict: 'E',
             scope: {
@@ -9,23 +15,31 @@ angular.module('SmartTable.directives', [])
                 tableTitle: '@'
             },
             replace: 'true',
-            templateUrl: 'partials/smartTable.html',
+            templateUrl: templateList.smartTable,
             controller: 'TableCtrl',
             link: function (scope, element, attr, ctrl) {
 
+                var i = 0,
+                    l = scope.columnCollection.length,
+                    templateObject;
                 //insert columns from column config
                 if (scope.columnCollection) {
-                    for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
+                    for (; i < l; i++) {
                         ctrl.insertColumn(scope.columnCollection[i]);
                     }
                 } else {
                     //or guess data Structure
                     if (scope.dataCollection && scope.dataCollection.length > 0) {
-                        var templateObject = scope.dataCollection[0];
+                        templateObject = scope.dataCollection[0];
                         angular.forEach(templateObject, function (value, key) {
                             ctrl.insertColumn({label: key, map: key});
                         });
                     }
+                }
+
+                //add selection box column if required
+                if (scope.selectionMode === 'multiple' && scope.displaySelectionCheckbox === true) {
+                    ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerClass: 'selection-column', isSelectionColumn: true});
                 }
 
                 //if item are added or removed into the data model from outside the grid
@@ -38,6 +52,7 @@ angular.module('SmartTable.directives', [])
             }
         };
     }])
+    //just to be able to select the row
     .directive('smartTableDataRow', function () {
 
         return {
@@ -61,28 +76,55 @@ angular.module('SmartTable.directives', [])
             }
         }
     })
+    //header cell with sorting functionality or put a checkbox if this column is a selection column
     .directive('smartTableHeaderCell', function () {
         return {
             restrict: 'C',
             require: '^smartTable',
             link: function (scope, element, attr, ctrl) {
-                element.bind('click', function () {
-                    scope.$apply(function () {
-                        ctrl.sortBy(scope.column);
-                    });
-                });
 
+                //if it is the column with selectionCheckbox
+                if (scope.column.isSelectionColumn) {
+                    element.html('');
+                    var input = angular.element('<input type="checkbox" />');
+                    input.bind('change', function () {
+                        scope.$apply(function () {
+                            ctrl.toggleSelectionAll(input[0].checked);
+                        });
+                    });
+                    element.append(input);
+                }
+                //otherwise, normal behavior
+                else {
+                    element.bind('click', function () {
+                        scope.$apply(function () {
+                            ctrl.sortBy(scope.column);
+                        });
+                    })
+                }
             }
         }
     })
-    .directive('smartTableGlobalSearch', function () {
+    //credit to Valentyn shybanov : http://stackoverflow.com/questions/14544741/angularjs-directive-to-stoppropagation
+    .directive('stopEvent', function () {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attr) {
+                element.bind(attr.stopEvent, function (e) {
+                    e.stopPropagation();
+                });
+            }
+        }
+    })
+    //the global filter
+    .directive('smartTableGlobalSearch', ['templateUrlList', function (templateList) {
         return {
             restrict: 'C',
             require: '^smartTable',
             scope: {
                 columnSpan: '@'
             },
-            templateUrl: 'partials/globalSearchCell.html',
+            templateUrl: templateList.smartTableGlobalSearch,
             replace: false,
             link: function (scope, element, attr, ctrl) {
 
@@ -93,7 +135,7 @@ angular.module('SmartTable.directives', [])
                 });
             }
         }
-    })
+    }])
     //a customisable cell (see templateUrl) and editable
     .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', function (filter, http, templateCache, compile) {
         return {
@@ -139,12 +181,11 @@ angular.module('SmartTable.directives', [])
             }
         };
     }])
-//directive that allow type to be bound in input
-    .
-    directive('inputType', ['$parse', function (parse) {
+    //directive that allows type to be bound in input
+    .directive('inputType', ['$parse', function (parse) {
         return {
             restrict: 'A',
-            priority: 9999,
+            priority: 1,
             link: function (scope, ielement, iattr) {
                 //force the type to be set before inputDirective is called
                 var getter = parse(iattr.type),
@@ -171,11 +212,11 @@ angular.module('SmartTable.directives', [])
 //        };
 //    })
     //an editable content in the context of a cell (see row, column)
-    .directive('editableCell', function () {
+    .directive('editableCell', ['templateUrlList', function (templateList) {
         return {
             restrict: 'E',
             require: '^smartTable',
-            templateUrl: 'partials/editableCell.html',
+            templateUrl: templateList.editableCell,
             scope: {
                 row: '=',
                 column: '=',
@@ -188,20 +229,19 @@ angular.module('SmartTable.directives', [])
 
                 //init values
                 scope.isEditMode = false;
-                scope.value = scope.row[scope.column.map];
 
                 scope.submit = function () {
                     //update model if valid
                     if (scope.myForm.$valid === true) {
                         scope.row[scope.column.map] = scope.value;
-                        ctrl.sortBy();//it will trigger the refresh... some hack ? (ie it will sort, filter, etc with the new value)
+                        ctrl.sortBy();//it will trigger the refresh...  (ie it will sort, filter, etc with the new value)
                     }
                     scope.isEditMode = false;
                 };
 
                 scope.toggleEditMode = function ($event) {
+                    scope.value = scope.row[scope.column.map];
                     scope.isEditMode = true;
-                    $event.stopPropagation();
                 };
 
                 scope.$watch('isEditMode', function (newValue, oldValue) {
@@ -218,5 +258,5 @@ angular.module('SmartTable.directives', [])
                 });
             }
         };
-    });
+    }]);
 
