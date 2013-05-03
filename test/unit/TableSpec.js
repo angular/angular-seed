@@ -126,7 +126,7 @@ describe('Table module', function () {
 
             });
 
-            describe('Select a dataRow', function () {
+            describe('Select dataRows', function () {
 
                 describe('in single selection Mode', function () {
 
@@ -151,6 +151,13 @@ describe('Table module', function () {
                         expect(scope.displayedCollection[0].isSelected).toBe(true);
                         ctrl.toggleSelection(scope.displayedCollection[0]);
                         expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                    });
+
+                    it('should not select any row when calling toggleSelectAll', function () {
+                        ctrl.toggleSelectionAll(true);
+                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
                     });
                 });
 
@@ -189,6 +196,35 @@ describe('Table module', function () {
                         expect(array[0].isSelected).not.toBe(true);
                         expect(array[1].isSelected).not.toBe(true);
                         expect(array[2].isSelected).not.toBe(true);
+                    });
+
+                    it('should select all the displayed row when calling toggleSelectAll with true', function () {
+                        ctrl.toggleSelectionAll(true);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).toBe(true);
+
+                        scope.displayedCollection[0].isSelected = false;
+                        ctrl.toggleSelectionAll(true);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).toBe(true);
+                    });
+
+                    it('should unselect all the displayed row when calling toggleSelectAll with anything but true', function () {
+                        scope.displayedCollection[0].isSelected = true;
+                        scope.displayedCollection[1].isSelected = true;
+                        ctrl.toggleSelectionAll('whatever');
+                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+
+                        scope.displayedCollection[0].isSelected = true;
+                        scope.displayedCollection[1].isSelected = true;
+                        ctrl.toggleSelectionAll(false);
+                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
                     });
                 });
             });
