@@ -17,7 +17,7 @@ var app = angular.module('myApp', ['SmartTable.Table']).
             {label: 'FirsName', map: 'firstName', sortPredicate: function (dataRow) {
                 return dataRow.firstName.length;
             }},
-            {label: 'LastName', map: 'lastName', isSortable: true},
+            {label: 'LastName', map: 'lastName', isSortable: false},
             {label: 'birth date', map: 'birthDate', formatFunction: 'date', type: 'date', isEditable: true},
             {label: 'balance', map: 'balance', isEditable: true, type: 'number', formatFunction: 'currency', formatParameter: '$'},
             {label: 'email', map: 'email', isEditable: true, type: 'email'}

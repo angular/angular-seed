@@ -56,7 +56,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*}
          */
         function sortDataRow(array, column) {
-            var sortAlgo = (sortAlgorithm && angular.isFunction(sortAlgorithm)) || filter('orderBy');
+            var sortAlgo = (sortAlgorithm && angular.isFunction(sortAlgorithm)) === true ? sortAlgorithm : filter('orderBy');
             if (column) {
                 return arrayUtility.sort(array, sortAlgo, column.sortPredicate, column.reverse);
             } else {
@@ -96,7 +96,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*}
          */
         function pipe(array) {
-            var filterAlgo = (filterAlgorithm && angular.isFunction(filterAlgorithm)) || filter('filter');
+            var filterAlgo = (filterAlgorithm && angular.isFunction(filterAlgorithm)) === true ? filterAlgorithm : filter('filter');
             //filter and sort are commutative
             return sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
         }

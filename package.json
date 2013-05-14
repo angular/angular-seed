@@ -25,6 +25,7 @@
         "grunt": "~0.4.1",
         "grunt-contrib-concat": "~0.3.0",
         "grunt-contrib-clean": "~0.4.1",
-        "grunt-contrib-yuidoc": "~0.4.0"
+        "grunt-contrib-yuidoc": "~0.4.0",
+        "grunt-bootstrap": "~0.1.0"
     }
 }
