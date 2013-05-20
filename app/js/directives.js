@@ -6,12 +6,13 @@ angular.module('SmartTable.directives', [])
         editableCell: 'partials/editableCell.html',
         selectionCheckbox: 'partials/selectionCheckbox.html'
     })
-    .directive('smartTable', ['templateUrlList', function (templateList) {
+    .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
         return {
             restrict: 'E',
             scope: {
                 columnCollection: '=columns',
                 dataCollection: '=rows',
+                config: '=',
                 tableTitle: '@'
             },
             replace: 'true',
@@ -19,28 +20,43 @@ angular.module('SmartTable.directives', [])
             controller: 'TableCtrl',
             link: function (scope, element, attr, ctrl) {
 
-                var i = 0,
-                    l = scope.columnCollection.length,
-                    templateObject;
-                //insert columns from column config
-                if (scope.columnCollection) {
-                    for (; i < l; i++) {
-                        ctrl.insertColumn(scope.columnCollection[i]);
-                    }
-                } else {
-                    //or guess data Structure
-                    if (scope.dataCollection && scope.dataCollection.length > 0) {
-                        templateObject = scope.dataCollection[0];
-                        angular.forEach(templateObject, function (value, key) {
-                            ctrl.insertColumn({label: key, map: key});
-                        });
-                    }
-                }
+                var templateObject;
 
-                //add selection box column if required
-                if (scope.selectionMode === 'multiple' && scope.displaySelectionCheckbox === true) {
-                    ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerClass: 'selection-column', isSelectionColumn: true});
-                }
+                scope.$watch('config', function (config) {
+                    var newConfig = angular.extend({}, defaultConfig, config),
+                        length = scope.columns !== undefined ? scope.columns.length : 0;
+                    ctrl.setGlobalConfig(newConfig);
+                    if (newConfig.selectionMode !== 'multiple' || newConfig.displaySelectionCheckbox !== true) {
+                        for (var i = length - 1; i >= 0; i--) {
+                            if (scope.columns[i].isSelectionColumn === true) {
+                                ctrl.removeColumn(i);
+                            }
+                        }
+                    } else {
+                        //add selection box column if required
+                        ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerClass: 'selection-column', isSelectionColumn: true}, 0);
+                    }
+                }, true);
+
+                //insert columns from column config
+                //TODO add a way to clean all columns
+                scope.$watch('columnCollection', function (oldValue, newValue) {
+                    if (scope.columnCollection) {
+                        for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
+                            ctrl.insertColumn(scope.columnCollection[i]);
+                        }
+                    } else {
+                        //or guess data Structure
+                        if (scope.dataCollection && scope.dataCollection.length > 0) {
+                            templateObject = scope.dataCollection[0];
+                            angular.forEach(templateObject, function (value, key) {
+                                if (key[0] != '$') {
+                                    ctrl.insertColumn({label: key, map: key});
+                                }
+                            });
+                        }
+                    }
+                }, true);
 
                 //if item are added or removed into the data model from outside the grid
                 scope.$watch('dataCollection.length', function (oldValue, newValue) {
@@ -239,7 +255,7 @@ angular.module('SmartTable.directives', [])
                     scope.isEditMode = false;
                 };
 
-                scope.toggleEditMode = function ($event) {
+                scope.toggleEditMode = function () {
                     scope.value = scope.row[scope.column.map];
                     scope.isEditMode = true;
                 };

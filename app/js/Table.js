@@ -4,26 +4,25 @@
 
 angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters'])
     .constant('DefaultTableConfiguration', {
-        selectionMode: 'multiple',
-        isGlobalSearchActivated: true,
-        displaySelectionCheckbox: true,
+        selectionMode: 'none',
+        isGlobalSearchActivated: false,
+        displaySelectionCheckbox: false,
 
         //just to remind available option
         sortAlgorithm: '',
         filterAlgorithm: ''
     })
-    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'DefaultTableConfiguration', 'ArrayUtility', function (scope, Column, filter, defaultConfig, arrayUtility) {
+    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'ArrayUtility', function (scope, Column, filter, arrayUtility) {
 
-        angular.extend(scope, defaultConfig);
+        this.setGlobalConfig = function (config) {
+            angular.extend(scope, config);
+        };
 
         scope.columns = [];
         scope.dataCollection = scope.dataCollection || [];
         scope.displayedCollection = scope.dataCollection;
 
-        var
-            filterAlgorithm,
-            sortAlgorithm,
-            predicate = {},
+        var predicate = {},
             lastColumnSort;
 
         /**
@@ -56,7 +55,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*}
          */
         function sortDataRow(array, column) {
-            var sortAlgo = (sortAlgorithm && angular.isFunction(sortAlgorithm)) === true ? sortAlgorithm : filter('orderBy');
+            var sortAlgo = (scope.sortAlgorithm && angular.isFunction(scope.sortAlgorithm)) === true ? scope.sortAlgorithm : filter('orderBy');
             if (column) {
                 return arrayUtility.sort(array, sortAlgo, column.sortPredicate, column.reverse);
             } else {
@@ -96,7 +95,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*}
          */
         function pipe(array) {
-            var filterAlgo = (filterAlgorithm && angular.isFunction(filterAlgorithm)) === true ? filterAlgorithm : filter('filter');
+            var filterAlgo = (scope.filterAlgorithm && angular.isFunction(scope.filterAlgorithm)) === true ? scope.filterAlgorithm : filter('filter');
             //filter and sort are commutative
             return sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
         }
@@ -215,13 +214,3 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             arrayUtility.moveAt(scope.displayedCollection, oldIndex, newIndex);
         };
     }]);
-
-
-
-
-
-
-
-
-
-
