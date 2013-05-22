@@ -9,13 +9,14 @@
             </td>
         </tr>
         <tr class="smart-table-header-row">
-            <th ng-repeat="column in columns" class="smart-table-header-cell {{column.headerClass}}" scope="col">
-                {{column.label}}
+            <th ng-repeat="column in columns" ng-include="column.headerTemplateUrl"
+                class="smart-table-header-cell {{column.headerClass}}" scope="col">
             </th>
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="dataRow in displayedCollection" class="smart-table-data-row">
+        <tr ng-repeat="dataRow in displayedCollection" ng-class="{selected:dataRow.isSelected}"
+            class="smart-table-data-row">
             <td ng-repeat="column in columns" class="smart-table-data-cell {{column.cellClass}}"></td>
         </tr>
         </tbody>

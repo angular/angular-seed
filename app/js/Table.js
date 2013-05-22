@@ -12,10 +12,10 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
         sortAlgorithm: '',
         filterAlgorithm: ''
     })
-    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'ArrayUtility', function (scope, Column, filter, arrayUtility) {
+    .controller('TableCtrl', ['$scope', 'Column', '$filter', 'ArrayUtility', 'DefaultTableConfiguration', function (scope, Column, filter, arrayUtility, defaultConfig) {
 
         this.setGlobalConfig = function (config) {
-            angular.extend(scope, config);
+            angular.extend(scope, defaultConfig, config);
         };
 
         scope.columns = [];

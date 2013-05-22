@@ -4,7 +4,9 @@ angular.module('SmartTable.directives', [])
         smartTable: 'partials/smartTable.html',
         smartTableGlobalSearch: 'partials/globalSearchCell.html',
         editableCell: 'partials/editableCell.html',
-        selectionCheckbox: 'partials/selectionCheckbox.html'
+        selectionCheckbox: 'partials/selectionCheckbox.html',
+        selectAllCheckbox: 'partials/selectAllCheckbox.html',
+        defaultHeader: 'partials/defaultHeader.html'
     })
     .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
         return {
@@ -25,7 +27,10 @@ angular.module('SmartTable.directives', [])
                 scope.$watch('config', function (config) {
                     var newConfig = angular.extend({}, defaultConfig, config),
                         length = scope.columns !== undefined ? scope.columns.length : 0;
+
                     ctrl.setGlobalConfig(newConfig);
+
+                    //remove the checkbox column if needed
                     if (newConfig.selectionMode !== 'multiple' || newConfig.displaySelectionCheckbox !== true) {
                         for (var i = length - 1; i >= 0; i--) {
                             if (scope.columns[i].isSelectionColumn === true) {
@@ -34,7 +39,7 @@ angular.module('SmartTable.directives', [])
                         }
                     } else {
                         //add selection box column if required
-                        ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerClass: 'selection-column', isSelectionColumn: true}, 0);
+                        ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerTemplateUrl: templateList.selectAllCheckbox, isSelectionColumn: true}, 0);
                     }
                 }, true);
 
@@ -81,45 +86,36 @@ angular.module('SmartTable.directives', [])
                         ctrl.toggleSelection(scope.dataRow);
                     })
                 });
-
-                scope.$watch('dataRow.isSelected', function (value) {
-                    if (value) {
-                        element.addClass('selected');
-                    } else {
-                        element.removeClass('selected');
-                    }
-                });
             }
-        }
+        };
     })
     //header cell with sorting functionality or put a checkbox if this column is a selection column
-    .directive('smartTableHeaderCell', function () {
+    .directive('smartTableHeaderCell',function () {
         return {
             restrict: 'C',
             require: '^smartTable',
             link: function (scope, element, attr, ctrl) {
-
-                //if it is the column with selectionCheckbox
-                if (scope.column.isSelectionColumn) {
-                    element.html('');
-                    var input = angular.element('<input type="checkbox" />');
-                    input.bind('change', function () {
-                        scope.$apply(function () {
-                            ctrl.toggleSelectionAll(input[0].checked);
-                        });
+                element.bind('click', function () {
+                    scope.$apply(function () {
+                        ctrl.sortBy(scope.column);
                     });
-                    element.append(input);
-                }
-                //otherwise, normal behavior
-                else {
-                    element.bind('click', function () {
-                        scope.$apply(function () {
-                            ctrl.sortBy(scope.column);
-                        });
-                    })
-                }
+                })
             }
-        }
+        };
+    }).directive('smartTableSelectAll', function () {
+        return {
+            restrict: 'C',
+            require: '^smartTable',
+            scope: {},
+            link: function (scope, element, attr, ctrl) {
+                scope.isChecked = false;
+                scope.$watch('isChecked', function (newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        ctrl.toggleSelectionAll(newValue);
+                    }
+                });
+            }
+        };
     })
     //credit to Valentyn shybanov : http://stackoverflow.com/questions/14544741/angularjs-directive-to-stoppropagation
     .directive('stopEvent', function () {
@@ -147,12 +143,14 @@ angular.module('SmartTable.directives', [])
                 scope.searchValue = '';
 
                 scope.$watch('searchValue', function (value) {
+                    //todo perf improvement only filter on blur ?
                     ctrl.search(value);
                 });
             }
         }
     }])
     //a customisable cell (see templateUrl) and editable
+    //TODO check with the ng-include strategy
     .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', function (filter, http, templateCache, compile) {
         return {
             restrict: 'C',
@@ -210,23 +208,6 @@ angular.module('SmartTable.directives', [])
             }
         };
     }])
-//    //Kai Gorner solution to bug (see https://groups.google.com/forum/?fromgroups=#!topic/angular/pRc5pu3bWQ0)
-//    .directive('proxyValidity', function () {
-//        return {
-//            require: 'ngModel',
-//            link: function ($scope, $element, $attrs, modelCtrl) {
-//                if (typeof $element.prop('validity') === 'undefined')
-//                    return;
-//
-//                $element.bind('input', function (e) {
-//                    var validity = $element.prop('validity');
-//                    $scope.$apply(function () {
-//                        modelCtrl.$setValidity('badInput', !validity.badInput);
-//                    });
-//                });
-//            }
-//        };
-//    })
     //an editable content in the context of a cell (see row, column)
     .directive('editableCell', ['templateUrlList', function (templateList) {
         return {

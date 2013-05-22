@@ -4,6 +4,7 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
     isSortable: true,
     isEditable: false,
     type: 'text',
+    headerTemplateUrl: 'partials/defaultHeader.html',
 
     //it is useless to have that empty stirngs, but it reminds what is available
     map: '',
@@ -12,7 +13,7 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
     formatFunction: '',
     formatParameter: '',
     filterPredicate: '',
-    templateUrl: '',
+    cellTemplateUrl: '',
     headerClass: '',
     cellClass: ''
 });
