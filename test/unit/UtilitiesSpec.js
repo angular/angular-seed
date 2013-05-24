@@ -183,7 +183,39 @@ describe('utilityModule Module', function () {
                     {id: 0, name: 'laurent'}
                 ]);
             }));
+        });
 
+        describe('from/To', function () {
+            beforeEach(function () {
+                array = [
+                    {id: 0},
+                    {id: 1},
+                    {id: 2},
+                    {id: 3},
+                    {id: 4}
+                ];
+            });
+
+            it('should return a part of the array', inject(function (ArrayUtility) {
+                var part = ArrayUtility.fromTo(array, 1, 3);
+                expect(part.length).toBe(3);
+                expect(part[0].id).toBe(1);
+                expect(part[1].id).toBe(2);
+                expect(part[2].id).toBe(3);
+
+                part = ArrayUtility.fromTo(array, 3, 4);
+                expect(part.length).toBe(2);
+                expect(part[0].id).toBe(3);
+                expect(part[1].id).toBe(4);
+
+                part = ArrayUtility.fromTo(array, -2, 2);
+                expect(part.length).toBe(2);
+                expect(part[0].id).toBe(0);
+                expect(part[1].id).toBe(1);
+
+                part = ArrayUtility.fromTo(array, 1, -1);
+                expect(part.length).toBe(0);
+            }));
         });
 
     });

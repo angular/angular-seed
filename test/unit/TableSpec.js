@@ -13,7 +13,7 @@ describe('Table module', function () {
         ctrl;
 
     beforeEach(module('SmartTable.Table', function ($provide) {
-        $provide.constant('DefaultTableConfiguration', {defaultValue: 'default', value: 'defaultValue'});
+        $provide.constant('DefaultTableConfiguration', {defaultValue: 'defaultValue', value: 'defaultValue'});
     }));
 
     describe('Table Controller', function () {
@@ -27,11 +27,16 @@ describe('Table module', function () {
             });
         }));
 
-        it('should initialise the scope', function () {
+        it('should init/set the config', function () {
             expect(angular.isArray(scope.columns)).toBe(true);
             expect(scope.columns.length).toBe(0);
             expect(angular.isArray(scope.displayedCollection)).toBe(true);
             expect(angular.isArray(scope.dataCollection)).toBe(true);
+
+            ctrl.setGlobalConfig({value: 'overwritten'});
+            expect(scope.defaultValue).toEqual('defaultValue');
+            expect(scope.value).toEqual('overwritten');
+
         });
 
         //TODO clean column tests now that we have moved the 'array logic' to utilitiy (which is tested somewhere else)

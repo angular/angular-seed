@@ -20,6 +20,11 @@
             <td ng-repeat="column in columns" class="smart-table-data-cell {{column.cellClass}}"></td>
         </tr>
         </tbody>
-        <tfoot></tfoot>
+        <tfoot ng-show="isPaginationEnabled">
+        <tr class="smart-table-footer-row">
+            <td colspan="{{columns.length}}"><input type="number" ng-model="currentPage"/>
+            </td>
+        </tr>
+        </tfoot>
     </table>
 </div>

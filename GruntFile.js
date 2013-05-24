@@ -6,28 +6,15 @@ module.exports = function (grunt) {
             options: {
             },
             dist: {
-                src: ['./app/js/*.js'],
+                src: ['./app/js/Column.js', './app/js/directives.js', './app/js/filters.js', './app/js/Table.js', './app/js/Utilities.js'],
                 dest: './<%= pkg.name %>.js'
             }
         },
         clean: {
             test: ['test_out']
-        },
-        yuidoc: {
-            compile: {
-                name: '<%= pkg.name %>',
-                description: '<%= pkg.description %>',
-                version: '<%= pkg.version %>',
-                options: {
-                    paths: './app/js/Table.js',
-                    outdir: 'doc'
-                }
-            }
         }
-
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.registerTask('doc', ['yuidoc']);
 };

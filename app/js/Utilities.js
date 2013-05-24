@@ -72,14 +72,40 @@ angular.module('SmartTable.Utilities', [])
                 } else {
                     return filterAlgorithm(arrayRef, predicate);
                 }
+            },
+
+            /**
+             * return an array, part of array ref starting at min and the size of length
+             * @param arrayRef
+             * @param min
+             * @param length
+             * @returns {*}
+             */
+                fromTo = function (arrayRef, min, length) {
+                var out = [],
+                    limit,
+                    start;
+
+                start = Math.max(0, min);
+                start = Math.min(start, arrayRef.length - 1);
+
+                length = Math.max(0, length);
+                limit = Math.min(start + length, arrayRef.length);
+
+                for (var i = start; i < limit; i++) {
+                    out.push(arrayRef[i]);
+                }
+                return out;
             };
+
 
         return {
             removeAt: removeAt,
             insertAt: insertAt,
             moveAt: moveAt,
             sort: sort,
-            filter: filter
+            filter: filter,
+            fromTo: fromTo
         };
     });
 

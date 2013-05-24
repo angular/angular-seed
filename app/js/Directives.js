@@ -39,7 +39,7 @@ angular.module('SmartTable.directives', [])
                         }
                     } else {
                         //add selection box column if required
-                        ctrl.insertColumn({templateUrl: templateList.selectionCheckbox, headerTemplateUrl: templateList.selectAllCheckbox, isSelectionColumn: true}, 0);
+                        ctrl.insertColumn({cellTemplateUrl: templateList.selectionCheckbox, headerTemplateUrl: templateList.selectAllCheckbox, isSelectionColumn: true}, 0);
                     }
                 }, true);
 

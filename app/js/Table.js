@@ -7,6 +7,8 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
         selectionMode: 'none',
         isGlobalSearchActivated: false,
         displaySelectionCheckbox: false,
+        isPaginationEnabled: true,
+        itemsByPage: 10,
 
         //just to remind available option
         sortAlgorithm: '',
@@ -14,16 +16,35 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
     })
     .controller('TableCtrl', ['$scope', 'Column', '$filter', 'ArrayUtility', 'DefaultTableConfiguration', function (scope, Column, filter, arrayUtility, defaultConfig) {
 
+        scope.columns = [];
+        scope.dataCollection = scope.dataCollection || [];
+        scope.displayedCollection = []; //init empty array so that if pagination is enabled, it does not spoil performances
+        scope.numberOfPages = calculateNumberOfPages(scope.dataCollection);
+        scope.currentPage = 1;
+
+        function calculateNumberOfPages(array) {
+
+            if (!angular.isArray(array)) {
+                return 1;
+            }
+            if (array.length === 0 || scope.itemsByPage < 1) {
+                return 1;
+            }
+            return Math.ceil(array.length / scope.itemsByPage);
+        }
+
+        var predicate = {},
+            lastColumnSort;
+
+        this.changePage = function (page) {
+            scope.currentPage = page.index;
+            scope.displayedCollection = pipe(scope.dataCollection);
+        };
+
         this.setGlobalConfig = function (config) {
             angular.extend(scope, defaultConfig, config);
         };
 
-        scope.columns = [];
-        scope.dataCollection = scope.dataCollection || [];
-        scope.displayedCollection = scope.dataCollection;
-
-        var predicate = {},
-            lastColumnSort;
 
         /**
          * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
@@ -36,7 +57,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
                 if (column.isSortable === true) {
                     // reset the last column used
                     if (lastColumnSort && lastColumnSort !== column) {
-                        lastColumnSort.reverse = false;
+                        lastColumnSort.reverse = 'none';
                     }
 
                     column.sortPredicate = column.sortPredicate || column.map;
@@ -95,9 +116,12 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
          * @returns {*}
          */
         function pipe(array) {
-            var filterAlgo = (scope.filterAlgorithm && angular.isFunction(scope.filterAlgorithm)) === true ? scope.filterAlgorithm : filter('filter');
+            var filterAlgo = (scope.filterAlgorithm && angular.isFunction(scope.filterAlgorithm)) === true ? scope.filterAlgorithm : filter('filter'),
+                output;
             //filter and sort are commutative
-            return sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
+            output = sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
+            scope.numberOfPages = calculateNumberOfPages(output);
+            return scope.isPaginationEnabled ? arrayUtility.fromTo(output, scope.currentPage - 1, scope.itemsByPage) : output;
         }
 
         //TODO check if it would be better not to 'pollute' the dataModel itself and use a wrapper/decorator for all the stuff related to the table features like we do for column (then we could emit event)
@@ -214,3 +238,4 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             arrayUtility.moveAt(scope.displayedCollection, oldIndex, newIndex);
         };
     }]);
+
