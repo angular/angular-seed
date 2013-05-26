@@ -6,7 +6,7 @@ angular.module('SmartTable.directives', [])
         editableCell: 'partials/editableCell.html',
         selectionCheckbox: 'partials/selectionCheckbox.html',
         selectAllCheckbox: 'partials/selectAllCheckbox.html',
-        defaultHeader: 'partials/defaultHeader.html',
+        defaultHeader: 'partials/defaultHeader.html'
     })
     .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
         return {
