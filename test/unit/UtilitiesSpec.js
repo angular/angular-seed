@@ -1,6 +1,3 @@
-'use strict';
-
-
 describe('utilityModule Module', function () {
 
     var array;

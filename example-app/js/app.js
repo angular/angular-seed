@@ -1,11 +1,7 @@
 'use strict';
 // Declare app level module which depends on filters, and services
 var app = angular.module('myApp', ['SmartTable.Table']).
-    config(['$routeProvider', function ($routeProvider) {
-        $routeProvider.when('/view1', {templateUrl: 'partials/partial1.html', controller: 'dummy'});
-//    $routeProvider.when('/view2', {templateUrl: 'partials/partial2.html', controller: MyCtrl2});
-        $routeProvider.otherwise({redirectTo: '/view1'});
-    }]).controller('dummy', ['$scope', function (scope) {
+    controller('mainCtrl', ['$scope', function (scope) {
 
         scope.rowCollection = [
             {id: 0, firstName: 'Laurent', lastName: 'Renard', birthDate: new Date('1987-05-21'), balance: 102, email: 'laurent34azerty@gmail.com'},
@@ -204,19 +200,24 @@ var app = angular.module('myApp', ['SmartTable.Table']).
             {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
         ];
 
+        for (var i = 0; i < scope.rowCollection.length; i++) {
+            var obj = scope.rowCollection[i];
+            obj.id = i;
+        }
+
         scope.columnCollection = [
-            {label: 'id', map: 'id'},
-            {label: 'FirsName', map: 'firstName' },
+            {label: 'id', map: 'id', isEditable: false},
+            {label: 'FirsName', map: 'firstName'},
             {label: 'LastName', map: 'lastName', isSortable: false},
-            {label: 'birth date', map: 'birthDate', formatFunction: 'date', type: 'date', isEditable: true},
-            {label: 'balance', map: 'balance', isEditable: true, type: 'number', formatFunction: 'currency', formatParameter: '$'},
-            {label: 'email', map: 'email', isEditable: true, type: 'email'}
+            {label: 'birth date', map: 'birthDate', formatFunction: 'date', type: 'date'},
+            {label: 'balance', map: 'balance', type: 'number', formatFunction: 'currency', formatParameter: '$'},
+            {label: 'email', map: 'email', type: 'email'}
         ];
 
         scope.globalConfig = {
             isPaginationEnabled: true,
-            isGlobalSearchActivated: false,
-            itemsByPage: 50
+            isGlobalSearchActivated: true,
+            itemsByPage: 10
         };
 
     }]);

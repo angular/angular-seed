@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="utf-8">
+    <title>My AngularJS App</title>
+    <link rel="stylesheet" href="css/app.css"/>
+    <link rel="stylesheet" href="css/bootstrap.css"/>
+</head>
+<body ng-controller="mainCtrl">
+
+<smart-table class="table table-striped" table-title="Smart Table example" columns="columnCollection"
+             rows="rowCollection" config="globalConfig"></smart-table>
+
+<!-- In production use:
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
+-->
+<script src="lib/angular/angular.min.js"></script>
+<script src="js/Smart-Table.debug.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

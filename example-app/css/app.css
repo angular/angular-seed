@@ -47,40 +47,14 @@
     content: "-";
 }
 
-.smart-table-footer-row {
+.pagination {
     text-align: center;
+    cursor: pointer;
 }
 
-/*.smart-table{*/
-/*table-layout: fixed;*/
-/*border-collapse: collapse;*/
-/*width: 750px;*/
-/*}*/
-
-/*.smart-table-container{*/
-/*overflow: hidden;*/
-/*height: 300px;*/
-/*width: 600px;*/
-/*clear: both;*/
-/*}*/
-
-/*.smart-table tbody{*/
-/*display: block;*/
-/*width: 100%;*/
-/*overflow: scroll;*/
-/*}*/
-
-/*.smart-table tr{*/
-/*display: table-row;*/
-/*}*/
-
 .smart-table th {
-    width: 80px;
+    width: 120px;
     padding: 0 20px;
 }
 
-/*.smart-table td{*/
-/*border: 1px solid lightskyblue;*/
-/*width: 200px;*/
-/*display: table-cell;*/
-/*}*/
+

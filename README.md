@@ -1,28 +1,40 @@
-# angular-seed — the seed for AngularJS apps
+# Smart Table— an easy to use table/grid made with Angular and for Angular
 
-This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
-You can use it to quickly bootstrap your angular webapp projects and dev environment for these
-projects.
+This project is a lightweight table/grid builder. It is meant to be easy configurable but also easy customisable
+(if you want to use it as a base for your own grid development). In The current version (0.1.0) the current features are
 
-The seed contains AngularJS libraries, test libraries and a bunch of scripts all preconfigured for
-instant web development gratification. Just clone the repo (or download the zip/tarball), start up
-our (or yours) webserver and you are ready to develop and test your application.
+*table markup: it is a table and follows the semantic of an HTML table.
+*manage your layout: you can choose the number of columns and how the should be mapped to your data model
+*format data: you can choose how the data are formatted within a given column :
+    ** by giving your own format function
+    ** using one of the built-in angular filters
+*Sort data
+  **using your own algorithm
+  **using the orderBy angular algorithm: in this case you'll be able to provide predicates as explained
+     in orderBy filter documentation
+*Filter data
+    ** using a global search input box
+    ** using the controller api to filter according to a particular column
+*select data row(s) according to different modes:
+    **single: one row selected at the time
+    **multiple: many row selected at the time. In this case you can also add a selection column with checkboxes
+*Simple style: you can easily give class name to all the cells of a given column and to the header as well
+*template cell:
+    ** you can provide template for a given column header (it will be compiled so that you can attach directves to it)
+    ** same for the data cells
+*Edit cells: you can make cells editable and specify a type for the input so that validation rules, etc will be applied
+*Client side pagination : you can choose the number of rows you want to display and use the bootstrap directive to navigate.
+*All the directives of the table use the table controller API. It means that you can easily change the templates and directives but still using
+ the API to perform any operation
 
-The seed app doesn't do much, just shows how to wire two controllers and views together. You can
-check it out by opening app/index.html in your browser (might not work file `file://` scheme in
-certain browsers, see note below).
+You'll find running example and more documentation at "fsdfsdfsdf"
 
-_Note: While angular is client-side-only technology and it's possible to create angular webapps that
-don't require a backend server at all, we recommend hosting the project files using a local
-webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
-sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
-etc to function properly when an html page is opened via `file://` scheme instead of `http://`._
+## How to use Smart-Table
 
-
-## How to use angular-seed
-
-Clone the angular-seed repository and start hacking...
-
+*You can clone the repository: the source code will be under smart-table-module directory.
+*You can add the Smart-Table.debug.js file to your application and then add the module 'SmartTable.Table' to your own app module.
+Note that for the moment the build does not inject the templates in the TemplateCache, so you'll also have to add the template files that you can
+find in the smart-table-module/partials directory (if you use another directories layout don't forget to change the paths in the source code)
 
 ### Running the app during development
 
@@ -31,37 +43,14 @@ You can pick one of these options:
 * serve this repository with your webserver
 * install node.js and run `scripts/web-server.js`
 
-Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
+Note that you'll find a running example app at http://localhost:<port>/example-app/index.html to see the app running in
 your browser.
-
-
-### Running the app in production
-
-This really depends on how complex is your app and the overall infrastructure of your system, but
-the general rule is that all you need in production are all the files under the `app/` directory.
-Everything else should be omitted.
-
-Angular apps are really just a bunch of static html, css and js files that just need to be hosted
-somewhere, where they can be accessed by browsers.
-
-If your Angular app is talking to the backend server via xhr or other means, you need to figure
-out what is the best way to host the static files to comply with the same origin policy if
-applicable. Usually this is done by hosting the files by the backend server or through
-reverse-proxying the backend server(s) and a webserver(s).
-
 
 ### Running unit tests
 
-We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
-[Testacular](http://vojtajina.github.com/testacular/) for your unit tests/specs, but you are free
-to use whatever works for you.
+Tests can be run with Testacular: you'll find the config file under config folder. Note, the coverage is done by Istanbul
 
-Requires [node.js](http://nodejs.org/), Testacular (`sudo npm install -g testacular`) and a local
-or remote browser.
-
-* start `scripts/test.sh` (on windows: `scripts\test.bat`)
-  * a browser will start and connect to the Testacular server (Chrome is default browser, others can be captured by loading the same url as the one in Chrome or by changing the `config/testacular.conf.js` file)
-* to run or re-run tests just change any of your source or test javascript files
+See Testacular website for more information
 
 
 ### End to end testing
@@ -71,58 +60,51 @@ you to write your tests with jasmine-like BDD syntax.
 
 Requires a webserver, node.js + `./scripts/web-server.js` or your backend server that hosts the angular static files.
 
-Check out the
-[end-to-end runner's documentation](http://docs.angularjs.org/guide/dev_guide.e2e-testing) for more
-info.
-
-* create your end-to-end tests in `test/e2e/scenarios.js`
-* serve your project directory with your http/backend server or node.js + `scripts/web-server.js`
-* to run do one of:
-  * open `http://localhost:port/test/e2e/runner.html` in your browser
-  * run the tests from console with [Testacular](vojtajina.github.com/testacular) via
-    `scripts/e2e-test.sh` or `script/e2e-test.bat`
-
-### Continuous Integration
-
-CloudBees have provided a CI/deployment setup:
-
-<a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/angular-js-clickstart/master/clickstart.json"><img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
-
-If you run this, you will get a cloned version of this repo to start working on in a private git repo, 
-along with a CI service (in Jenkins) hosted that will run unit and end to end tests in both Firefox and Chrome.
-
-### Receiving updates from upstream
-
-When we upgrade angular-seed's repo with newer angular or testing library code, you can just
-fetch the changes and merge them into your project with git.
-
 
 ## Directory Layout
 
-    app/                --> all of the files to be used in production
-      css/              --> css files
-        app.css         --> default stylesheet
-      img/              --> image files
-      index.html        --> app layout file (the main html template file of the app)
-      index-async.html  --> just like index.html, but loads js files asynchronously
-      js/               --> javascript files
-        app.js          --> application
-        controllers.js  --> application controllers
-        directives.js   --> application directives
-        filters.js      --> custom angular filters
-        services.js     --> custom angular services
-      lib/              --> angular and 3rd party javascript libraries
-        angular/
-          angular.js        --> the latest angular js
-          angular.min.js    --> the latest minified angular js
-          angular-*.js      --> angular add-on modules
-          version.txt       --> version number
-      partials/             --> angular view partials (partial html templates)
-        partial1.html
-        partial2.html
-
     config/testacular.conf.js        --> config file for running unit tests with Testacular
     config/testacular-e2e.conf.js    --> config file for running e2e tests with Testacular
+
+    example-app/                --> a runing example app
+      css/                      --> css files
+        app.css                 --> default stylesheet
+        bootstrap.css           --> twitter bootstrap style sheet
+      img/                      --> image files
+      js/                       --> javascript files
+        app.js                  --> application and main controller
+        Smart-Table.debug.js    --> the souce code (js) of the smart table module
+      lib/                      --> angular and 3rd party javascript libraries
+        angular/
+          angular.min.js        --> the latest minified angular js
+      partials/                 --> smart table view partials (templates of all the smart-table directives)
+        defaultCell.html
+        defaultHeader.html
+        editableCell.html
+        globalSearch.html
+        pagination.html
+        selectAllCheckBox.html
+        selectionCheckBox.html
+        smartTable.html
+      index.html                --> app layout file (the main html template file of the app)
+
+   smart-table-module/          --> The smart table source code
+      js/                       --> javascript files
+        Column.js               --> Column module
+        Directives.js           --> all the directives used in the smart table (except for the pagination bootstrap)
+        Filters.js              --> the Filters used by smart table (format the data)
+        Table.js                --> The controller that offers a global API to all the children directives
+        ui-bootstrap-custom..js --> the source code of the pagination directive (form angular-ui.bootsrap project)
+        Utilities.js            --> some helper to manipulate arrays
+      partials/                 --> smart table view partials (templates of all the smart-table directives)
+        defaultCell.html
+        defaultHeader.html
+        editableCell.html
+        globalSearch.html
+        pagination.html
+        selectAllCheckBox.html
+        selectionCheckBox.html
+        smartTable.html
 
     scripts/            --> handy shell/js/ruby scripts
       e2e-test.sh       --> runs end-to-end tests with Testacular (*nix)
@@ -141,11 +123,12 @@ fetch the changes and merge them into your project with git.
           angular-scenario.js   --> angular's scenario (end-to-end) test runner library
           version.txt           --> version file
       unit/                     --> unit level specs/tests
-        controllersSpec.js      --> specs for controllers
-        directivessSpec.js      --> specs for directives
-        filtersSpec.js          --> specs for filters
-        servicesSpec.js         --> specs for services
+        ColumnSoec.js           --> specs for column module
+        DirectivesSpec.js       --> specs for all directives
+        FiltersSpec.js          --> specs for format filter
+        TableSpec.js            --> specs for table controller
+        UtilitiesSpec.js        --> specs for utilities service
 
 ## Contact
 
-For more information on AngularJS please check out http://angularjs.org/
+For more information on Smart Table, please contact the author at laurent34azerty@gmail.com

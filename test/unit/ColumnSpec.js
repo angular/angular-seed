@@ -1,7 +1,3 @@
-'use strict';
-
-/* jasmine specs for services go here */
-
 describe('Column Module', function () {
     beforeEach(module('SmartTable.Column', function ($provide) {
         $provide.constant('DefaultColumnConfiguration', {defaultValue: 'default', value: 'defaultValue'});
@@ -26,7 +22,6 @@ describe('Column Module', function () {
             expect(column.defaultValue).toEqual('default');
             expect(column.value).toEqual('value');
             expect(column.otherValue).toEqual('otherValue');
-
         }));
     });
 });

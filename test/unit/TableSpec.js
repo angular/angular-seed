@@ -1,8 +1,3 @@
-'use strict';
-
-/* jasmine specs for controllers go here */
-
-
 describe('Table module', function () {
 
     var
@@ -10,7 +5,15 @@ describe('Table module', function () {
         Column,
         DefaultConfig,
         filter,
-        ctrl;
+        ctrl,
+        defaultDisplayedCollection = [
+            {prop: 'defaultValue'}
+        ],
+        ctrlMock = {
+            pipe: function () {
+                return defaultDisplayedCollection;
+            }
+        };
 
     beforeEach(module('SmartTable.Table', function ($provide) {
         $provide.constant('DefaultTableConfiguration', {defaultValue: 'defaultValue', value: 'defaultValue'});
@@ -27,50 +30,82 @@ describe('Table module', function () {
             });
         }));
 
-        it('should init/set the config', function () {
+        it('should init the config', function () {
+
             expect(angular.isArray(scope.columns)).toBe(true);
-            expect(scope.columns.length).toBe(0);
             expect(angular.isArray(scope.displayedCollection)).toBe(true);
             expect(angular.isArray(scope.dataCollection)).toBe(true);
 
             ctrl.setGlobalConfig({value: 'overwritten'});
             expect(scope.defaultValue).toEqual('defaultValue');
             expect(scope.value).toEqual('overwritten');
-
         });
 
-        //TODO clean column tests now that we have moved the 'array logic' to utilitiy (which is tested somewhere else)
-        describe('Column API', function () {
-            it('should add column at proper index or put it at the end', function () {
-                //insert few column
-                ctrl.insertColumn({});
-                expect(scope.columns.length).toBe(1);
-                ctrl.insertColumn({});
-                expect(scope.columns.length).toBe(2);
-                //insert at a given index
-                ctrl.insertColumn({id: 1}, 1);
-                expect(scope.columns.length).toBe(3);
-                expect(scope.columns[1].id).toBe(1);
+        it('should set and override the config', function () {
+            ctrl.setGlobalConfig({value: 'overwritten'});
+            expect(scope.defaultValue).toEqual('defaultValue');
+            expect(scope.value).toEqual('overwritten');
+        });
 
-                //wrong index -> insert at the end
+        describe('change page', function () {
+
+            beforeEach(function () {
+                var changePage = ctrl.changePage;
+                ctrl = ctrlMock;
+                ctrl.changePage = changePage;
+            });
+
+            it('should change the page and refresh the displayed items', function () {
+                spyOn(ctrlMock, 'pipe').andCallThrough();
+                scope.currentPage = 1;
+                ctrl.changePage({page: 2});
+                expect(scope.currentPage).toEqual(2);
+                expect(ctrlMock.pipe).toHaveBeenCalledWith(scope.dataCollection);
+                expect(scope.displayedCollection).toBe(defaultDisplayedCollection);
+            });
+
+            it('should not change the page if provided page parameter is not correct', function () {
+                scope.currentPage = 3;
+                spyOn(ctrlMock, 'pipe').andCallThrough();
+                ctrl.changePage('whatever');
+                expect(scope.currentPage).toEqual(3);
+                expect(ctrlMock.pipe).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('Column API', function () {
+
+            beforeEach(function () {
+                scope.columns = [new Column({id: 0}), new Column({id: 1})];
+            });
+
+            it('should add column at proper index or put it at the end', function () {
+
+                expect(scope.columns.length).toEqual(2);
+                //insert at a given index
+                ctrl.insertColumn({id: 3}, 1);
+                expect(scope.columns.length).toBe(3);
+                expect(scope.columns[1].id).toBe(3);
+            });
+
+            it('should add Column at the end', function () {
+                expect(scope.columns.length).toEqual(2);
+
                 ctrl.insertColumn({id: 666}, -1);
-                expect(scope.columns.length).toBe(4);
-                expect(scope.columns[3].id).toBe(666);
+                expect(scope.columns.length).toBe(3);
+                expect(scope.columns[2].id).toBe(666);
                 ctrl.insertColumn({id: 99}, 99);
-                expect(scope.columns.length).toBe(5);
-                expect(scope.columns[4].id).toBe(99);
+                expect(scope.columns.length).toBe(4);
+                expect(scope.columns[3].id).toBe(99);
             });
 
             it('should remove column at proper index or do nothing', function () {
-                //insert few column
-                ctrl.insertColumn({id: 1});
-                expect(scope.columns.length).toBe(1);
-                ctrl.insertColumn({id: 2});
-                expect(scope.columns.length).toBe(2);
+
+                expect(scope.columns.length).toEqual(2);
 
                 ctrl.removeColumn(0);
                 expect(scope.columns.length).toBe(1);
-                expect(scope.columns[0].id).toBe(2);
+                expect(scope.columns[0].id).toBe(1);
 
                 ctrl.removeColumn(666);
                 expect(scope.columns.length).toBe(1);
@@ -79,6 +114,7 @@ describe('Table module', function () {
             });
 
             describe('move column', function () {
+
                 beforeEach(function () {
                     //insert few columns
                     scope.columns = [];
@@ -91,9 +127,6 @@ describe('Table module', function () {
                 });
 
                 it('should move a column from a lower index to an higher one', function () {
-
-                    expect(scope.columns.length).toBe(5);
-
                     ctrl.moveColumn(0, 3);
                     expect(scope.columns[0].id).toBe(1);
                     expect(scope.columns[3].id).toBe(0);
@@ -114,21 +147,18 @@ describe('Table module', function () {
             });
         });
 
-        //TODO clean row tests now that we have moved the 'array logic' to utilitiy (which is tested somewhere else
         describe('Row API', function () {
-            var array;
+            var refArray = [
+                {id: 0},
+                {id: 1},
+                {id: 2}
+            ];
             beforeEach(function () {
-                array = [
-                    {id: 0, secondProperty: true, thirdProperty: 1},
-                    {id: 1, secondProperty: true, thirdProperty: 2},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
-                ];
                 scope.displayedCollection = scope.dataCollection = [
-                    {id: 0, secondProperty: true, thirdProperty: 1},
-                    {id: 1, secondProperty: true, thirdProperty: 2},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
+                    {id: 0},
+                    {id: 1},
+                    {id: 2}
                 ];
-
             });
 
             describe('Select dataRows', function () {
@@ -137,6 +167,11 @@ describe('Table module', function () {
 
                     beforeEach(function () {
                         scope.selectionMode = 'single';
+                        scope.displayedCollection = scope.dataCollection = [
+                            {id: 0, secondProperty: true, thirdProperty: 1},
+                            {id: 1, secondProperty: true, thirdProperty: 2},
+                            {id: 2, secondProperty: true, thirdProperty: 1}
+                        ];
                     });
 
                     it('should only set isSelected=true to only one item at the time', function () {
@@ -168,39 +203,38 @@ describe('Table module', function () {
 
                 describe('selection in selection mode multiple', function () {
 
-                    var array;
-
                     beforeEach(function () {
-                        scope.displayedCollection = array = [
-                            {firstProperty: 'firstvalue1', secondProperty: true, thirdProperty: 1},
-                            {firstProperty: 'firstvalue1', secondProperty: true, thirdProperty: 2},
-                            {firstProperty: 'firstvalue2', secondProperty: true, thirdProperty: 1}
-                        ];
                         scope.selectionMode = 'multiple';
+
+                        scope.displayedCollection = scope.dataCollection = [
+                            {id: 0, secondProperty: true, thirdProperty: 1},
+                            {id: 1, secondProperty: true, thirdProperty: 2},
+                            {id: 2, secondProperty: true, thirdProperty: 1}
+                        ];
                     });
 
                     it('should set isSelected=true to any row', function () {
-                        ctrl.toggleSelection(array[0]);
-                        expect(array[0].isSelected).toBe(true);
-                        expect(array[1].isSelected).not.toBe(true);
-                        expect(array[2].isSelected).not.toBe(true);
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
 
-                        ctrl.toggleSelection(array[1]);
-                        expect(array[0].isSelected).toBe(true);
-                        expect(array[1].isSelected).toBe(true);
-                        expect(array[2].isSelected).not.toBe(true);
+                        ctrl.toggleSelection(scope.displayedCollection[1]);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
                     });
 
                     it('should unselect any row', function () {
-                        ctrl.toggleSelection(array[0]);
-                        expect(array[0].isSelected).toBe(true);
-                        expect(array[1].isSelected).not.toBe(true);
-                        expect(array[2].isSelected).not.toBe(true);
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
 
-                        ctrl.toggleSelection(array[0]);
-                        expect(array[0].isSelected).not.toBe(true);
-                        expect(array[1].isSelected).not.toBe(true);
-                        expect(array[2].isSelected).not.toBe(true);
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
+                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
                     });
 
                     it('should select all the displayed row when calling toggleSelectAll with true', function () {
@@ -235,16 +269,17 @@ describe('Table module', function () {
             });
 
             it('should delete a row from displayed collection and from data collection', function () {
+
                 ctrl.removeDataRow(0);
                 expect(scope.displayedCollection.length).toBe(2);
                 expect(scope.dataCollection.length).toBe(2);
                 expect(scope.displayedCollection).toEqual([
-                    {id: 1, secondProperty: true, thirdProperty: 2},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
+                    {id: 1},
+                    {id: 2}
                 ]);
                 expect(scope.dataCollection).toEqual([
-                    {id: 1, secondProperty: true, thirdProperty: 2},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
+                    {id: 1},
+                    {id: 2}
                 ]);
             });
 
@@ -277,28 +312,27 @@ describe('Table module', function () {
             it('should not move any row with invalid index', function () {
                 ctrl.moveDataRow(-1, 1);
                 expect(scope.displayedCollection.length).toBe(3);
-                expect(scope.displayedCollection).toEqual(array);
+                expect(scope.displayedCollection).toEqual(refArray);
 
                 ctrl.moveDataRow(1, 4);
                 expect(scope.displayedCollection.length).toBe(3);
-                expect(scope.displayedCollection).toEqual(array);
+                expect(scope.displayedCollection).toEqual(refArray);
 
                 ctrl.moveDataRow(-666, 'whatever');
                 expect(scope.displayedCollection.length).toBe(3);
-                expect(scope.displayedCollection).toEqual(array);
+                expect(scope.displayedCollection).toEqual(refArray);
             });
         });
 
         describe('sort data rows', function () {
 
-            var array;
+            var refArray = [
+                {id: 0, secondProperty: true, thirdProperty: 2},
+                {id: 1, secondProperty: true, thirdProperty: 3},
+                {id: 2, secondProperty: true, thirdProperty: 1}
+            ];
 
             beforeEach(function () {
-                array = [
-                    {id: 0, secondProperty: true, thirdProperty: 2},
-                    {id: 1, secondProperty: true, thirdProperty: 3},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
-                ];
                 scope.displayedCollection = scope.dataCollection = [
                     {id: 0, secondProperty: true, thirdProperty: 2},
                     {id: 1, secondProperty: true, thirdProperty: 3},
@@ -311,10 +345,11 @@ describe('Table module', function () {
 
             it('should not sort the displayed collection when isSortable is false', function () {
                 ctrl.sortBy(scope.columns[1]);
-                expect(scope.displayedCollection).toEqual(array);
+                expect(scope.displayedCollection).toEqual(refArray);
             });
 
-            it('should sort filter by "map", first acending then descending ', function () {
+            //not really unit test but more relevant here...
+            it('should sort by "map", first acending then descending ', function () {
                 //by id
                 ctrl.sortBy(scope.columns[0]);
                 expect(scope.displayedCollection).toEqual([
@@ -340,21 +375,20 @@ describe('Table module', function () {
 
                 //descent
                 ctrl.sortBy(scope.columns[0]);
-                expect(scope.displayedCollection).toEqual(array);
+                expect(scope.displayedCollection).toEqual(refArray);
             });
-
 
         });
 
         describe('search data rows', function () {
-            var array;
+            var refArray = [
+                {id: 0, secondProperty: true, thirdProperty: 2},
+                {id: 1, secondProperty: true, thirdProperty: 3},
+                {id: 2, secondProperty: true, thirdProperty: 1}
+            ];
 
             beforeEach(function () {
-                array = [
-                    {id: 0, secondProperty: true, thirdProperty: 2},
-                    {id: 1, secondProperty: true, thirdProperty: 3},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
-                ];
+                scope.itemsByPage = 10;
                 scope.displayedCollection = scope.dataCollection = [
                     {id: 0, secondProperty: true, thirdProperty: 2},
                     {id: 1, secondProperty: true, thirdProperty: 3},
@@ -402,8 +436,8 @@ describe('Table module', function () {
                     {id: 1, secondProperty: true, thirdProperty: 3},
                     {id: 2, secondProperty: true, thirdProperty: 1}
                 ]);
-            })
-        })
+            });
+        });
     });
 });
 

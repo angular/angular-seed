@@ -6,8 +6,8 @@ module.exports = function (grunt) {
             options: {
             },
             dist: {
-                src: ['./app/js/Column.js', './app/js/directives.js', './app/js/filters.js', './app/js/Table.js', './app/js/Utilities.js'],
-                dest: './<%= pkg.name %>.js'
+                src: ['./smart-table-module/js/Column.js', './smart-table-module/js/directives.js', './smart-table-module/js/ui-bootstrap-custom-tpls-0.4.0-SNAPSHOT.js', './smart-table-module/js/filters.js', './smart-table-module/js/Table.js', './smart-table-module/js/Utilities.js'],
+                dest: './<%= pkg.name %>.debug.js'
             }
         },
         clean: {
@@ -16,5 +16,4 @@ module.exports = function (grunt) {
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.registerTask('doc', ['yuidoc']);
 };

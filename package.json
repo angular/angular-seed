@@ -1,17 +1,18 @@
 {
     "name": "Smart-Table",
-    "version": "0.0.0",
-    "description": "a table for AngularJS",
-    "main": "index.js",
+    "version": "0.1.0",
+    "description": "a table/grid for AngularJS",
+    "main": "smart-table-module",
     "directories": {
-        "test": "test"
+        "test": "test",
+        "example": "example-app"
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "webServer": "scripts/web-server.js"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/lorenzofox3/angular-seed.git"
+        "url": "https://github.com/lorenzofox3/Smart-Table.git"
     },
     "keywords": [
         "table",
@@ -24,8 +25,6 @@
     "devDependencies": {
         "grunt": "~0.4.1",
         "grunt-contrib-concat": "~0.3.0",
-        "grunt-contrib-clean": "~0.4.1",
-        "grunt-contrib-yuidoc": "~0.4.0",
-        "grunt-bootstrap": "~0.1.0"
+        "grunt-contrib-clean": "~0.4.1"
     }
 }
