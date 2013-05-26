@@ -174,7 +174,7 @@ angular.module('SmartTable.directives', [])
                     }
                 }
 
-                scope.$watch('column.templateUrl', function (value) {
+                scope.$watch('column.cellTemplateUrl', function (value) {
 
                     if (value) {
                         //we have to load the template (and cache it) : a kind of ngInclude
