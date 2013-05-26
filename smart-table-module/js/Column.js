@@ -2,11 +2,11 @@
 
 var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('DefaultColumnConfiguration', {
     isSortable: true,
-    isEditable: true,
+    isEditable: false,
     type: 'text',
     headerTemplateUrl: 'partials/defaultHeader.html',
 
-    //it is useless to have that empty stirngs, but it reminds what is available
+    //it is useless to have that empty strings, but it reminds what is available
     map: '',
     label: '',
     sortPredicate: '',
