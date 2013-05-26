@@ -22,7 +22,8 @@
         </tbody>
         <tfoot ng-show="isPaginationEnabled">
         <tr class="smart-table-footer-row">
-            <td colspan="{{columns.length}}"><input type="number" ng-model="currentPage"/>
+            <td colspan="{{columns.length}}">
+                <pagination num-pages="numberOfPages" max-size="maxSize" current-page="currentPage"></pagination>
             </td>
         </tr>
         </tfoot>

@@ -2,13 +2,14 @@
 
 //TODO be able to register function on remove/add column and rows or use the scope to emit the events
 
-angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters'])
+angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters', 'ui.bootstrap.pagination'])
     .constant('DefaultTableConfiguration', {
         selectionMode: 'none',
         isGlobalSearchActivated: false,
         displaySelectionCheckbox: false,
         isPaginationEnabled: true,
         itemsByPage: 10,
+        maxSize: 5,
 
         //just to remind available option
         sortAlgorithm: '',
@@ -22,6 +23,9 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
         scope.numberOfPages = calculateNumberOfPages(scope.dataCollection);
         scope.currentPage = 1;
 
+        var predicate = {},
+            lastColumnSort;
+
         function calculateNumberOfPages(array) {
 
             if (!angular.isArray(array)) {
@@ -33,48 +37,6 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             return Math.ceil(array.length / scope.itemsByPage);
         }
 
-        var predicate = {},
-            lastColumnSort;
-
-        this.changePage = function (page) {
-            scope.currentPage = page.index;
-            scope.displayedCollection = pipe(scope.dataCollection);
-        };
-
-        this.setGlobalConfig = function (config) {
-            angular.extend(scope, defaultConfig, config);
-        };
-
-
-        /**
-         * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
-         * @method sortBy
-         * @param column
-         */
-        this.sortBy = function (column) {
-            var index = scope.columns.indexOf(column);
-            if (index !== -1) {
-                if (column.isSortable === true) {
-                    // reset the last column used
-                    if (lastColumnSort && lastColumnSort !== column) {
-                        lastColumnSort.reverse = 'none';
-                    }
-
-                    column.sortPredicate = column.sortPredicate || column.map;
-                    column.reverse = column.reverse !== true;
-                    lastColumnSort = column;
-                }
-            }
-
-            scope.displayedCollection = pipe(scope.dataCollection);
-        };
-
-        /**
-         * sort an array according to the current column configuration (predicate, reverese)
-         * @param array
-         * @param column
-         * @returns {*}
-         */
         function sortDataRow(array, column) {
             var sortAlgo = (scope.sortAlgorithm && angular.isFunction(scope.sortAlgorithm)) === true ? scope.sortAlgorithm : filter('orderBy');
             if (column) {
@@ -84,54 +46,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             }
         }
 
-        /**
-         * set the filter predicate used for searching
-         * @param input
-         * @param column
-         */
-        this.search = function (input, column) {
-
-            //update column and global predicate
-            if (column && scope.columns.indexOf(column) !== -1) {
-                predicate.$ = '';
-                column.filterPredicate = input;
-            } else {
-                for (var j = 0, l = scope.columns.length; j < l; j++) {
-                    scope.columns[j].filterPredicate = '';
-                }
-                predicate.$ = input;
-            }
-
-            for (var j = 0, l = scope.columns.length; j < l; j++) {
-                predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
-            }
-
-            scope.displayedCollection = pipe(scope.dataCollection);
-
-        };
-
-        /**
-         * combine sort and search operation
-         * @param array
-         * @returns {*}
-         */
-        function pipe(array) {
-            var filterAlgo = (scope.filterAlgorithm && angular.isFunction(scope.filterAlgorithm)) === true ? scope.filterAlgorithm : filter('filter'),
-                output;
-            //filter and sort are commutative
-            output = sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
-            scope.numberOfPages = calculateNumberOfPages(output);
-            return scope.isPaginationEnabled ? arrayUtility.fromTo(output, scope.currentPage - 1, scope.itemsByPage) : output;
-        }
-
         //TODO check if it would be better not to 'pollute' the dataModel itself and use a wrapper/decorator for all the stuff related to the table features like we do for column (then we could emit event)
-        /**
-         * 'select'/'unselect' an entry in an array by setting isSelected on the datarow Model. Select one/multiple rows depending on the selectionMode
-         * @param array the data array where we can select/unselect values
-         * @param selectionMode 'single', 'multiple' or equivalent to 'none'
-         * @param index of the item to select in the array
-         * @param select true if select, false if unselect
-         */
         function selectDataRow(array, selectionMode, index, select) {
 
             var dataRow;
@@ -154,6 +69,86 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
             }
         }
 
+        /**
+         * set the config (config parameters will be available through scope
+         * @param config
+         */
+        this.setGlobalConfig = function (config) {
+            angular.extend(scope, defaultConfig, config);
+        };
+
+        /**
+         * change the current page displayed
+         * @param page
+         */
+        this.changePage = function (page) {
+            if (angular.isNumber(page.page)) {
+                scope.currentPage = page.page;
+                scope.displayedCollection = this.pipe(scope.dataCollection);
+            }
+        };
+
+        /**
+         * set column as the column used to sort the data (if it is already the case, it will change the reverse value)
+         * @method sortBy
+         * @param column
+         */
+        this.sortBy = function (column) {
+            var index = scope.columns.indexOf(column);
+            if (index !== -1) {
+                if (column.isSortable === true) {
+                    // reset the last column used
+                    if (lastColumnSort && lastColumnSort !== column) {
+                        lastColumnSort.reverse = 'none';
+                    }
+
+                    column.sortPredicate = column.sortPredicate || column.map;
+                    column.reverse = column.reverse !== true;
+                    lastColumnSort = column;
+                }
+            }
+
+            scope.displayedCollection = this.pipe(scope.dataCollection);
+        };
+
+        /**
+         * set the filter predicate used for searching
+         * @param input
+         * @param column
+         */
+        this.search = function (input, column) {
+
+            //update column and global predicate
+            if (column && scope.columns.indexOf(column) !== -1) {
+                predicate.$ = '';
+                column.filterPredicate = input;
+            } else {
+                for (var j = 0, l = scope.columns.length; j < l; j++) {
+                    scope.columns[j].filterPredicate = '';
+                }
+                predicate.$ = input;
+            }
+
+            for (var j = 0, l = scope.columns.length; j < l; j++) {
+                predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
+            }
+            scope.displayedCollection = this.pipe(scope.dataCollection);
+
+        };
+
+        /**
+         * combine sort, search and limitTo operations on an array,
+         * @param array
+         * @returns Array, an array result of the operations on input array
+         */
+        this.pipe = function (array) {
+            var filterAlgo = (scope.filterAlgorithm && angular.isFunction(scope.filterAlgorithm)) === true ? scope.filterAlgorithm : filter('filter'),
+                output;
+            //filter and sort are commutative
+            output = sortDataRow(arrayUtility.filter(array, filterAlgo, predicate), lastColumnSort);
+            scope.numberOfPages = calculateNumberOfPages(output);
+            return scope.isPaginationEnabled ? arrayUtility.fromTo(output, (scope.currentPage - 1) * scope.itemsByPage, scope.itemsByPage) : output;
+        }
 
         /*////////////
          Column API
@@ -190,7 +185,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
 
         /*///////////
          ROW API
-         *///////////
+         */
 
         /**
          * select or unselect the item of the displayedCollection with the selection mode set in the scope
@@ -204,7 +199,7 @@ angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities',
         };
 
         /**
-         * select/unselect all the currently displayed raw
+         * select/unselect all the currently displayed rows
          * @param value if true select, else unselect
          */
         this.toggleSelectionAll = function (value) {

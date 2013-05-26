@@ -82,12 +82,17 @@ angular.module('SmartTable.Utilities', [])
              * @returns {*}
              */
                 fromTo = function (arrayRef, min, length) {
+
                 var out = [],
                     limit,
                     start;
 
-                start = Math.max(0, min);
-                start = Math.min(start, arrayRef.length - 1);
+                if (!angular.isArray(arrayRef)) {
+                    return arrayRef;
+                }
+
+                start = Math.max(min, 0);
+                start = Math.min(start, (arrayRef.length - 1) > 0 ? arrayRef.length - 1 : 0);
 
                 length = Math.max(0, length);
                 limit = Math.min(start + length, arrayRef.length);
