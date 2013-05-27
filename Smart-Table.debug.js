@@ -249,6 +249,7 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
     sortPredicate: '',
     formatFunction: '',
     formatParameter: '',
+    filterPredicate: '',
     cellTemplateUrl: '',
     headerClass: '',
     cellClass: ''
