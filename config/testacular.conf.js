@@ -3,11 +3,10 @@ basePath = '../';
 files = [
     JASMINE,
     JASMINE_ADAPTER,
-    'app/lib/angular/angular.js',
-    'app/lib/angular/angular-*.js',
+    'smart-table-module/lib/angular/angular.js',
     'test/lib/angular/angular-mocks.js',
-    'app/js/**/*.js',
-    'test/unit/**/*.js'
+    'smart-table-module/js/*.js',
+    'test/unit/*.js'
 ];
 
 autoWatch = false;
@@ -16,11 +15,11 @@ browsers = ['Chrome'];
 
 
 preprocessors = {
-    '**/js/Column.js': 'coverage',
-    '**/js/Table.js': 'coverage',
-    '**/js/Utilities.js': 'coverage',
-    '**/js/Filters.js': 'coverage',
-    '**/js/Directives.js': 'coverage'
+    'smart-table-module/js/Column.js': 'coverage',
+    'smart-table-module/js/Table.js': 'coverage',
+    'smart-table-module/js/Utilities.js': 'coverage',
+    'smart-table-module/js/Filters.js': 'coverage',
+    'smart-table-module/js/Directives.js': 'coverage'
 };
 
 reporters = ['junit', 'progress', 'coverage'];
