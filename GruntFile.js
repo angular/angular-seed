@@ -6,7 +6,7 @@ module.exports = function (grunt) {
             options: {
             },
             dist: {
-                src: ['./smart-table-module/js/Column.js', './smart-table-module/js/directives.js', './smart-table-module/js/ui-bootstrap-custom-tpls-0.4.0-SNAPSHOT.js', './smart-table-module/js/filters.js', './smart-table-module/js/Table.js', './smart-table-module/js/Utilities.js'],
+                src: ['./smart-table-module/js/Table.js', './smart-table-module/js/Column.js', './smart-table-module/js/Utilities.js', './smart-table-module/js/filters.js', './smart-table-module/js/directives.js', './smart-table-module/js/ui-bootstrap-custom-tpls-0.4.0-SNAPSHOT.js'],
                 dest: './<%= pkg.name %>.debug.js'
             }
         },

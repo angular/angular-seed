@@ -14,8 +14,7 @@ angular.module('SmartTable.directives', [])
             scope: {
                 columnCollection: '=columns',
                 dataCollection: '=rows',
-                config: '=',
-                tableTitle: '@'
+                config: '='
             },
             replace: 'true',
             templateUrl: templateList.smartTable,

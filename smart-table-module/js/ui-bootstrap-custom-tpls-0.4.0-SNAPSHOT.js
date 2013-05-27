@@ -4,8 +4,8 @@ angular.module('ui.bootstrap.pagination', [])
         boundaryLinks: false,
         directionLinks: true,
         firstText: 'First',
-        previousText: '<-',
-        nextText: '->',
+        previousText: '❰',
+        nextText: '❱',
         lastText: 'Last'
     })
 
