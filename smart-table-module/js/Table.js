@@ -2,7 +2,7 @@
 
 //TODO be able to register function on remove/add column and rows or use the scope to emit the events
 
-angular.module('SmartTable.Table', ['SmartTable.Column', 'SmartTable.Utilities', 'SmartTable.directives', 'SmartTable.filters', 'ui.bootstrap.pagination'])
+angular.module('smartTable.table', ['smartTable.column', 'smartTable.utilities', 'smartTable.directives', 'smartTable.filters', 'ui.bootstrap.pagination'])
     .constant('DefaultTableConfiguration', {
         selectionMode: 'none',
         isGlobalSearchActivated: false,

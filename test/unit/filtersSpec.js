@@ -1,6 +1,6 @@
 describe('filter', function () {
 
-    beforeEach(module('SmartTable.filters'));
+    beforeEach(module('smartTable.filters'));
 
     describe('format filter', function () {
 

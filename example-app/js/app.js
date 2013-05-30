@@ -1,6 +1,6 @@
 'use strict';
 // Declare app level module which depends on filters, and services
-var app = angular.module('myApp', ['SmartTable.Table']).
+var app = angular.module('myApp', ['smartTable.table']).
     controller('mainCtrl', ['$scope', function (scope) {
 
         scope.rowCollection = [

@@ -1,12 +1,13 @@
 /* Column module */
 
-var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('DefaultColumnConfiguration', {
+var smartTableColumnModule = angular.module('smartTable.column', ['smartTable.templateUrlList']).constant('DefaultColumnConfiguration', {
     isSortable: true,
     isEditable: false,
     type: 'text',
-    headerTemplateUrl: 'partials/defaultHeader.html',
+
 
     //it is useless to have that empty strings, but it reminds what is available
+    headerTemplateUrl: '',
     map: '',
     label: '',
     sortPredicate: '',
@@ -19,7 +20,7 @@ var smartTableColumnModule = angular.module('SmartTable.Column', []).constant('D
 });
 
 
-function ColumnProvider(DefaultColumnConfiguration) {
+function ColumnProvider(DefaultColumnConfiguration, templateUrlList) {
 
     function Column(config) {
         if (!(this instanceof Column)) {
@@ -32,6 +33,7 @@ function ColumnProvider(DefaultColumnConfiguration) {
         angular.extend(Column.prototype, option);
     };
 
+    DefaultColumnConfiguration.headerTemplateUrl = templateUrlList.defaultHeader;
     this.setDefaultOption(DefaultColumnConfiguration);
 
     this.$get = function () {
@@ -39,6 +41,6 @@ function ColumnProvider(DefaultColumnConfiguration) {
     };
 }
 
-ColumnProvider.$inject = ['DefaultColumnConfiguration'];
+ColumnProvider.$inject = ['DefaultColumnConfiguration', 'templateUrlList'];
 smartTableColumnModule.provider('Column', ColumnProvider);
 

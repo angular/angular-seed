@@ -1,6 +1,6 @@
 /* Filters */
 
-angular.module('SmartTable.filters', []).
+angular.module('smartTable.filters', []).
     constant('DefaultFilters', ['currency', 'date', 'json', 'lowercase', 'number', 'uppercase']).
     filter('format', ['$filter', 'DefaultFilters', function (filter, defaultfilters) {
         return function (value, formatFunction, filterParameter) {

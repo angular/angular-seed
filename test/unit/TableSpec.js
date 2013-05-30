@@ -15,7 +15,7 @@ describe('Table module', function () {
             }
         };
 
-    beforeEach(module('SmartTable.Table', function ($provide) {
+    beforeEach(module('smartTable.table', function ($provide) {
         $provide.constant('DefaultTableConfiguration', {defaultValue: 'defaultValue', value: 'defaultValue'});
     }));
 

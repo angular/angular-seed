@@ -1,4 +1,4 @@
-angular.module('ui.bootstrap.pagination', [])
+angular.module('ui.bootstrap.pagination', ['smartTable.templateUrlList'])
 
     .constant('paginationConfig', {
         boundaryLinks: false,
@@ -9,7 +9,7 @@ angular.module('ui.bootstrap.pagination', [])
         lastText: 'Last'
     })
 
-    .directive('pagination', ['paginationConfig', function (paginationConfig) {
+    .directive('pagination', ['paginationConfig', 'templateUrlList', function (paginationConfig, templateUrlList) {
         return {
             restrict: 'EA',
             require: '^smartTable',
@@ -18,7 +18,7 @@ angular.module('ui.bootstrap.pagination', [])
                 currentPage: '=',
                 maxSize: '='
             },
-            templateUrl: 'partials/pagination.html',
+            templateUrl: templateUrlList.pagination,
             replace: true,
             link: function (scope, element, attrs, ctrl) {
 

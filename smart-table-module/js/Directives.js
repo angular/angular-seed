@@ -1,13 +1,5 @@
 /* Directives */
-angular.module('SmartTable.directives', [])
-    .constant('templateUrlList', {
-        smartTable: 'partials/smartTable.html',
-        smartTableGlobalSearch: 'partials/globalSearchCell.html',
-        editableCell: 'partials/editableCell.html',
-        selectionCheckbox: 'partials/selectionCheckbox.html',
-        selectAllCheckbox: 'partials/selectAllCheckbox.html',
-        defaultHeader: 'partials/defaultHeader.html'
-    })
+angular.module('smartTable.directives', ['smartTable.templateUrlList', 'smartTable.templates'])
     .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
         return {
             restrict: 'E',

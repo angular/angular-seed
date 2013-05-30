@@ -2,7 +2,7 @@ describe('utilityModule Module', function () {
 
     var array;
 
-    beforeEach(module('SmartTable.Utilities', function () {
+    beforeEach(module('smartTable.utilities', function () {
 
     }));
 

@@ -1,4 +1,4 @@
-angular.module('SmartTable.Utilities', [])
+angular.module('smartTable.utilities', [])
 
     .factory('ArrayUtility', function () {
 
