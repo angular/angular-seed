@@ -30,10 +30,8 @@ You'll find running examples and more documentation at [the demo website](http:/
 ## How to use Smart-Table
 
 * You can clone the repository: the source code will be under smart-table-module directory.
-* You can add the Smart-Table.debug.js file to your application and then add the module 'SmartTable.Table' to your own app module.
-Note that for the moment the build does not inject the templates in the TemplateCache, so you'll also have to add the template files that you can
-find in the smart-table-module/partials directory (if you use another directories layout don't forget to change the paths in the source code)
-
+* You can add the Smart-Table.min.js file to your application and then add the module 'smartTable.table' to your own app module. The build includes all the template in the $templateCache
+so you need only this file.
 ### Running the app during development
 
 Follow the steps:
@@ -45,78 +43,6 @@ Follow the steps:
 ### Running unit tests
 
 Tests can be run with [Testacular](http://karma-runner.github.io/0.8/index.html): you'll find the config file under config folder. Note, the coverage is done by [Istanbul.js](http://gotwarlost.github.io/istanbul/)
-
-### End to end testing
-
-Angular ships with a baked-in end-to-end test runner that understands angular, your app and allows
-you to write your tests with jasmine-like BDD syntax.
-
-Requires a webserver, node.js + `./scripts/web-server.js` or your backend server that hosts the angular static files.
-
-
-## Directory Layout
-
-    config/testacular.conf.js        --> config file for running unit tests with Testacular
-    config/testacular-e2e.conf.js    --> config file for running e2e tests with Testacular
-    example-app/                --> a runing example app
-      css/                      --> css files
-        app.css                 --> default stylesheet
-        bootstrap.css           --> twitter bootstrap style sheet
-      img/                      --> image files
-      js/                       --> javascript files
-        app.js                  --> application and main controller
-        Smart-Table.debug.js    --> the souce code (js) of the smart table module
-      lib/                      --> angular and 3rd party javascript libraries
-        angular/
-          angular.min.js        --> the latest minified angular js
-      partials/                 --> smart table view partials (templates of all the smart-table directives)
-        defaultCell.html
-        defaultHeader.html
-        editableCell.html
-        globalSearch.html
-        pagination.html
-        selectAllCheckBox.html
-        selectionCheckBox.html
-        smartTable.html
-      index.html                --> app layout file (the main html template file of the app)
-    smart-table-module/          --> The smart table source code
-      js/                       --> javascript files
-        Column.js               --> Column module
-        Directives.js           --> all the directives used in the smart table (except for the pagination bootstrap)
-        Filters.js              --> the Filters used by smart table (format the data)
-        Table.js                --> The controller that offers a global API to all the children directives
-        ui-bootstrap-custom..js --> the source code of the pagination directive (form angular-ui.bootsrap project)
-        Utilities.js            --> some helper to manipulate arrays
-      partials/                 --> smart table view partials (templates of all the smart-table directives)
-        defaultCell.html
-        defaultHeader.html
-        editableCell.html
-        globalSearch.html
-        pagination.html
-        selectAllCheckBox.html
-        selectionCheckBox.html
-        smartTable.html
-    scripts/            --> handy shell/js/ruby scripts
-      e2e-test.sh       --> runs end-to-end tests with Testacular (*nix)
-      e2e-test.bat      --> runs end-to-end tests with Testacular (windows)
-      test.bat          --> autotests unit tests with Testacular (windows)
-      test.sh           --> autotests unit tests with Testacular (*nix)
-      web-server.js     --> simple development webserver based on node.js
-    test/               --> test source files and libraries
-      e2e/              -->
-        runner.html     --> end-to-end test runner (open in your browser to run)
-        scenarios.js    --> end-to-end specs
-      lib/
-        angular/                --> angular testing libraries
-          angular-mocks.js      --> mocks that replace certain angular services in tests
-          angular-scenario.js   --> angular's scenario (end-to-end) test runner library
-          version.txt           --> version file
-      unit/                     --> unit level specs/tests
-        ColumnSoec.js           --> specs for column module
-        DirectivesSpec.js       --> specs for all directives
-        FiltersSpec.js          --> specs for format filter
-        TableSpec.js            --> specs for table controller
-        UtilitiesSpec.js        --> specs for utilities service
         
 ## License
 
