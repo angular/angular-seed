@@ -32,6 +32,7 @@ You'll find running examples and more documentation at [the demo website](http:/
 * You can clone the repository: the source code will be under smart-table-module directory.
 * You can add the Smart-Table.min.js file to your application and then add the module 'smartTable.table' to your own app module. The build includes all the template in the $templateCache
 so you need only this file.
+
 ### Running the app during development
 
 Follow the steps:
