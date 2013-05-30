@@ -122,7 +122,7 @@ Requires a webserver, node.js + `./scripts/web-server.js` or your backend server
 
 Smart Table module is under MIT license:
 
-> Copyright (C) 2011-2013 Laurent Renard.
+> Copyright (C) 2013 Laurent Renard.
 >
 > Permission is hereby granted, free of charge, to any person
 > obtaining a copy of this software and associated documentation files
