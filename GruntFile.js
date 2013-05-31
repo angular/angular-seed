@@ -16,7 +16,8 @@ module.exports = function (grunt) {
         },
         html2js: {
             options: {
-                base: 'smart-table-module'
+                base: 'smart-table-module',
+                module: 'smartTable.templates'
             },
             smartTable: {
                 src: [ '<%= src.html %>' ],
