@@ -14,9 +14,27 @@ module.exports = function (grunt) {
                 dest: './<%= pkg.name %>.debug.js'
             }
         },
+        "regex-replace": {
+            dist: {
+                src: ['<%= pkg.name %>.debug.js'],
+                actions: [
+                    {
+                        search: '\{\{',
+                        replace: "<%= grunt.option('startSymbol') %>",
+                        flags: "g"
+                    },
+                    {
+                        search: '\}\}',
+                        replace: "<%= grunt.option('endSymbol') %>",
+                        flags: "g"
+                    }
+                ]
+            }
+        },
         html2js: {
             options: {
-                base: 'smart-table-module'
+                base: 'smart-table-module',
+                module: 'smartTable.templates'
             },
             smartTable: {
                 src: [ '<%= src.html %>' ],
@@ -44,6 +62,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-html2js');
+    grunt.loadNpmTasks('grunt-regex-replace');
     grunt.registerTask('refApp', ['html2js:smartTable', 'concat', 'copy:refApp']);
-    grunt.registerTask('build', ['html2js:smartTable', 'concat', 'uglify']);
+    grunt.registerTask('build', function() {
+        grunt.task.run('html2js:smartTable');
+        grunt.task.run('concat');
+        if (grunt.option('startSymbol') && grunt.option('endSymbol')) grunt.task.run('regex-replace');
+        grunt.task.run('uglify');
+    });
 };
