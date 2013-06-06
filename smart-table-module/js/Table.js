@@ -232,6 +232,21 @@
             this.moveDataRow = function (oldIndex, newIndex) {
                 arrayUtility.moveAt(scope.displayedCollection, oldIndex, newIndex);
             };
+
+            /**
+             * update the model, it can be a non existing yet property
+             * @param dataRow the dataRow to update
+             * @param propertyName the property on the dataRow ojbect to update
+             * @param newValue the value to set
+             */
+            this.updateDataRow = function (dataRow, propertyName, newValue) {
+                var index = scope.displayedCollection.indexOf(dataRow);
+                if (index !== -1) {
+                    scope.displayedCollection[index][propertyName] = newValue;
+                }
+            };
+
+
         }]);
 
 })(angular);

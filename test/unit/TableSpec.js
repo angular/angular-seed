@@ -438,6 +438,62 @@ describe('Table module', function () {
                 ]);
             });
         });
+
+        describe('update data row', function () {
+            beforeEach(function () {
+                scope.displayedCollection = scope.dataCollection = [
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ];
+            });
+
+            it('should update the proper data row with the proper value', function () {
+                ctrl.updateDataRow(scope.displayedCollection[0], 'id', 34);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 34, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+
+                expect(scope.dataCollection).toEqual([
+                    {id: 34, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+            });
+
+            it('should not update any data Row', function () {
+                ctrl.updateDataRow({id: 1, secondProperty: true, thirdProperty: 2}, 'id', 34);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+
+                expect(scope.dataCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+            });
+
+            it('should "create" a new property on the proper dataRow ', function () {
+                ctrl.updateDataRow(scope.displayedCollection[0], 'newProp', 'value');
+                expect(scope.displayedCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2, newProp: 'value'},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+
+                expect(scope.dataCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2, newProp: 'value'},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+            });
+
+        });
     });
 });
 

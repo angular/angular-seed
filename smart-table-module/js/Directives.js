@@ -222,7 +222,7 @@
                     scope.submit = function () {
                         //update model if valid
                         if (scope.myForm.$valid === true) {
-                            scope.row[scope.column.map] = scope.value;
+                            ctrl.updateDataRow(scope.row,scope.column.map,scope.value);
                             ctrl.sortBy();//it will trigger the refresh...  (ie it will sort, filter, etc with the new value)
                         }
                         scope.isEditMode = false;

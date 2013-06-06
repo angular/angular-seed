@@ -206,12 +206,12 @@ var app = angular.module('myApp', ['smartTable.table']).
         }
 
         scope.columnCollection = [
-            {label: 'id', map: 'id', isEditable: false},
+            {label: 'id', map: 'id', isEditable: true},
             {label: 'FirsName', map: 'firstName'},
             {label: 'LastName', map: 'lastName', isSortable: false},
             {label: 'birth date', map: 'birthDate', formatFunction: 'date', type: 'date'},
-            {label: 'balance', map: 'balance', type: 'number', formatFunction: 'currency', formatParameter: '$'},
-            {label: 'email', map: 'email', type: 'email'}
+            {label: 'balance', map: 'balance',isEditable:true, type: 'number', formatFunction: 'currency', formatParameter: '$'},
+            {label: 'email', map: 'email', type: 'email', cellTemplate:'{{dataRow.email}} : {{dataRow.lastName}}'}
         ];
 
         scope.globalConfig = {
