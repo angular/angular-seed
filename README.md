@@ -30,19 +30,58 @@ You'll find running examples and more documentation at [the demo website](http:/
 ## How to use Smart-Table
 
 * You can clone the repository: the source code will be under smart-table-module directory.
-* You can add the Smart-Table.min.js file to your application and then add the module 'smartTable.table' to your own app module. The build includes all the template in the $templateCache
+* You can add the Smart-Table.min.js file to your application and then add the module `smartTable.table` to your own app module. The build includes all the template in the $templateCache
 so you need only this file.
+* use [https://github.com/bower/bower](bower) and run the command `bower install smart-table`
 
-### Running the app during development
+## Smart Table for developers
 
-Follow the steps:
+### the branches
 
-1. clone this repository
-2. install node.js and run `scripts/web-server.js`
-3. you'll find a running example app at http://localhost:<port>/example-app/index.html after you have started the web-server
+* The [https://github.com/lorenzofox3/Smart-Table](master) branch is the main branch where you can find stable/tested code for a fully client side table module.
+* The [https://github.com/lorenzofox3/Smart-Table/tree/cowboy](cowboy) branch is where we add some modifications on the `Directives.js` file. This part is not tested and is more an "experimental" branch
+* The [https://github.com/lorenzofox3/Smart-Table/tree/server-partial](server-partial) branch:
+I have quite a few times been asked :
+>" I have a huge set of data which I want to be loaded in the browser only on demand, how can I do that"
+This is somehow `server-side pagination`. You load the data on demand but keep the rest of the logic on the client side (sort,filter,...)
+This branch show you how to turn smart-table to be able to have this particular flow (~10 lines to change)
+* The [https://github.com/lorenzofox3/Smart-Table/tree/server-sample](server-sample) branch:
+This time is a small example on how to change smart-table to have the whole logic (sort, filter, ...) on the server side, and be able
+to send particular queries to the server (with proper filter value, sort value, etc)
+
+### How does Smart-Table work ?
+
+If you want to adapt smart-table to your own flow, it is really easy. But first you should understand how it works, so you will know what to change to customise it.
+
+The `Table.js` file is the key. When you bind a dataCollection to the smart table directive
+```<smart-table rows="dataCollection" columns="myColumns"></smart-table>```
+the table controller (Table.js) will have access to this data collection through the scope. This controller provides an API which table child directives (`Directives.js`) will be able to call.
+Through this API calls, the controller will perform some operations on the dataCollection (sort,filter, etc) to build a subset of dataCollection (displayedCollection) which is the actual displayed data.
+Most of the API method simply change table controller or scope variables and then call the `pipe` function which will actually chain the operations to build the subset (displayedCollection) and regarding to the updated
+local/scope variables. The `Column.js` simply wraps (and add some required properties) to your column configuration to expose it to the table child directives through the scope.
+
+So, at the end you don't even have to use the provided directives and build yours if you want a special behavior.
+
+###The build process
+
+1. install [http://nodejs.org/] (node.js) and run `npm install` to install the required node modules.
+2. the build tasks are [http://gruntjs.com/](grunt tasks).
+* if you run `grunt build` it will perform the following operations:
+    * transform the template (.html) files into an angular module and load them in the [http://docs.angularjs.org/api/ng.$templateCache]($templateCache) (it will result with the `Template.js` file.
+    * concatenate all the source files into a single one (Smart-Table.debug.js)
+    * minify the debug file so you have a production ready file (Smart-Table.min.js)
+* if you run `grunt refApp` the two first steps are the same that the build task, but at the end it will simply copy
+the Smart-Table.debug.js into the example-app folder (see below)
+
+### The example app
+The example app is a running example of the smart-table in action.
+To run it :
+1. use node to run `scripts/web-server.js`
+2. In your browser go to http://localhost:<port>/example-app/index.html
 
 ### Running unit tests
 
+Unit tests are provided for all the code except for Directive.js file which is a bit more experimental.
 Tests can be run with [Testacular](http://karma-runner.github.io/0.8/index.html): you'll find the config file under config folder. Note, the coverage is done by [Istanbul.js](http://gotwarlost.github.io/istanbul/)
         
 ## License
