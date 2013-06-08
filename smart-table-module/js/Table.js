@@ -62,10 +62,8 @@
                         for (var i = 0, l = array.length; i < l; i++) {
                             array[i].isSelected = false;
                         }
-                        dataRow.isSelected = select;
-                    } else if (selectionMode === 'multiple') {
-                        dataRow.isSelected = select;
                     }
+                    dataRow.isSelected = select;
                 }
             }
 
