@@ -560,17 +560,17 @@ describe('Table module', function () {
                 ]);
             });
 
-            it('should emit an event'), inject(function ($rootScope) {
+            it('should emit an event', inject(function ($rootScope) {
                 var eventHandler = {
                     listener: function (event, args) {
                         expect(args.item).toEqual(scope.displayedCollection[0]);
                     }
-                }
+                };
                 spyOn(eventHandler, 'listener');
                 $rootScope.$on('updateDataRow', eventHandler.listener);
-                ctr.updateDataRow(scope.displayedCollection[0], 'id', 2);
+                ctrl.updateDataRow(scope.displayedCollection[0], 'id', 2);
                 expect(eventHandler.listener).toHaveBeenCalled();
-            })
+            }));
 
         });
     });
