@@ -374,10 +374,9 @@
                 }
             }
 
-            //TODO check if it would be better not to 'pollute' the dataModel itself and use a wrapper/decorator for all the stuff related to the table features like we do for column (then we could emit event)
             function selectDataRow(array, selectionMode, index, select) {
 
-                var dataRow;
+                var dataRow, oldValue;
 
                 if ((!angular.isArray(array)) || (selectionMode !== 'multiple' && selectionMode !== 'single')) {
                     return;
@@ -388,12 +387,15 @@
                     if (selectionMode === 'single') {
                         //unselect all the others
                         for (var i = 0, l = array.length; i < l; i++) {
+                            oldValue = array[i].isSelected;
                             array[i].isSelected = false;
+                            if (oldValue === true) {
+                                scope.$emit('selectionChange', {item: array[i]});
+                            }
                         }
-                        dataRow.isSelected = select;
-                    } else if (selectionMode === 'multiple') {
-                        dataRow.isSelected = select;
                     }
+                    dataRow.isSelected = select;
+                    scope.$emit('selectionChange', {item: dataRow});
                 }
             }
 
@@ -410,9 +412,11 @@
              * @param page
              */
             this.changePage = function (page) {
+                var oldPage = scope.currentPage;
                 if (angular.isNumber(page.page)) {
                     scope.currentPage = page.page;
                     scope.displayedCollection = this.pipe(scope.dataCollection);
+                    scope.$emit('changePage', {oldValue: oldPage, newValue: scope.currentPage});
                 }
             };
 
@@ -520,9 +524,9 @@
              * @param dataRow
              */
             this.toggleSelection = function (dataRow) {
-                var index = scope.displayedCollection.indexOf(dataRow);
+                var index = scope.dataCollection.indexOf(dataRow);
                 if (index !== -1) {
-                    selectDataRow(scope.displayedCollection, scope.selectionMode, index, dataRow.isSelected !== true);
+                    selectDataRow(scope.dataCollection, scope.selectionMode, index, dataRow.isSelected !== true);
                 }
             };
 
@@ -568,9 +572,14 @@
              * @param newValue the value to set
              */
             this.updateDataRow = function (dataRow, propertyName, newValue) {
-                var index = scope.displayedCollection.indexOf(dataRow);
+                var index = scope.displayedCollection.indexOf(dataRow),
+                    oldValue;
                 if (index !== -1) {
-                    scope.displayedCollection[index][propertyName] = newValue;
+                    oldValue = scope.displayedCollection[index][propertyName];
+                    if (oldValue !== newValue) {
+                        scope.displayedCollection[index][propertyName] = newValue;
+                        scope.$emit('updateDataRow', {item: scope.displayedCollection[index]});
+                    }
                 }
             };
 

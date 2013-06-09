@@ -3,6 +3,9 @@
 var app = angular.module('myApp', ['smartTable.table']).
     controller('mainCtrl', ['$scope', function (scope) {
 
+        scope.$on('updateDataRow', function (event, args) {
+            alert(JSON.stringify(args));
+        });
         scope.rowCollection = [
             {id: 0, firstName: 'Laurent', lastName: 'Renard', birthDate: new Date('1987-05-21'), balance: 102, email: 'laurent34azerty@gmail.com'},
             {id: 1, firstName: 'Blandine', lastName: 'Faivre', birthDate: new Date('1987-04-25'), balance: -2323.22, email: 'laurent34azerty@gmail.com'},
@@ -147,57 +150,7 @@ var app = angular.module('myApp', ['smartTable.table']).
             {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
             {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
             {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
-            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'},
+            {id: 25, firstName: 'Francoise', lastName: 'Frere', birthDate: new Date('1955-08-27'), balance: 42343, email: 'laurent34azerty@gmail.com'}
         ];
 
         for (var i = 0; i < scope.rowCollection.length; i++) {
@@ -210,14 +163,15 @@ var app = angular.module('myApp', ['smartTable.table']).
             {label: 'FirsName', map: 'firstName'},
             {label: 'LastName', map: 'lastName', isSortable: false},
             {label: 'birth date', map: 'birthDate', formatFunction: 'date', type: 'date'},
-            {label: 'balance', map: 'balance',isEditable:true, type: 'number', formatFunction: 'currency', formatParameter: '$'},
-            {label: 'email', map: 'email', type: 'email', cellTemplate:'{{dataRow.email}} : {{dataRow.lastName}}'}
+            {label: 'balance', map: 'balance', isEditable: true, type: 'number', formatFunction: 'currency', formatParameter: '$'},
+            {label: 'email', map: 'email', type: 'email', cellTemplate: '{{dataRow.email}} : {{dataRow.lastName}}'}
         ];
 
         scope.globalConfig = {
             isPaginationEnabled: true,
             isGlobalSearchActivated: true,
-            itemsByPage: 10
+            itemsByPage: 10,
+            selectionMode: 'single'
         };
 
     }]);

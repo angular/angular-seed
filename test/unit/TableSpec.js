@@ -71,6 +71,20 @@ describe('Table module', function () {
                 expect(scope.currentPage).toEqual(3);
                 expect(ctrlMock.pipe).not.toHaveBeenCalled();
             });
+
+            it('should emit an event', inject(function ($rootScope) {
+                scope.currentPage = 3;
+                var eventHandler = {
+                    listener: function (event, args) {
+                        expect(args.oldValue).toEqual(3);
+                        expect(args.newValue).toEqual(1);
+                    }
+                };
+                spyOn(eventHandler, 'listener');
+                $rootScope.$on('changePage', eventHandler.listener);
+                ctrl.changePage({page: 1});
+                expect(eventHandler.listener).toHaveBeenCalled();
+            }));
         });
 
         describe('Column API', function () {
@@ -176,28 +190,66 @@ describe('Table module', function () {
 
                     it('should only set isSelected=true to only one item at the time', function () {
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).toBe(true);
+                        expect(scope.dataCollection[1].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
 
                         ctrl.toggleSelection(scope.displayedCollection[1]);
-                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[1].isSelected).toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
                     });
+
+                    it('should emit event when being selected', inject(function ($rootScope) {
+                        var eventHanlder = {
+                            listener: function (event, args) {
+                                expect(args.item).toEqual(scope.displayedCollection[0]);
+                                expect(args.item.isSelected).toBe(true);
+                            }
+                        };
+                        spyOn(eventHanlder, 'listener').andCallThrough();
+                        $rootScope.$on('selectionChange', eventHanlder.listener);
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(eventHanlder.listener).toHaveBeenCalled();
+                    }));
+
+                    it('should emit event when being unselected', inject(function ($rootScope) {
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+
+                        var callCounter = 0;
+                        var eventHanlder = {
+                            listener: function (event, args) {
+
+                                //first time call : unselect the previously selected
+                                if (callCounter === 0) {
+                                    expect(args.item).toEqual(scope.displayedCollection[0]);
+                                    expect(args.item.isSelected).toBe(false);
+                                    callCounter++;
+                                } else {
+                                    expect(args.item).toEqual(scope.displayedCollection[1]);
+                                    expect(args.item.isSelected).toBe(true);
+                                }
+                            }
+                        };
+                        spyOn(eventHanlder, 'listener').andCallThrough();
+                        $rootScope.$on('selectionChange', eventHanlder.listener);
+                        ctrl.toggleSelection(scope.displayedCollection[1]);
+                        expect(eventHanlder.listener.callCount).toBe(2);
+                    }));
 
                     it('should unselect', function () {
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).toBe(true);
+                        expect(scope.dataCollection[0].isSelected).toBe(true);
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).not.toBe(true);
                     });
 
                     it('should not select any row when calling toggleSelectAll', function () {
                         ctrl.toggleSelectionAll(true);
-                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[1].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
                     });
                 });
 
@@ -215,26 +267,26 @@ describe('Table module', function () {
 
                     it('should set isSelected=true to any row', function () {
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).toBe(true);
+                        expect(scope.dataCollection[1].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
 
                         ctrl.toggleSelection(scope.displayedCollection[1]);
-                        expect(scope.displayedCollection[0].isSelected).toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).toBe(true);
+                        expect(scope.dataCollection[1].isSelected).toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
                     });
 
                     it('should unselect any row', function () {
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).toBe(true);
+                        expect(scope.dataCollection[1].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
 
                         ctrl.toggleSelection(scope.displayedCollection[0]);
-                        expect(scope.displayedCollection[0].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[1].isSelected).not.toBe(true);
-                        expect(scope.displayedCollection[2].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[0].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[1].isSelected).not.toBe(true);
+                        expect(scope.dataCollection[2].isSelected).not.toBe(true);
                     });
 
                     it('should select all the displayed row when calling toggleSelectAll with true', function () {
@@ -265,6 +317,21 @@ describe('Table module', function () {
                         expect(scope.displayedCollection[1].isSelected).not.toBe(true);
                         expect(scope.displayedCollection[2].isSelected).not.toBe(true);
                     });
+
+                    it('should always emit an event', inject(function ($rootScope) {
+                        var eventHanlder = {
+                            listener: function (event, args) {
+                                expect(args.item).toEqual(scope.displayedCollection[0]);
+                                expect(args.item.isSelected).toEqual(scope.displayedCollection[0].isSelected);
+                            }
+                        };
+                        spyOn(eventHanlder, 'listener').andCallThrough();
+                        $rootScope.$on('selectionChange', eventHanlder.listener);
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(eventHanlder.listener).toHaveBeenCalled();
+                        ctrl.toggleSelection(scope.displayedCollection[0]);
+                        expect(eventHanlder.listener).toHaveBeenCalled();
+                    }));
                 });
             });
 
@@ -492,6 +559,18 @@ describe('Table module', function () {
                     {id: 2, secondProperty: true, thirdProperty: 1}
                 ]);
             });
+
+            it('should emit an event'), inject(function ($rootScope) {
+                var eventHandler = {
+                    listener: function (event, args) {
+                        expect(args.item).toEqual(scope.displayedCollection[0]);
+                    }
+                }
+                spyOn(eventHandler, 'listener');
+                $rootScope.$on('updateDataRow', eventHandler.listener);
+                ctr.updateDataRow(scope.displayedCollection[0], 'id', 2);
+                expect(eventHandler.listener).toHaveBeenCalled();
+            })
 
         });
     });
