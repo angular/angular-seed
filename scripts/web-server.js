@@ -19,7 +19,8 @@ function escapeHtml(value) {
   return value.toString().
     replace('<', '&lt;').
     replace('>', '&gt;').
-    replace('"', '&quot;');
+    replace('"', '&quot;').
+    replace("'", '&#39;');
 }
 
 function createServlet(Class) {
