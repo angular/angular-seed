@@ -1,8 +1,8 @@
 basePath = '../';
 
+frameworks = ["ng-scenario"];
+
 files = [
-  ANGULAR_SCENARIO,
-  ANGULAR_SCENARIO_ADAPTER,
   'test/e2e/**/*.js'
 ];
 
@@ -20,3 +20,10 @@ junitReporter = {
   outputFile: 'test_out/e2e.xml',
   suite: 'e2e'
 };
+
+urlRoot = '/__testacular/';
+
+plugins = [
+    'karma-ng-scenario',
+    'karma-chrome-launcher'
+];
