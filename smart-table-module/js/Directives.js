@@ -144,7 +144,7 @@
         }])
         //a customisable cell (see templateUrl) and editable
         //TODO check with the ng-include strategy
-        .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', function (filter, http, templateCache, compile) {
+        .directive('smartTableDataCell', ['$filter', '$http', '$templateCache', '$compile', '$parse', function (filter, http, templateCache, compile, parse) {
             return {
                 restrict: 'C',
                 link: function (scope, element) {
@@ -152,15 +152,16 @@
                         column = scope.column,
                         row = scope.dataRow,
                         format = filter('format'),
+                        getter = parse(column.map),
                         childScope;
 
                     //can be useful for child directives
-                    scope.formatedValue = format(row[column.map], column.formatFunction, column.formatParameter);
+                    scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
 
                     function defaultContent() {
                         //clear content
                         if (column.isEditable) {
-                            element.html('<editable-cell row="dataRow" column="column" type="column.type" value="dataRow[column.map]"></editable-cell>');
+                            element.html('<editable-cell row="dataRow" column="column" type="column.type"></editable-cell>');
                             compile(element.contents())(scope);
                         } else {
                             element.text(scope.formatedValue);
@@ -188,20 +189,19 @@
             };
         }])
         //directive that allows type to be bound in input
-        .directive('inputType', ['$parse', function (parse) {
+        .directive('inputType', function () {
             return {
                 restrict: 'A',
                 priority: 1,
                 link: function (scope, ielement, iattr) {
                     //force the type to be set before inputDirective is called
-                    var getter = parse(iattr.type),
-                        type = getter(scope);
+                    var type = scope.$eval(iattr.type);
                     iattr.$set('type', type);
                 }
             };
-        }])
+        })
         //an editable content in the context of a cell (see row, column)
-        .directive('editableCell', ['templateUrlList', function (templateList) {
+        .directive('editableCell', ['templateUrlList', '$parse', function (templateList, parse) {
             return {
                 restrict: 'E',
                 require: '^smartTable',
@@ -214,22 +214,25 @@
                 replace: true,
                 link: function (scope, element, attrs, ctrl) {
                     var form = angular.element(element.children()[1]),
-                        input = angular.element(form.children()[0]);
+                        input = angular.element(form.children()[0]),
+                        getter = parse(scope.column.map);
 
                     //init values
                     scope.isEditMode = false;
+                    scope.value = getter(scope.row);
+
 
                     scope.submit = function () {
                         //update model if valid
                         if (scope.myForm.$valid === true) {
-                            ctrl.updateDataRow(scope.row,scope.column.map,scope.value);
+                            ctrl.updateDataRow(scope.row, scope.column.map, scope.value);
                             ctrl.sortBy();//it will trigger the refresh...  (ie it will sort, filter, etc with the new value)
                         }
                         scope.isEditMode = false;
                     };
 
                     scope.toggleEditMode = function () {
-                        scope.value = scope.row[scope.column.map];
+                        scope.value = getter(scope.row);
                         scope.isEditMode = true;
                     };
 

@@ -15,7 +15,7 @@
             sortAlgorithm: '',
             filterAlgorithm: ''
         })
-        .controller('TableCtrl', ['$scope', 'Column', '$filter', 'ArrayUtility', 'DefaultTableConfiguration', function (scope, Column, filter, arrayUtility, defaultConfig) {
+        .controller('TableCtrl', ['$scope', 'Column', '$filter', '$parse', 'ArrayUtility', 'DefaultTableConfiguration', function (scope, Column, filter, parse, arrayUtility, defaultConfig) {
 
             scope.columns = [];
             scope.dataCollection = scope.dataCollection || [];
@@ -245,11 +245,13 @@
              */
             this.updateDataRow = function (dataRow, propertyName, newValue) {
                 var index = scope.displayedCollection.indexOf(dataRow),
+                    getter = parse(propertyName),
+                    setter = getter.assign,
                     oldValue;
                 if (index !== -1) {
-                    oldValue = scope.displayedCollection[index][propertyName];
+                    oldValue = getter(scope.displayedCollection[index]);
                     if (oldValue !== newValue) {
-                        scope.displayedCollection[index][propertyName] = newValue;
+                        setter(scope.displayedCollection[index], newValue);
                         scope.$emit('updateDataRow', {item: scope.displayedCollection[index]});
                     }
                 }
