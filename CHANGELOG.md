@@ -32,3 +32,7 @@
     * `selectionChange`
     * `udpateDataRow`
     * `pageChange`
+
+## v0.1.2
+* support multi-level object in column config like `map:'myNestedObject.subProperties`
+    
