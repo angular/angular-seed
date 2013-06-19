@@ -332,7 +332,7 @@
 
 (function (angular) {
     "use strict";
-    angular.module('smartTable.table', ['smartTable.column', 'smartTable.utilities', 'smartTable.directives', 'smartTable.filters', 'ui.bootstrap.pagination'])
+    angular.module('smartTable.table', ['smartTable.column', 'smartTable.utilities', 'smartTable.directives', 'smartTable.filters', 'ui.bootstrap.pagination.smartTable'])
         .constant('DefaultTableConfiguration', {
             selectionMode: 'none',
             isGlobalSearchActivated: false,
@@ -665,11 +665,13 @@ angular.module("partials/smartTable.html", []).run(["$templateCache", function (
             "    <tfoot ng-show=\"isPaginationEnabled\">\n" +
             "    <tr class=\"smart-table-footer-row\">\n" +
             "        <td colspan=\"{{columns.length}}\">\n" +
-            "            <div pagination=\"\" num-pages=\"numberOfPages\" max-size=\"maxSize\" current-page=\"currentPage\"></div>\n" +
+            "            <div pagination-smart-table=\"\" num-pages=\"numberOfPages\" max-size=\"maxSize\" current-page=\"currentPage\"></div>\n" +
             "        </td>\n" +
             "    </tr>\n" +
             "    </tfoot>\n" +
             "</table>\n" +
+            "\n" +
+            "\n" +
             "");
 }]);
 
@@ -809,7 +811,7 @@ angular.module("partials/smartTable.html", []).run(["$templateCache", function (
 
 
 (function (angular) {
-    angular.module('ui.bootstrap.pagination', ['smartTable.templateUrlList'])
+    angular.module('ui.bootstrap.pagination.smartTable', ['smartTable.templateUrlList'])
 
         .constant('paginationConfig', {
             boundaryLinks: false,
@@ -820,7 +822,7 @@ angular.module("partials/smartTable.html", []).run(["$templateCache", function (
             lastText: 'Last'
         })
 
-        .directive('pagination', ['paginationConfig', 'templateUrlList', function (paginationConfig, templateUrlList) {
+        .directive('paginationSmartTable', ['paginationConfig', 'templateUrlList', function (paginationConfig, templateUrlList) {
             return {
                 restrict: 'EA',
                 require: '^smartTable',
