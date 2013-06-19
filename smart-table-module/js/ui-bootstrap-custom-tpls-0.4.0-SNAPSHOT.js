@@ -1,5 +1,5 @@
 (function (angular) {
-    angular.module('ui.bootstrap.pagination', ['smartTable.templateUrlList'])
+    angular.module('ui.bootstrap.pagination.smartTable', ['smartTable.templateUrlList'])
 
         .constant('paginationConfig', {
             boundaryLinks: false,
@@ -10,7 +10,7 @@
             lastText: 'Last'
         })
 
-        .directive('pagination', ['paginationConfig', 'templateUrlList', function (paginationConfig, templateUrlList) {
+        .directive('paginationSmartTable', ['paginationConfig', 'templateUrlList', function (paginationConfig, templateUrlList) {
             return {
                 restrict: 'EA',
                 require: '^smartTable',
