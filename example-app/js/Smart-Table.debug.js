@@ -56,7 +56,7 @@
     angular.module('smartTable.directives', ['smartTable.templateUrlList', 'smartTable.templates'])
         .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
             return {
-                restrict: 'E',
+                restrict: 'EA',
                 scope: {
                     columnCollection: '=columns',
                     dataCollection: '=rows',
@@ -213,7 +213,7 @@
                     function defaultContent() {
                         //clear content
                         if (column.isEditable) {
-                            element.html('<editable-cell row="dataRow" column="column" type="column.type"></editable-cell>');
+                            element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
                         } else {
                             element.text(scope.formatedValue);
@@ -255,7 +255,7 @@
         //an editable content in the context of a cell (see row, column)
         .directive('editableCell', ['templateUrlList', '$parse', function (templateList, parse) {
             return {
-                restrict: 'E',
+                restrict: 'EA',
                 require: '^smartTable',
                 templateUrl: templateList.editableCell,
                 scope: {
@@ -280,12 +280,12 @@
                             ctrl.updateDataRow(scope.row, scope.column.map, scope.value);
                             ctrl.sortBy();//it will trigger the refresh...  (ie it will sort, filter, etc with the new value)
                         }
-                        scope.isEditMode = false;
+                        scope.toggleEditMode();
                     };
 
                     scope.toggleEditMode = function () {
                         scope.value = getter(scope.row);
-                        scope.isEditMode = true;
+                        scope.isEditMode = scope.isEditMode !== true;
                     };
 
                     scope.$watch('isEditMode', function (newValue, oldValue) {
@@ -644,34 +644,32 @@ angular.module("partials/selectionCheckbox.html", []).run(["$templateCache", fun
 
 angular.module("partials/smartTable.html", []).run(["$templateCache", function ($templateCache) {
     $templateCache.put("partials/smartTable.html",
-        "<div class=\"smart-table-container\">\n" +
-            "    <table class=\"smart-table\">\n" +
-            "        <thead>\n" +
-            "        <tr class=\"smart-table-global-search-row\" ng-show=\"isGlobalSearchActivated\">\n" +
-            "            <td class=\"smart-table-global-search\" column-span=\"{{columns.length}}\" colspan=\"{{columnSpan}}\">\n" +
-            "            </td>\n" +
-            "        </tr>\n" +
-            "        <tr class=\"smart-table-header-row\">\n" +
-            "            <th ng-repeat=\"column in columns\" ng-include=\"column.headerTemplateUrl\"\n" +
-            "                class=\"smart-table-header-cell {{column.headerClass}}\" scope=\"col\">\n" +
-            "            </th>\n" +
-            "        </tr>\n" +
-            "        </thead>\n" +
-            "        <tbody>\n" +
-            "        <tr ng-repeat=\"dataRow in displayedCollection\" ng-class=\"{selected:dataRow.isSelected}\"\n" +
-            "            class=\"smart-table-data-row\">\n" +
-            "            <td ng-repeat=\"column in columns\" class=\"smart-table-data-cell {{column.cellClass}}\"></td>\n" +
-            "        </tr>\n" +
-            "        </tbody>\n" +
-            "        <tfoot ng-show=\"isPaginationEnabled\">\n" +
-            "        <tr class=\"smart-table-footer-row\">\n" +
-            "            <td colspan=\"{{columns.length}}\">\n" +
-            "                <pagination num-pages=\"numberOfPages\" max-size=\"maxSize\" current-page=\"currentPage\"></pagination>\n" +
-            "            </td>\n" +
-            "        </tr>\n" +
-            "        </tfoot>\n" +
-            "    </table>\n" +
-            "</div>\n" +
+        "<table class=\"smart-table\">\n" +
+            "    <thead>\n" +
+            "    <tr class=\"smart-table-global-search-row\" ng-show=\"isGlobalSearchActivated\">\n" +
+            "        <td class=\"smart-table-global-search\" column-span=\"{{columns.length}}\" colspan=\"{{columnSpan}}\">\n" +
+            "        </td>\n" +
+            "    </tr>\n" +
+            "    <tr class=\"smart-table-header-row\">\n" +
+            "        <th ng-repeat=\"column in columns\" ng-include=\"column.headerTemplateUrl\"\n" +
+            "            class=\"smart-table-header-cell {{column.headerClass}}\" scope=\"col\">\n" +
+            "        </th>\n" +
+            "    </tr>\n" +
+            "    </thead>\n" +
+            "    <tbody>\n" +
+            "    <tr ng-repeat=\"dataRow in displayedCollection\" ng-class=\"{selected:dataRow.isSelected}\"\n" +
+            "        class=\"smart-table-data-row\">\n" +
+            "        <td ng-repeat=\"column in columns\" class=\"smart-table-data-cell {{column.cellClass}}\"></td>\n" +
+            "    </tr>\n" +
+            "    </tbody>\n" +
+            "    <tfoot ng-show=\"isPaginationEnabled\">\n" +
+            "    <tr class=\"smart-table-footer-row\">\n" +
+            "        <td colspan=\"{{columns.length}}\">\n" +
+            "            <div pagination=\"\" num-pages=\"numberOfPages\" max-size=\"maxSize\" current-page=\"currentPage\"></div>\n" +
+            "        </td>\n" +
+            "    </tr>\n" +
+            "    </tfoot>\n" +
+            "</table>\n" +
             "");
 }]);
 

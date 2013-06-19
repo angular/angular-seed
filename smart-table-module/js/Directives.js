@@ -228,12 +228,12 @@
                             ctrl.updateDataRow(scope.row, scope.column.map, scope.value);
                             ctrl.sortBy();//it will trigger the refresh...  (ie it will sort, filter, etc with the new value)
                         }
-                        scope.isEditMode = false;
+                        scope.toggleEditMode();
                     };
 
                     scope.toggleEditMode = function () {
                         scope.value = getter(scope.row);
-                        scope.isEditMode = true;
+                        scope.isEditMode = scope.isEditMode !== true;
                     };
 
                     scope.$watch('isEditMode', function (newValue, oldValue) {
