@@ -4,7 +4,7 @@
     angular.module('smartTable.directives', ['smartTable.templateUrlList', 'smartTable.templates'])
         .directive('smartTable', ['templateUrlList', 'DefaultTableConfiguration', function (templateList, defaultConfig) {
             return {
-                restrict: 'E',
+                restrict: 'EA',
                 scope: {
                     columnCollection: '=columns',
                     dataCollection: '=rows',
@@ -161,7 +161,7 @@
                     function defaultContent() {
                         //clear content
                         if (column.isEditable) {
-                            element.html('<editable-cell row="dataRow" column="column" type="column.type"></editable-cell>');
+                            element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
                         } else {
                             element.text(scope.formatedValue);
@@ -203,7 +203,7 @@
         //an editable content in the context of a cell (see row, column)
         .directive('editableCell', ['templateUrlList', '$parse', function (templateList, parse) {
             return {
-                restrict: 'E',
+                restrict: 'EA',
                 require: '^smartTable',
                 templateUrl: templateList.editableCell,
                 scope: {
