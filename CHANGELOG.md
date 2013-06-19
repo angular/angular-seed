@@ -35,4 +35,6 @@
 
 ## v0.1.2
 * support multi-level object in column config like `map:'myNestedObject.subProperties`
+* change pagination directive name to avoid collision with angular-ui.bootstrap
+* make module IE8 compatible
     
