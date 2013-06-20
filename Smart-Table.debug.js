@@ -820,8 +820,8 @@ angular.module("partials/smartTable.html", []).run(["$templateCache", function($
             boundaryLinks: false,
             directionLinks: true,
             firstText: 'First',
-            previousText: '❰',
-            nextText: '❱',
+            previousText: '<',
+            nextText: '>',
             lastText: 'Last'
         })
 

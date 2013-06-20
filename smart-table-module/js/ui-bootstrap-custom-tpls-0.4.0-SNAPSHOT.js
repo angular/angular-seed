@@ -5,8 +5,8 @@
             boundaryLinks: false,
             directionLinks: true,
             firstText: 'First',
-            previousText: '❰',
-            nextText: '❱',
+            previousText: '<',
+            nextText: '>',
             lastText: 'Last'
         })
 
