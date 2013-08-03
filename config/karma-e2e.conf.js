@@ -8,6 +8,8 @@ files = [
 
 autoWatch = false;
 
+urlRoot = '/angular-seed/'
+
 browsers = ['Chrome'];
 
 singleRun = true;
