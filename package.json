@@ -1,0 +1,6 @@
+{
+  "devDependencies": [
+    "karma",
+    "karma-ng-scenario"
+  ]
+}
