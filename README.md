@@ -56,7 +56,7 @@ We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
 [Karma](http://karma-runner.github.io) for your unit tests/specs, but you are free
 to use whatever works for you.
 
-Requires [node.js](http://nodejs.org/), Karma (`sudo npm install -g karma`) and a local
+Requires [node.js](http://nodejs.org/), Karma w/ Angular Scenario adapter (`npm install`) and a local
 or remote browser.
 
 * start `scripts/test.sh` (on windows: `scripts\test.bat`)
