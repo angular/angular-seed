@@ -36,6 +36,7 @@ function createServlet(Class) {
 function HttpServer(handlers) {
   this.handlers = handlers;
   this.server = http.createServer(this.handleRequest_.bind(this));
+  this.server.setMaxListeners(100);
 }
 
 HttpServer.prototype.start = function(port) {
