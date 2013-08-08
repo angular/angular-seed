@@ -1,0 +1,8 @@
+{
+    "devDependencies" :
+    {
+        "cucumber": "latest",
+        "zombie": "1.4.1",
+        "assert": "latest"
+    }
+}
