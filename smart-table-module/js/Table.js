@@ -22,9 +22,21 @@
             scope.displayedCollection = []; //init empty array so that if pagination is enabled, it does not spoil performances
             scope.numberOfPages = calculateNumberOfPages(scope.dataCollection);
             scope.currentPage = 1;
+            scope.holder = {isAllSelected: false};
 
             var predicate = {},
                 lastColumnSort;
+
+            function isAllSelected() {
+                var i,
+                    l = scope.displayedCollection.length;
+                for (i = 0; i < l; i++) {
+                    if (scope.displayedCollection[i].isSelected !== true) {
+                        return false;
+                    }
+                }
+                return true;
+            }
 
             function calculateNumberOfPages(array) {
 
@@ -67,6 +79,7 @@
                         }
                     }
                     dataRow.isSelected = select;
+                    scope.holder.isAllSelected = isAllSelected();
                     scope.$emit('selectionChange', {item: dataRow});
                 }
             }
@@ -88,6 +101,7 @@
                 if (angular.isNumber(page.page)) {
                     scope.currentPage = page.page;
                     scope.displayedCollection = this.pipe(scope.dataCollection);
+                    scope.holder.isAllSelected = isAllSelected();
                     scope.$emit('changePage', {oldValue: oldPage, newValue: scope.currentPage});
                 }
             };

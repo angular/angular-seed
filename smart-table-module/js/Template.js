@@ -39,7 +39,7 @@ angular.module("partials/pagination.html", []).run(["$templateCache", function($
 
 angular.module("partials/selectAllCheckbox.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("partials/selectAllCheckbox.html",
-    "<input class=\"smart-table-select-all\" type=\"checkbox\" ng-model=\"isChecked\"/>");
+    "<input class=\"smart-table-select-all\"  type=\"checkbox\" ng-model=\"holder.isAllSelected\"/>");
 }]);
 
 angular.module("partials/selectionCheckbox.html", []).run(["$templateCache", function($templateCache) {

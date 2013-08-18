@@ -99,14 +99,10 @@
             return {
                 restrict: 'C',
                 require: '^smartTable',
-                scope: {},
                 link: function (scope, element, attr, ctrl) {
-                    scope.isChecked = false;
-                    scope.$watch('isChecked', function (newValue, oldValue) {
-                        if (newValue !== oldValue) {
-                            ctrl.toggleSelectionAll(newValue);
-                        }
-                    });
+                    element.bind('click', function (event) {
+                        ctrl.toggleSelectionAll(element[0].checked === true);
+                    })
                 }
             };
         })

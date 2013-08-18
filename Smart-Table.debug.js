@@ -152,14 +152,10 @@
             return {
                 restrict: 'C',
                 require: '^smartTable',
-                scope: {},
                 link: function (scope, element, attr, ctrl) {
-                    scope.isChecked = false;
-                    scope.$watch('isChecked', function (newValue, oldValue) {
-                        if (newValue !== oldValue) {
-                            ctrl.toggleSelectionAll(newValue);
-                        }
-                    });
+                    element.bind('click', function (event) {
+                        ctrl.toggleSelectionAll(element[0].checked === true);
+                    })
                 }
             };
         })
@@ -353,9 +349,21 @@
             scope.displayedCollection = []; //init empty array so that if pagination is enabled, it does not spoil performances
             scope.numberOfPages = calculateNumberOfPages(scope.dataCollection);
             scope.currentPage = 1;
+            scope.holder = {isAllSelected: false};
 
             var predicate = {},
                 lastColumnSort;
+
+            function isAllSelected() {
+                var i,
+                    l = scope.displayedCollection.length;
+                for (i = 0; i < l; i++) {
+                    if (scope.displayedCollection[i].isSelected !== true) {
+                        return false;
+                    }
+                }
+                return true;
+            }
 
             function calculateNumberOfPages(array) {
 
@@ -398,6 +406,7 @@
                         }
                     }
                     dataRow.isSelected = select;
+                    scope.holder.isAllSelected = isAllSelected();
                     scope.$emit('selectionChange', {item: dataRow});
                 }
             }
@@ -419,6 +428,7 @@
                 if (angular.isNumber(page.page)) {
                     scope.currentPage = page.page;
                     scope.displayedCollection = this.pipe(scope.dataCollection);
+                    scope.holder.isAllSelected = isAllSelected();
                     scope.$emit('changePage', {oldValue: oldPage, newValue: scope.currentPage});
                 }
             };
@@ -636,7 +646,7 @@ angular.module("partials/pagination.html", []).run(["$templateCache", function($
 
 angular.module("partials/selectAllCheckbox.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("partials/selectAllCheckbox.html",
-    "<input class=\"smart-table-select-all\" type=\"checkbox\" ng-model=\"isChecked\"/>");
+    "<input class=\"smart-table-select-all\"  type=\"checkbox\" ng-model=\"holder.isAllSelected\"/>");
 }]);
 
 angular.module("partials/selectionCheckbox.html", []).run(["$templateCache", function($templateCache) {

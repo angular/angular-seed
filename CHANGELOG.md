@@ -36,3 +36,5 @@
 ## v0.1.2
 * support multi-level object in column config like `map:'myNestedObject.subProperties`
     
+## v0.1.3
+* reset the selectionAll state on page change
