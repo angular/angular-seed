@@ -7,7 +7,7 @@ before_script:
   - sh -e /etc/init.d/xvfb start
   - npm install --quiet -g karma
   - ./scripts/web-server.js > /dev/null &
-  - sleep 1 # give server time to start
+  - sleep 1 # give server time to start 
 
 script:
   - karma start config/karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
