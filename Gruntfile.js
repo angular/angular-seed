@@ -6,18 +6,7 @@ module.exports = function (grunt) {
             files: ['gruntfile.js', 'app/js/*.js', 'test/e2e/*.js', 'test/unit/*.js'],
             options: {
                 // options here to override JSHint defaults
-                globals: {
-                    "jquery": true,
-                    "describe": false,
-                    "beforeEach": false,
-                    "module": false,
-                    "it": false,
-                    "inject": false,
-                    "expect": false,
-                    "browser": false,
-                    "element": false,
-                    "angular": false
-                }
+                jshintrc: '.jshintrc'
             }
         },
         karma: {
