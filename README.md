@@ -149,3 +149,5 @@ fetch the changes and merge them into your project with git.
 ## Contact
 
 For more information on AngularJS please check out http://angularjs.org/
+
+[![Build Status](https://travis-ci.org/ferronrsmith/angular-seed.png?branch=master)](https://travis-ci.org/ferronrsmith/angular-seed)
