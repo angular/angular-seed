@@ -1,8 +1,7 @@
-'use strict';
-
 /* jasmine specs for controllers go here */
 
 describe('controllers', function(){
+  'use strict';
   beforeEach(module('myApp.controllers'));
 
 
