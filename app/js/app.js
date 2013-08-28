@@ -15,15 +15,17 @@ angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.directives', 
 
 var myApp = angular.module('authenticationApp', []).
     config(['$routeProvider', function($routeProvider) {
-      $routeProvider.when('/login', {
-        templateUrl: 'login.html',
-        controller:  'loginCtrl'});
       $routeProvider.when('/home', {
         templateUrl: 'home.html',
         controller:  'homeCtrl'
       });
+      $routeProvider.when('/login', {
+        templateUrl: 'login.html',
+        controller:  'loginCtrl'
+      });
+
       $routeProvider.otherwise({
-        redirectTo:  '/login'
+        redirectTo:  '/home'
       });
 }]);
 
@@ -43,5 +45,5 @@ var loginCtrl = function($scope, $location) {
 };
 
 var homeCtrl = function($scope) {
-
+  $scope.active = "home";
 };

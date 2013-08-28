@@ -2,8 +2,17 @@
   <head>
     <script type="text/javascript" src="lib/angular/angular.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
+    <!-- CSS library -->
+    <link rel="stylesheet" href="css/bootstrap/css/bootstrap.css"/>
   </head>
   <body>
-    <div ng-view></div>
+    <div id="header" class="navbar navbar-fixed-top container">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#">Home</a></li>
+            <li class=""><a href="#">Blogs</a></li>
+            <li class=""><a href="#">Profile</a></li>
+          </ul>
+    </div>
+    <div class="main-container" ng-view></div>
   </body>
 </html>

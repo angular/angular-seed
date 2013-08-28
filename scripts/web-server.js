@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var DEBUG = true; // debug control
+var DEBUG = false; // debug control
 var DEBUG_LOGO = '\n' +
     '=============SHAN=HE=[Debug]=============';
 
