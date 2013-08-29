@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+var DEBUG = false; // debug control
+var DEBUG_LOGO = '\n' +
+    '=============SHAN=HE=[Debug]=============';
 
 var util = require('util'),
     http = require('http'),
@@ -87,9 +90,23 @@ StaticServlet.MimeMap = {
 
 StaticServlet.prototype.handleRequest = function(req, res) {
   var self = this;
-  var path = ('./' + req.url.pathname).replace('//','/').replace(/%(..)/g, function(match, hex){
+
+  var path = './app/';
+  if (req.url.pathname === '/'){
+    path += 'index.html';
+  } else {
+    path += req.url.pathname;
+  }
+  path = path.replace('//', '/').replace(/%(..)/g, function(match, hex){
     return String.fromCharCode(parseInt(hex, 16));
   });
+//  var path = ('./app' + req.url.pathname).replace('//','/').replace(/%(..)/g, function(match, hex){
+//    return String.fromCharCode(parseInt(hex, 16));
+//  });
+  if (DEBUG) util.puts(DEBUG_LOGO);
+  if (DEBUG) util.puts('[DEBUG]: req.url.pathname=' + req.url.pathname);
+  if (DEBUG) util.puts('[DEBUG]: path=' + path);
+  if (DEBUG) util.puts('');
   var parts = path.split('/');
   if (parts[parts.length-1].charAt(0) === '.')
     return self.sendForbidden_(req, res, path);
