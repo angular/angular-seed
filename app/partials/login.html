@@ -1,0 +1,11 @@
+<div ng-controller="loginCtrl">
+  <h1>Welcome to the system</h1>
+  <h2>Please enter your name and password</h2>
+  <form action="">
+    <label>name: </label>
+    <input type="text" placeholder="Input a name here" ng-model="name" required/>
+    <label>password: </label>
+    <input type="password" name="password" placeholder="Input password here" ng-model="password" required/>
+    <input type="button" value="Log In" ng-click="authentic()"/>
+  </form>
+</div>
