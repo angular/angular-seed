@@ -13,22 +13,32 @@ angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.directives', 
 
 // Shan's own app
 
-var myApp = angular.module('authenticationApp', []).
-    config(['$routeProvider', function($routeProvider) {
-      $routeProvider.when('/home', {
-        templateUrl: 'home.html',
-        controller:  'homeCtrl'
-      });
-      $routeProvider.when('/login', {
-        templateUrl: 'login.html',
-        controller:  'loginCtrl'
-      });
+var myApp = angular.module('authenticationApp', ['authenticationApp.controllers']);
 
-      $routeProvider.otherwise({
-        redirectTo:  '/home'
-      });
+myApp.config(['$routeProvider', function($routeProvider) {
+  $routeProvider.when('/home', {
+    templateUrl: 'partials/home.html',
+    controller:  'homeCtrl'
+  });
+  $routeProvider.when('/blogs', {
+    templateUrl: 'partials/blogs.html',
+    controller:  'blogsCtrl'
+  });
+  $routeProvider.when('/profile', {
+    templateUrl: 'partials/profile.html',
+    controller:  'profileCtrl'
+  });
+
+  $routeProvider.otherwise({
+    redirectTo:  '/home'
+  });
 }]);
 
+
+
+
+
+/*
 var loginCtrl = function($scope, $location) {
   //$scope.test = "hello world";
   $scope.authentic = function() {
@@ -43,7 +53,4 @@ var loginCtrl = function($scope, $location) {
     $location.path('/home');
   };
 };
-
-var homeCtrl = function($scope) {
-  $scope.active = "home";
-};
+*/

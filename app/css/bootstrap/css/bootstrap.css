@@ -5777,7 +5777,7 @@ a.badge:focus {
 }
 
 .progress {
-  height: 20px;
+  height: 30px;
   margin-bottom: 20px;
   overflow: hidden;
   background-color: #f7f7f7;
@@ -6169,4 +6169,66 @@ a.badge:focus {
 /* customized CSS library */
 .main-container {
   margin-top: 50px;
+}
+
+#home-page {
+  color: #CCC;
+  font-family: 'Asul', sans-serif;
+}
+
+#home-page .biggest-stylish {
+  font-size: 65px;
+  font-weight: 700;
+  margin-bottom: 50px;
+}
+
+#home-page .big-stylish {
+  font-size: 25px;
+  font-weight: 400;
+}
+
+#home-page #social-box {
+  margin-top: 300px;
+  margin-bottom: 30px;
+}
+
+
+
+/* Footer */
+#footer {
+  color: #CCC;
+}
+
+.front-bg {
+  position: fixed;
+  width: 120%;
+  height: 120%;
+  left: -28%;
+  top: -5%;
+  z-index: -99;
+  background-color: #000000;
+}
+
+.front-image {
+  margin: auto;
+  min-height: 130%;
+  min-width: 130%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.icon-facebook {
+  font-family: 'icomoon';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+.icon-facebook:before {
+  content: "\e001";
 }
