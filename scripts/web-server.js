@@ -58,7 +58,7 @@ HttpServer.prototype.handleRequest_ = function(req, res) {
   if (req.headers['user-agent']) {
     logEntry += ' ' + req.headers['user-agent'];
   }
-  util.puts(logEntry);
+  //util.log(logEntry);
   req.url = this.parseUrl_(req.url);
   var handler = this.handlers[req.method];
   if (!handler) {
@@ -91,8 +91,10 @@ StaticServlet.MimeMap = {
 StaticServlet.prototype.handleRequest = function(req, res) {
   var self = this;
 
-  //var path = '/srv/shanhe/app/';
-  var path = './app/';
+  var path = '/srv/shanhe/app/';
+  path = './app/';
+
+
   if (req.url.pathname === '/'){
     path += 'index.html';
   } else {

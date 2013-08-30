@@ -9,13 +9,16 @@
     <script type="text/javascript" src="js/controllers.js"></script>
     <!-- CSS library -->
     <link rel="stylesheet" href="css/bootstrap/css/bootstrap.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
     <link rel="stylesheet" href="css/social/style.css"/>
     <!-- Google Fonts -->
     <link href='http://fonts.googleapis.com/css?family=Asul:400,700&effect=3d-float' rel='stylesheet' type='text/css'>
   </head>
   <body>
     <!-- Header -->
-    <div id="header" class="navbar navbar-inverse navbar-static-top ">
+    <div id="header" class="navbar navbar-inverse navbar-fixed-top ">
       <div class="navbar-inner ">
         <div class="container">
           <ul class="nav nav-pills">
@@ -28,7 +31,7 @@
     </div>
 
     <!-- the Content -->
-    <div class="main-container" ng-view></div>
+    <div ng-view></div>
 
     <!-- Background -->
     <div class="front-bg">

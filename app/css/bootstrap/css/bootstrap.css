@@ -6168,10 +6168,10 @@ a.badge:focus {
 
 /* customized CSS library */
 .main-container {
-  margin-top: 50px;
+  margin-top: 90px;
 }
 
-#home-page {
+body {
   color: #CCC;
 }
 
@@ -6191,25 +6191,14 @@ a.badge:focus {
   font-family: 'Asul', sans-serif;
 }
 
-#social-box {
-  margin-bottom: 35px;
+#blogs {
+  background-color: rgba(30, 30, 30, .8);
+  min-height: 80%;
 }
 
-.fs1 {
-  font-size: 3em;
-  color: #CCC;
-  background-color: rgba(0,0,0,.0);
-  padding: 10px;
-}
 
-.fs1:hover {
-  text-decoration: none;
-}
 
-/* Footer */
-#footer {
-  color: #CCC;
-}
+
 
 .front-bg {
   position: fixed;

@@ -47,3 +47,18 @@ you can use the generic selector below, but it's slower:
 .icon-linkedin:hover {
 	color: #1A85BC;
 }
+
+#social-box {
+  margin-bottom: 35px;
+}
+
+.fs1 {
+  font-size: 3em;
+  color: #CCC;
+  background-color: rgba(0,0,0,.0);
+  padding: 10px;
+}
+
+.fs1:hover {
+  text-decoration: none;
+}
