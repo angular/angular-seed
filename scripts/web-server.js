@@ -91,6 +91,7 @@ StaticServlet.MimeMap = {
 StaticServlet.prototype.handleRequest = function(req, res) {
   var self = this;
 
+  //var path = '/srv/shanhe/app/';
   var path = './app/';
   if (req.url.pathname === '/'){
     path += 'index.html';

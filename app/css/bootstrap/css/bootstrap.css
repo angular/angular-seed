@@ -6173,26 +6173,38 @@ a.badge:focus {
 
 #home-page {
   color: #CCC;
+}
+
+.biggest-stylish {
+  font-size: 60px;
+  font-family: 'Asul', sans-serif;
+  margin-bottom: 15px;
+}
+
+.bigger-stylish {
+  font-size: 35px;
   font-family: 'Asul', sans-serif;
 }
 
-#home-page .biggest-stylish {
-  font-size: 65px;
-  font-weight: 700;
-  margin-bottom: 50px;
+.big-stylish {
+  font-size: 21px;
+  font-family: 'Asul', sans-serif;
 }
 
-#home-page .big-stylish {
-  font-size: 25px;
-  font-weight: 400;
+#social-box {
+  margin-bottom: 35px;
 }
 
-#home-page #social-box {
-  margin-top: 300px;
-  margin-bottom: 30px;
+.fs1 {
+  font-size: 3em;
+  color: #CCC;
+  background-color: rgba(0,0,0,.0);
+  padding: 10px;
 }
 
-
+.fs1:hover {
+  text-decoration: none;
+}
 
 /* Footer */
 #footer {
@@ -6203,32 +6215,18 @@ a.badge:focus {
   position: fixed;
   width: 120%;
   height: 120%;
-  left: -28%;
-  top: -5%;
+  left: -10%;
+  top: -8%;
   z-index: -99;
   background-color: #000000;
 }
 
 .front-image {
   margin: auto;
-  min-height: 130%;
-  min-width: 130%;
+  min-height: 100%;
+  min-width: 100%;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-}
-
-.icon-facebook {
-  font-family: 'icomoon';
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-}
-.icon-facebook:before {
-  content: "\e001";
 }

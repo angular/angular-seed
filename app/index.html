@@ -1,14 +1,20 @@
 <html ng-app="authenticationApp">
   <head>
+    <title>WaterWaves.me - Shan's personal website</title>
+
+    <link rel="icon" type="image/png" href="/img/s.png"/>
+
     <script type="text/javascript" src="lib/angular/angular.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/controllers.js"></script>
     <!-- CSS library -->
     <link rel="stylesheet" href="css/bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="css/social/style.css"/>
     <!-- Google Fonts -->
     <link href='http://fonts.googleapis.com/css?family=Asul:400,700&effect=3d-float' rel='stylesheet' type='text/css'>
   </head>
   <body>
+    <!-- Header -->
     <div id="header" class="navbar navbar-inverse navbar-static-top ">
       <div class="navbar-inner ">
         <div class="container">
@@ -20,9 +26,33 @@
         </div>
       </div>
     </div>
+
+    <!-- the Content -->
     <div class="main-container" ng-view></div>
 
+    <!-- Background -->
+    <div class="front-bg">
+      <img src="img/brown-1.jpg" class="front-image" />
+    </div>
+    <!-- Footer -->
     <div id="footer" class="navbar navbar-fixed-bottom">
+      <div id="social-box" class="container underline">
+        <div class="span1 offset1">
+          <a class="fs1 icon-linkedin" data-icon="&#xe005;" href="http://www.linkedin.com/in/shanhe/"></a>
+        </div>
+        <div class="span1 offset1">
+          <a class="fs1 icon-twitter" data-icon="&#xe000;" href="http://twitter.com/waterwaves_me"></a>
+        </div>
+        <div class="span1 offset1">
+          <a class="fs1 icon-github" data-icon="&#xe002;" href="http://github.com/waterwaves"></a>
+        </div>
+        <div class="span1 offset1">
+          <a class="fs1 icon-google-plus" data-icon="&#xe003;" href="http://plus.google.com/u/0/103790327280908560402"></a>
+        </div>
+        <div class="span1 offset1">
+          <a class="fs1 icon-mail" data-icon="&#xe004;" href="mailto: sean.shanhe@gmail.com"></a>
+        </div>
+      </div>
       <p class="text-center">&copy; 2013 Shan He</p>
     </div>
   </body>

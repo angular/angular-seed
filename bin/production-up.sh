@@ -1,0 +1,1 @@
+rsync . shanhe@192.241.190.213:/srv/shanhe/ -r
