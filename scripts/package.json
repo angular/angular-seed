@@ -1,0 +1,15 @@
+{
+  "name": "waterwaves-me",
+  "version": "0.0.0",
+  "author": "Shan He <sean.shanhe@gmail.com>",
+  "description": "a configuration command-line for waterwaves.me server",
+
+  "scripts": {
+    "start": "node web-server.js"
+  },
+
+  "dependencies": {
+    "mongoose": "3.6.x",
+    "async": "0.2.x"
+  }
+}

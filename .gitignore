@@ -1,3 +1,5 @@
 logs/*
 !.gitkeep
 .idea/*
+scripts/node_modules/*
+*.log
