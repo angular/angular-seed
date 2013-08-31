@@ -8,6 +8,7 @@ var util = require('util'),
     fs = require('fs'),
     url = require('url'),
     events = require('events');
+    express = require('express');
 
 var DEFAULT_PORT = 8000;
 
