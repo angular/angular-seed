@@ -56,7 +56,7 @@ you can use the generic selector below, but it's slower:
   font-size: 3em;
   color: #CCC;
   background-color: rgba(0,0,0,.0);
-  padding: 10px;
+  margin: 10px;
 }
 
 .fs1:hover {
