@@ -1,0 +1,69 @@
+@import url("bootstrap/css/bootstrap.min.css");
+@import url("social/style.css");
+
+/* customized CSS library */
+.main-container {
+  margin-top: 90px;
+}
+
+body {
+  color: #CCC;
+}
+
+.warm {
+  color: #B8870C;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.biggest-stylish {
+  font-size: 60px;
+  font-family: 'Asul', sans-serif;
+  margin-bottom: 15px;
+}
+
+.bigger-stylish {
+  font-size: 35px;
+  font-family: 'Asul', sans-serif;
+}
+
+.big-stylish {
+  font-size: 21px;
+  font-family: 'Asul', sans-serif;
+}
+
+.normal-stylish {
+  font-size: 16px;
+  font-family: 'Asul', sans-serif;
+}
+
+#blogs {
+  background-color: rgba(70, 61, 45, .9);
+  min-height: 80%;
+}
+
+
+
+/* background image(s) settings */
+
+.front-bg {
+  position: fixed;
+  width: 120%;
+  height: 120%;
+  left: -10%;
+  top: -8%;
+  z-index: -99;
+  background-color: #000000;
+}
+
+.front-image {
+  margin: auto;
+  min-height: 100%;
+  min-width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
