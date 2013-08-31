@@ -7,7 +7,8 @@ var util = require('util'),
     http = require('http'),
     fs = require('fs'),
     url = require('url'),
-    events = require('events');
+    events = require('events'),
+    mongoose = require('mongoose');
 
 var DEFAULT_PORT = 8000;
 
