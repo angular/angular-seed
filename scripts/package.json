@@ -5,7 +5,7 @@
   "description": "a configuration command-line for waterwaves.me server",
 
   "scripts": {
-    "start": "node old-web-server.js"
+    "start": "node web-server.js"
   },
 
   "dependencies": {
