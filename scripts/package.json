@@ -1,14 +1,15 @@
 {
   "name": "waterwaves-me",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Shan He <sean.shanhe@gmail.com>",
   "description": "a configuration command-line for waterwaves.me server",
 
   "scripts": {
-    "start": "node web-server.js"
+    "start": "node old-web-server.js"
   },
 
   "dependencies": {
+    "express": "3.3.x",
     "mongoose": "3.6.x",
     "async": "0.2.x"
   }

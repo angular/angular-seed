@@ -18,10 +18,13 @@ myApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     templateUrl: 'partials/profile.html',
     controller:  'profileCtrl'
   });
-
-  $routeProvider.otherwise({
-    redirectTo:  '/'
+  $routeProvider.when('/home', {
+    redirectTo: '/'
   });
+
+//  $routeProvider.otherwise({
+//    redirectTo:  '/'
+//  });
 
   // Get rid of the '#' in the url.
   $locationProvider.html5Mode(true);

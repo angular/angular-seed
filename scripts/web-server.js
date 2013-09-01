@@ -1,23 +1,77 @@
 #!/usr/bin/env node
-var DEBUG = false; // debug control
-var DEBUG_LOGO = '\n' +
-    '=============SHAN=HE=[Debug]=============';
 
-var util = require('util'),
-    http = require('http'),
-    fs = require('fs'),
-    url = require('url'),
-    events = require('events'),
-    mongoose = require('mongoose');
+var util    = require('util'),
+    http    = require('http'),
+    fs      = require('fs'),
+    url     = require('url'),
+    events  = require('events'),
+    express = require('express');
 
+var DEBUG        = false;
+var DEBUG_LOGO   = '=============SHANHE=[Debug]==============';
 var DEFAULT_PORT = 8000;
+var DEFAULT_DIR  = '/srv/shanhe/app/'; // Production
+DEFAULT_DIR = './app/'; // Dev
 
-function main(argv) {
-  new HttpServer({
-    'GET': createServlet(StaticServlet),
-    'HEAD': createServlet(StaticServlet)
-  }).start(Number(argv[2]) || DEFAULT_PORT);
+
+/**** Parse params from command-line. ****/
+var args = process.argv;
+args.splice(0, 2); // remove the first two args: node & JS-file
+if (args.indexOf('debug') > -1) {
+  args.splice(args.indexOf('debug'), 1);
+  DEBUG = true;
+  DEFAULT_DIR = './app/'; // Dev
+  util.puts(DEBUG_LOGO);
 }
+if (args.length > 0 && args[0].match(/^\d{2,4}$/)) {
+  DEFAULT_PORT = Number(args[0]);
+}
+/**** END ****/
+
+var myServer = express();
+
+/*
+ *  Parseable urls : '/', '/home', '/blogs', '/profile'
+ */
+myServer.get('/:mainPage(home|blogs|profile)?', function(req, res) {
+  if (DEBUG) util.log('[DEBUG] mainPage = ' + req.params.mainPage);
+  var path = DEFAULT_DIR + 'index.html';
+  if (DEBUG) util.log('[DEBUG] path = ' + path);
+  requestHandler(req, res, path);
+});
+
+/*
+ *  Parse all other urls, including those from Angular.JS, and bad urls.
+ */
+myServer.get('/*', function(req, res) {
+  if (DEBUG) util.log('req.params = ' + util.inspect(req.params));
+  var path = DEFAULT_DIR + req.params[0];
+  requestHandler(req, res, path);
+});
+
+myServer.listen(DEFAULT_PORT);
+util.log("myServer starts listening to the PORT: " + DEFAULT_PORT);
+
+
+
+/*
+ *  Different methods and objects used for this router below.
+ */
+
+var requestHandler = function(req, res, path) {
+  fs.stat(path, function(err, stat) {
+    if (err) {
+      if (DEBUG) util.log('[DEBUG][ERROR]: ' + util.inspect(err));
+      return new StaticServlet().sendMissing_(req, res, path);
+    }
+    if (stat.isDirectory()) {
+      // No desire for directory yet, so just return 404.
+      return new StaticServlet().sendMissing_(req, res, path);
+    }
+    return new StaticServlet().sendFile_(req, res, path);
+  });
+}
+
 
 function escapeHtml(value) {
   return value.toString().
@@ -26,102 +80,25 @@ function escapeHtml(value) {
     replace('"', '&quot;');
 }
 
-function createServlet(Class) {
-  var servlet = new Class();
-  return servlet.handleRequest.bind(servlet);
-}
-
-/**
- * An Http server implementation that uses a map of methods to decide
- * action routing.
- *
- * @param {Object} Map of method => Handler function
- */
-function HttpServer(handlers) {
-  this.handlers = handlers;
-  this.server = http.createServer(this.handleRequest_.bind(this));
-}
-
-HttpServer.prototype.start = function(port) {
-  this.port = port;
-  this.server.listen(port);
-  util.puts('Http Server running at http://localhost:' + port + '/');
-};
-
-HttpServer.prototype.parseUrl_ = function(urlString) {
-  var parsed = url.parse(urlString);
-  parsed.pathname = url.resolve('/', parsed.pathname);
-  return url.parse(url.format(parsed), true);
-};
-
-HttpServer.prototype.handleRequest_ = function(req, res) {
-  var logEntry = req.method + ' ' + req.url;
-  if (req.headers['user-agent']) {
-    logEntry += ' ' + req.headers['user-agent'];
-  }
-  //util.log(logEntry);
-  req.url = this.parseUrl_(req.url);
-  var handler = this.handlers[req.method];
-  if (!handler) {
-    res.writeHead(501);
-    res.end();
-  } else {
-    handler.call(this, req, res);
-  }
-};
-
 /**
  * Handles static content.
  */
+
 function StaticServlet() {}
 
 StaticServlet.MimeMap = {
-  'txt': 'text/plain',
+  'txt' : 'text/plain',
   'html': 'text/html',
-  'css': 'text/css',
-  'xml': 'application/xml',
+  'css' : 'text/css',
+  'xml' : 'application/xml',
   'json': 'application/json',
-  'js': 'application/javascript',
-  'jpg': 'image/jpeg',
+  'js'  : 'application/javascript',
+  'jpg' : 'image/jpeg',
   'jpeg': 'image/jpeg',
-  'gif': 'image/gif',
-  'png': 'image/png',
-  'svg': 'image/svg+xml'
+  'gif' : 'image/gif',
+  'png' : 'image/png',
+  'svg' : 'image/svg+xml'
 };
-
-StaticServlet.prototype.handleRequest = function(req, res) {
-  var self = this;
-
-  var path = '/srv/shanhe/app/';
-  path = './app/';
-
-
-  if (req.url.pathname === '/' || req.url.pathname === '/profile'){
-    path += 'index.html';
-  } else {
-    path += req.url.pathname;
-  }
-  path = path.replace('//', '/').replace(/%(..)/g, function(match, hex){
-    return String.fromCharCode(parseInt(hex, 16));
-  });
-//  var path = ('./app' + req.url.pathname).replace('//','/').replace(/%(..)/g, function(match, hex){
-//    return String.fromCharCode(parseInt(hex, 16));
-//  });
-  if (DEBUG) util.puts(DEBUG_LOGO);
-  if (DEBUG) util.puts('[DEBUG]: req.url.pathname=' + req.url.pathname);
-  if (DEBUG) util.puts('[DEBUG]: path=' + path);
-  if (DEBUG) util.puts('');
-  var parts = path.split('/');
-  if (parts[parts.length-1].charAt(0) === '.')
-    return self.sendForbidden_(req, res, path);
-  fs.stat(path, function(err, stat) {
-    if (err)
-      return self.sendMissing_(req, res, path);
-    if (stat.isDirectory())
-      return self.sendDirectory_(req, res, path);
-    return self.sendFile_(req, res, path);
-  });
-}
 
 StaticServlet.prototype.sendError_ = function(req, res, error) {
   res.writeHead(500, {
@@ -200,11 +177,14 @@ StaticServlet.prototype.sendFile_ = function(req, res, path) {
       res.end();
     });
     file.on('error', function(error) {
-      self.sendError_(req, res, error);
+      /* TODO: This is a problem, the header cannot be sent twice */
+      //self.sendError_(req, res, error);
+      util.log("File reading meets some internal problems. Not sure " +
+          "the server is down or not. Please check!");
     });
   }
 };
-
+/*
 StaticServlet.prototype.sendDirectory_ = function(req, res, path) {
   var self = this;
   if (path.match(/[^\/]$/)) {
@@ -260,6 +240,4 @@ StaticServlet.prototype.writeDirectoryIndex_ = function(req, res, path, files) {
   res.write('</ol>');
   res.end();
 };
-
-// Must be last,
-main(process.argv);
+*/
