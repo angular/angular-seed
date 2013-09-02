@@ -12,17 +12,33 @@ angular.module('myApp.controllers', []).
 */
 
 // Shan's own
-var myControllers = angular.module('authenticationApp.controllers', []);
+var myControllers = angular.module('authenticationApp.controllers', [
+  'authenticationApp.services'
+]);
 
-myControllers.controller('homeCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
-  // make 'Home' tab active
-  $rootScope.active = 'home';
+myControllers.controller('homeCtrl', ['$scope', '$rootScope', 'globalService', function($scope, $rootScope, globalService) {
+  var section = 'home';
+  $rootScope.active = section;
+  globalService.footerShow(section);
 }]);
 
-myControllers.controller('blogsCtrl', ['$scope', '$rootScope', function($scope, $rootScrope) {
-  $rootScrope.active = 'blogs'
+myControllers.controller('blogsCtrl', ['$scope', '$rootScope', 'globalService', function($scope, $rootScope, globalService) {
+  var section = 'blogs';
+  $rootScope.active = section;
+  globalService.footerShow(section);
+  window.onscroll = function() {
+    globalService.footerShow(section);
+    $rootScope.$digest();
+  };
 }]);
 
-myControllers.controller('profileCtrl', ['$scope', '$rootScope', function($scope, $rootScrope) {
-  $rootScrope.active = 'profile'
+myControllers.controller('profileCtrl', ['$scope', '$rootScope', 'globalService', function($scope, $rootScope, globalService) {
+  var section = 'profile';
+  $rootScope.active = section;
+  globalService.footerShow(section);
+  window.onscroll = function() {
+    globalService.footerShow(section);
+    $rootScope.$digest();
+  };
 }]);
+

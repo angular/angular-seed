@@ -41,10 +41,42 @@ body {
 
 #blogs {
   background-color: rgba(70, 61, 45, .9);
-  min-height: 80%;
+}
+
+/* Only for Test*/
+#blogs .main-container {
+  height: 2000px;
 }
 
 
+/* footer settings */
+
+.footer-show {
+  animation: showup .5s forwards;
+  -webkit-animation: showup .5s forwards;
+}
+
+.footer-hide {
+  animation: hidedown .5s forwards;
+  -webkit-animation: hidedown .5s forwards;
+}
+
+@keyframes showup {
+  from {bottom : -100px;}
+  to {bottom : 0px;}
+}
+@-webkit-keyframes showup {
+  from {bottom : -100px;}
+  to {bottom : 0px;}
+}
+@keyframes hidedown {
+  from {bottom : 0px;}
+  to {bottom : -100px;}
+}
+@-webkit-keyframes hidedown {
+  from {bottom : 0px;}
+  to {bottom : -100px;}
+}
 
 /* background image(s) settings */
 

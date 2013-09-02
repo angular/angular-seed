@@ -3,7 +3,9 @@
 
 // Declare app level module which depends on filters, and services
 
-var myApp = angular.module('authenticationApp', ['authenticationApp.controllers']);
+var myApp = angular.module('authenticationApp', [
+  'authenticationApp.controllers'
+]);
 
 myApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
   $routeProvider.when('/', {
