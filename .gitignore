@@ -1,2 +1,6 @@
 logs/*
 !.gitkeep
+.idea/*
+.DS_Store
+scripts/node_modules/*
+*.log
