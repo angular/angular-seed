@@ -7,5 +7,8 @@
         "karma-junit-reporter" : "*",    
         "karma-jasmine" : "*",
         "karma-ng-scenario" : "*"
+    },
+    "scripts": {
+        "start": "node scripts/web-server.js"
     }
 }
