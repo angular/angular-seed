@@ -109,11 +109,9 @@
                         }
                     }, true);
 
-                    //if item are added or removed into the data model from outside the grid
-                    scope.$watch('dataCollection.length', function (oldValue, newValue) {
-                        if (oldValue !== newValue) {
-                            ctrl.sortBy();//it will trigger the refresh... some hack ?
-                        }
+                    //if the data model changes from outside the grid
+                    scope.$watchCollection('dataCollection', function (newValue, oldValue) {
+                        ctrl.sortBy();//it will trigger the refresh... some hack ?
                     });
 
                 }
