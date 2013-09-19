@@ -58,9 +58,7 @@
 
                     //if the data model changes from outside the grid
                     scope.$watchCollection('dataCollection', function (newValue, oldValue) {
-                        if (oldValue !== newValue) {
-                            ctrl.sortBy();//it will trigger the refresh... some hack ?
-                        }
+                        ctrl.sortBy();//it will trigger the refresh... some hack ?
                     });
 
                 }
