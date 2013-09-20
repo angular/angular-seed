@@ -40,3 +40,6 @@
     
 ## v0.1.3
 * reset the selectionAll state on page change
+
+## v0.1.4
+* fix sync issue with the content of an item and its smart-table row
