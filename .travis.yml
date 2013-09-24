@@ -6,9 +6,11 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - npm install --quiet -g karma
+  - ./node_modules/protractor/bin/install_selenium_standalone
+  - java -jar selenium/selenium-server-standalone-2.35.0.jar -Dwebdriver.chrome.driver=./selenium/chromedriver &
   - ./scripts/web-server.js > /dev/null &
   - sleep 1 # give server time to start
 
 script:
   - karma start config/karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
-  - karma start config/karma-e2e.conf.js --reporters=dots --browsers=Firefox
+  - ./node_modules/.bin/protractor config/protractor-e2e.conf.js

@@ -3,7 +3,7 @@
 BASE_DIR=`dirname $0`
 
 echo ""
-echo "Starting Karma Server (http://karma-runner.github.io)"
+echo "Starting Protractor (https://github.com/angular/protractor)"
 echo "-------------------------------------------------------------------"
 
-karma start $BASE_DIR/../config/karma-e2e.conf.js $*
+./node_modules/.bin/protractor $BASE_DIR/../config/protractor-e2e.conf.js $*
