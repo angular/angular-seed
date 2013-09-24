@@ -42,5 +42,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.registerTask('test', ['jshint', 'karma:unit', 'connect', 'karma:e2e']);
     grunt.registerTask('default', ['jshint', 'karma:unit', 'connect', 'karma:e2e']);
+    grunt.registerTask('e2e', ['jshint', 'connect', 'karma:e2e']);
 
 };

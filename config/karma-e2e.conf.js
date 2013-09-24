@@ -4,6 +4,7 @@ module.exports = function (config) {
         basePath: '../',
         frameworks: ['ng-scenario'],
         files: [
+            'app/lib/angular/angular-matchers.js',
             'test/e2e/**/*.js'
         ],
         autoWatch: false,
