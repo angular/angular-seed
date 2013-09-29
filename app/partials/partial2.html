@@ -3,3 +3,8 @@
   Showing of 'interpolate' filter:
   {{ 'Current version is v%VERSION%.' | interpolate }}
 </p>
+
+<label>Name:</label>
+<input type="text" ng-model="yourName" placeholder="Enter a name here">
+<hr>
+<h1>Hello {{yourName}}!</h1>
