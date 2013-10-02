@@ -59,8 +59,21 @@
                     }, true);
 
                     //if item are added or removed into the data model from outside the grid
-                    scope.$watch('dataCollection.length', function (oldValue, newValue) {
+                    scope.$watch('dataCollection', function (oldValue, newValue) {
                         if (oldValue !== newValue) {
+                            scope.redraw = true;
+                        }
+                    });
+
+                    scope.$watch('dataCollection.length', function(oldValue, newValue) {
+                        if (oldValue !== newValue) {
+                            scope.redraw = true;
+                        }
+                    });
+
+                    scope.$watch('redraw', function(oldValue, newValue) {
+                        if(scope.redraw) {
+                            scope.redraw = false;
                             ctrl.sortBy();//it will trigger the refresh... some hack ?
                         }
                     });
