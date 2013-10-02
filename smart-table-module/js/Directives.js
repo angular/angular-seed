@@ -38,9 +38,9 @@
 
                     //insert columns from column config
                     scope.$watch('columnCollection', function (oldValue, newValue) {
-                        if(scope.syncColumns) {
-                            ctrl.clearColumns();
-                        }
+
+                        ctrl.clearColumns();
+
                         if (scope.columnCollection) {
                             for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
                                 ctrl.insertColumn(scope.columnCollection[i]);
@@ -65,14 +65,14 @@
                         }
                     });
 
-                    scope.$watch('dataCollection.length', function(oldValue, newValue) {
+                    scope.$watch('dataCollection.length', function (oldValue, newValue) {
                         if (oldValue !== newValue) {
                             scope.redraw = true;
                         }
                     });
 
-                    scope.$watch('redraw', function(oldValue, newValue) {
-                        if(scope.redraw) {
+                    scope.$watch('redraw', function (oldValue, newValue) {
+                        if (scope.redraw) {
                             scope.redraw = false;
                             ctrl.sortBy();//it will trigger the refresh... some hack ?
                         }
