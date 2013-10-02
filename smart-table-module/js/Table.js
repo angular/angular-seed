@@ -40,10 +40,7 @@
 
             function calculateNumberOfPages(array) {
 
-                if (!angular.isArray(array)) {
-                    return 1;
-                }
-                if (array.length === 0 || scope.itemsByPage < 1) {
+                if (!angular.isArray(array) || array.length === 0 || scope.itemsByPage < 1) {
                     return 1;
                 }
                 return Math.ceil(array.length / scope.itemsByPage);
@@ -136,18 +133,19 @@
              */
             this.search = function (input, column) {
 
+                var j, l = scope.columns.length;
                 //update column and global predicate
                 if (column && scope.columns.indexOf(column) !== -1) {
                     predicate.$ = '';
                     column.filterPredicate = input;
                 } else {
-                    for (var j = 0, l = scope.columns.length; j < l; j++) {
+                    for (j = 0; j < l; j++) {
                         scope.columns[j].filterPredicate = '';
                     }
                     predicate.$ = input;
                 }
 
-                for (var j = 0, l = scope.columns.length; j < l; j++) {
+                for (j = 0; j < l; j++) {
                     predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
                 }
                 scope.displayedCollection = this.pipe(scope.dataCollection);
@@ -201,11 +199,11 @@
             };
 
             /**
-            * remove all columns
-            */
-            this.clearColumns = function() {
+             * remove all columns
+             */
+            this.clearColumns = function () {
                 scope.columns.length = 0;
-            }
+            };
 
             /*///////////
              ROW API
@@ -276,10 +274,7 @@
                     }
                 }
             };
-
-
         }]);
-
 })(angular);
 
 
