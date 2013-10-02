@@ -43,3 +43,6 @@
 
 ## v0.1.4
 * fix sync issue with the content of an item and its smart-table row
+
+## v0.1.5
+* add the clear column functionality
