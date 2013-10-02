@@ -1,39 +1,43 @@
-basePath = '../';
+module.exports = function (config) {
+  config.set({
 
-files = [
-    JASMINE,
-    JASMINE_ADAPTER,
-    'smart-table-module/lib/angular/angular.js',
-    'test/lib/angular/angular-mocks.js',
-    'smart-table-module/js/*.js',
-    'test/unit/*.js'
-];
+    basePath: '../',
 
-autoWatch = false;
+    files: [
+        JASMINE,
+        JASMINE_ADAPTER,
+        'smart-table-module/lib/angular/angular.js',
+        'test/lib/angular/angular-mocks.js',
+        'smart-table-module/js/*.js',
+        'test/unit/*.js'
+    ],
 
-browsers = ['Chrome'];
+    autoWatch: false,
 
-
-preprocessors = {
-    'smart-table-module/js/Column.js': 'coverage',
-    'smart-table-module/js/Table.js': 'coverage',
-    'smart-table-module/js/Utilities.js': 'coverage',
-    'smart-table-module/js/Filters.js': 'coverage',
-    'smart-table-module/js/Directives.js': 'coverage'
-};
-
-reporters = ['junit', 'progress', 'coverage'];
+    browsers :['Chrome'],
 
 
-junitReporter = {
-    outputFile: 'test_out/unit.xml',
-    suite: 'unit'
-};
+    preprocessors: {
+        'smart-table-module/js/Column.js': 'coverage',
+        'smart-table-module/js/Table.js': 'coverage',
+        'smart-table-module/js/Utilities.js': 'coverage',
+        'smart-table-module/js/Filters.js': 'coverage',
+        'smart-table-module/js/Directives.js': 'coverage'
+    },
 
-coverageReporter = {
-    type: 'html',
-    dir: 'test_out/'
-};
+    reporters :['junit', 'progress', 'coverage'],
 
 
+    junitReporter: {
+        outputFile: 'test_out/unit.xml',
+        suite: 'unit'
+    },
+
+    coverageReporter: {
+        type: 'html',
+        dir: 'test_out/'
+    }
+
+  });
+}
 
