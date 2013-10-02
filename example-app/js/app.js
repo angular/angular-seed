@@ -38,6 +38,17 @@ var app = angular.module('myApp', ['smartTable.table']).
         scope.globalConfig = {
             isPaginationEnabled: true,
             isGlobalSearchActivated: true,
-            itemsByPage: 200
+            itemsByPage: 200,
+            syncColumns: false
         };
+
+        scope.shuffleColumns = function() {
+            function shuffle(o){ //v1.0
+                for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+                return o;
+            };
+            var newColumns = scope.columnCollection.slice();
+            shuffle(newColumns);
+            scope.columnCollection = newColumns;
+        }
     }]);
