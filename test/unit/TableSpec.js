@@ -159,6 +159,37 @@ describe('Table module', function () {
                     expect(scope.columns[3].id).toBe(3);
                 });
             });
+
+            describe('clear columns', function () {
+
+                beforeEach(function () {
+                    //insert few columns
+                    scope.columns = [];
+
+                    ctrl.insertColumn({id: 0});
+                    ctrl.insertColumn({id: 1});
+                    ctrl.insertColumn({id: 2});
+                    ctrl.insertColumn({id: 3});
+                    ctrl.insertColumn({id: 4});
+                });
+
+                it('should remove all columns', function () {
+                    expect(scope.columns.length).toBe(5);
+                    ctrl.clearColumns();
+                    expect(scope.columns.length).toBe(0);
+                });
+
+                it('should have columns when adding after clear', function () {
+                    ctrl.clearColumns();
+                    ctrl.insertColumn({id: 7});
+                    ctrl.insertColumn({id: 8});
+                    ctrl.insertColumn({id: 9});
+                    expect(scope.columns[0].id).toBe(7);
+                    expect(scope.columns[1].id).toBe(8);
+                    expect(scope.columns[2].id).toBe(9);
+                });
+
+            });
         });
 
         describe('Row API', function () {

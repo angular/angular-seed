@@ -37,8 +37,10 @@
                     }, true);
 
                     //insert columns from column config
-                    //TODO add a way to clean all columns
                     scope.$watch('columnCollection', function (oldValue, newValue) {
+                        if(scope.syncColumns) {
+                            ctrl.clearColumns();
+                        }
                         if (scope.columnCollection) {
                             for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
                                 ctrl.insertColumn(scope.columnCollection[i]);
@@ -56,9 +58,25 @@
                         }
                     }, true);
 
-                    //if the data model changes from outside the grid
-                    scope.$watchCollection('dataCollection', function (newValue, oldValue) {
-                        ctrl.sortBy();//it will trigger the refresh... some hack ?
+                    //if item are added or removed into the data model from outside the grid
+                    scope.$watch('dataCollection', function (oldValue, newValue) {
+                        if (oldValue !== newValue) {
+                            scope.redraw = true;
+                        }
+                    });
+
+                    scope.$watch('dataCollection.length', function(oldValue, newValue) {
+                        if (oldValue !== newValue) {
+                            scope.redraw = true;
+                        }
+                    });
+
+                    scope.$watch('redraw', function(oldValue, newValue) {
+                        if(scope.redraw) {
+                            scope.redraw = false;
+                            ctrl.sortBy();//it will trigger the refresh... some hack ?
+                        }
+
                     });
 
                 }
@@ -144,16 +162,21 @@
                 link: function (scope, element) {
                     var
                         column = scope.column,
+                        isSimpleCell = !column.isEditable,
                         row = scope.dataRow,
                         format = filter('format'),
                         getter = parse(column.map),
                         childScope;
 
                     //can be useful for child directives
-                    scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
+                    scope.$watch('dataRow', function (value) {
+                        scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
+                        if (isSimpleCell === true) {
+                            element.text(scope.formatedValue);
+                        }
+                    }, true);
 
                     function defaultContent() {
-                        //clear content
                         if (column.isEditable) {
                             element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
@@ -167,6 +190,8 @@
                         if (value) {
                             //we have to load the template (and cache it) : a kind of ngInclude
                             http.get(value, {cache: templateCache}).success(function (response) {
+
+                                isSimpleCell = false;
 
                                 //create a scope
                                 childScope = scope.$new();
@@ -213,7 +238,9 @@
 
                     //init values
                     scope.isEditMode = false;
-                    scope.value = getter(scope.row);
+                    scope.$watch('row', function () {
+                        scope.value = getter(scope.row);
+                    }, true);
 
 
                     scope.submit = function () {
@@ -230,8 +257,8 @@
                         scope.isEditMode = scope.isEditMode !== true;
                     };
 
-                    scope.$watch('isEditMode', function (newValue, oldValue) {
-                        if (newValue) {
+                    scope.$watch('isEditMode', function (newValue) {
+                        if (newValue === true) {
                             input[0].select();
                             input[0].focus();
                         }

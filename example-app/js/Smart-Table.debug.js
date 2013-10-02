@@ -199,16 +199,21 @@
                 link: function (scope, element) {
                     var
                         column = scope.column,
+                        isSimpleCell = !column.isEditable,
                         row = scope.dataRow,
                         format = filter('format'),
                         getter = parse(column.map),
                         childScope;
 
                     //can be useful for child directives
-                    scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
+                    scope.$watch('dataRow', function (value) {
+                        scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
+                        if (isSimpleCell === true) {
+                            element.text(scope.formatedValue);
+                        }
+                    }, true);
 
                     function defaultContent() {
-                        //clear content
                         if (column.isEditable) {
                             element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
@@ -222,6 +227,8 @@
                         if (value) {
                             //we have to load the template (and cache it) : a kind of ngInclude
                             http.get(value, {cache: templateCache}).success(function (response) {
+
+                                isSimpleCell = false;
 
                                 //create a scope
                                 childScope = scope.$new();
@@ -268,7 +275,9 @@
 
                     //init values
                     scope.isEditMode = false;
-                    scope.value = getter(scope.row);
+                    scope.$watch('row', function () {
+                        scope.value = getter(scope.row);
+                    }, true);
 
 
                     scope.submit = function () {
@@ -285,8 +294,8 @@
                         scope.isEditMode = scope.isEditMode !== true;
                     };
 
-                    scope.$watch('isEditMode', function (newValue, oldValue) {
-                        if (newValue) {
+                    scope.$watch('isEditMode', function (newValue) {
+                        if (newValue === true) {
                             input[0].select();
                             input[0].focus();
                         }
