@@ -200,6 +200,12 @@
                 arrayUtility.moveAt(scope.columns, oldIndex, newIndex);
             };
 
+            /**
+            * remove all columns
+            */
+            this.clearColumns = function() {
+                scope.columns.length = 0;
+            }
 
             /*///////////
              ROW API

@@ -37,8 +37,10 @@
                     }, true);
 
                     //insert columns from column config
-                    //TODO add a way to clean all columns
                     scope.$watch('columnCollection', function (oldValue, newValue) {
+                        if(scope.syncColumns) {
+                            ctrl.clearColumns();
+                        }
                         if (scope.columnCollection) {
                             for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
                                 ctrl.insertColumn(scope.columnCollection[i]);
