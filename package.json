@@ -1,5 +1,5 @@
 {
-  "name": "angualrjs-seed",
+  "name": "angularjs-seed",
   "description": "A starter project for angular js",
   "devDependencies": {
         "phantomjs" : "*",
