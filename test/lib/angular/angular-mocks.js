@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.0-rc.2
+ * @license AngularJS v1.2.0-rc.3
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  *
@@ -75,6 +75,13 @@ angular.mock.$Browser = function() {
   };
 
 
+  /**
+   * @name ngMock.$browser#defer.now
+   * @propertyOf ngMock.$browser
+   *
+   * @description
+   * Current milliseconds mock time.
+   */
   self.defer.now = 0;
 
 
@@ -118,29 +125,6 @@ angular.mock.$Browser = function() {
       self.deferredFns.shift().fn();
     }
   };
-
-  /**
-   * @name ngMock.$browser#defer.flushNext
-   * @methodOf ngMock.$browser
-   *
-   * @description
-   * Flushes next pending request and compares it to the provided delay
-   *
-   * @param {number=} expectedDelay the delay value that will be asserted against the delay of the next timeout function
-   */
-  self.defer.flushNext = function(expectedDelay) {
-    var tick = self.deferredFns.shift();
-    expect(tick.time).toEqual(expectedDelay);
-    tick.fn();
-  };
-
-  /**
-   * @name ngMock.$browser#defer.now
-   * @propertyOf ngMock.$browser
-   *
-   * @description
-   * Current milliseconds mock time.
-   */
 
   self.$$baseHref = '';
   self.baseHref = function() {
@@ -454,6 +438,119 @@ angular.mock.$LogProvider = function() {
 };
 
 
+/**
+ * @ngdoc service
+ * @name ngMock.$interval
+ *
+ * @description
+ * Mock implementation of the $interval service.
+ *
+ * Use {@link ngMock.$interval#flush `$interval.flush(millis)`} to
+ * move forward by `millis` milliseconds and trigger any functions scheduled to run in that
+ * time.
+ *
+ * @param {function()} fn A function that should be called repeatedly.
+ * @param {number} delay Number of milliseconds between each function call.
+ * @param {number=} [count=0] Number of times to repeat. If not set, or 0, will repeat
+ *   indefinitely.
+ * @param {boolean=} [invokeApply=true] If set to `false` skips model dirty checking, otherwise
+ *   will invoke `fn` within the {@link ng.$rootScope.Scope#$apply $apply} block.
+ * @returns {promise} A promise which will be notified on each iteration.
+ */
+angular.mock.$IntervalProvider = function() {
+  this.$get = ['$rootScope', '$q',
+       function($rootScope,   $q) {
+    var repeatFns = [],
+        nextRepeatId = 0,
+        now = 0;
+
+    var $interval = function(fn, delay, count, invokeApply) {
+      var deferred = $q.defer(),
+          promise = deferred.promise,
+          count = (angular.isDefined(count)) ? count : 0,
+          iteration = 0,
+          skipApply = (angular.isDefined(invokeApply) && !invokeApply);
+
+      promise.then(null, null, fn);
+
+      promise.$$intervalId = nextRepeatId;
+
+      function tick() {
+        deferred.notify(iteration++);
+
+        if (count > 0 && iteration >= count) {
+          var fnIndex;
+          deferred.resolve(iteration);
+
+          angular.forEach(repeatFns, function(fn, index) {
+            if (fn.id === promise.$$intervalId) fnIndex = index;
+          });
+
+          if (fnIndex !== undefined) {
+            repeatFns.splice(fnIndex, 1);
+          }
+        }
+
+        if (!skipApply) $rootScope.$apply();
+      };
+
+      repeatFns.push({
+        nextTime:(now + delay),
+        delay: delay,
+        fn: tick,
+        id: nextRepeatId,
+        deferred: deferred
+      });
+      repeatFns.sort(function(a,b){ return a.nextTime - b.nextTime;});
+
+      nextRepeatId++;
+      return promise;
+    };
+
+    $interval.cancel = function(promise) {
+      var fnIndex;
+
+      angular.forEach(repeatFns, function(fn, index) {
+        if (fn.id === promise.$$intervalId) fnIndex = index;
+      });
+
+      if (fnIndex !== undefined) {
+        repeatFns[fnIndex].deferred.reject('canceled');
+        repeatFns.splice(fnIndex, 1);
+        return true;
+      }
+
+      return false;
+    };
+
+    /**
+     * @ngdoc method
+     * @name ngMock.$interval#flush
+     * @methodOf ngMock.$interval
+     * @description
+     *
+     * Runs interval tasks scheduled to be run in the next `millis` milliseconds.
+     *
+     * @param {number=} millis maximum timeout amount to flush up until.
+     *
+     * @return {number} The amount of time moved forward.
+     */
+    $interval.flush = function(millis) {
+      now += millis;
+      while (repeatFns.length && repeatFns[0].nextTime <= now) {
+        var task = repeatFns[0];
+        task.fn();
+        task.nextTime += task.delay;
+        repeatFns.sort(function(a,b){ return a.nextTime - b.nextTime;});
+      }
+      return millis;
+    };
+
+    return $interval;
+  }];
+};
+
+
 (function() {
   var R_ISO8061_STR = /^(\d{4})-?(\d\d)-?(\d\d)(?:T(\d\d)(?:\:?(\d\d)(?:\:?(\d\d)(?:\.(\d{3}))?)?)?(Z|([+-])(\d\d):?(\d\d)))?$/;
 
@@ -672,7 +769,7 @@ angular.mock.animate = angular.module('mock.animate', ['ng'])
         }
       };
 
-      forEach(['enter','leave','move','addClass','removeClass'], function(method) {
+      angular.forEach(['enter','leave','move','addClass','removeClass'], function(method) {
         animate[method] = function() {
           var params = arguments;
           animate.queue.push({
@@ -747,7 +844,7 @@ angular.mock.dump = function(object) {
     offset = offset ||  '  ';
     var log = [offset + 'Scope(' + scope.$id + '): {'];
     for ( var key in scope ) {
-      if (scope.hasOwnProperty(key) && !key.match(/^(\$|this)/)) {
+      if (Object.prototype.hasOwnProperty.call(scope, key) && !key.match(/^(\$|this)/)) {
         log.push('  ' + key + ': ' + angular.toJson(scope[key]));
       }
     }
@@ -1597,6 +1694,7 @@ angular.module('ngMock', ['ng']).provider({
   $browser: angular.mock.$BrowserProvider,
   $exceptionHandler: angular.mock.$ExceptionHandlerProvider,
   $log: angular.mock.$LogProvider,
+  $interval: angular.mock.$IntervalProvider,
   $httpBackend: angular.mock.$HttpBackendProvider,
   $rootElement: angular.mock.$RootElementProvider
 }).config(function($provide) {
@@ -1789,7 +1887,7 @@ angular.mock.clearDataCache = function() {
       cache = angular.element.cache;
 
   for(key in cache) {
-    if (cache.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(cache,key)) {
       var handle = cache[key].handle;
 
       handle && angular.element(handle.elem).off();
@@ -1892,8 +1990,40 @@ angular.mock.clearDataCache = function() {
    * instance of {@link AUTO.$injector $injector} per test, which is then used for
    * resolving references.
    *
-   * See also {@link angular.mock.module module}
    *
+   * ## Resolving References (Underscore Wrapping)
+   * Often, we would like to inject a reference once, in a `beforeEach()` block and reuse this
+   * in multiple `it()` clauses. To be able to do this we must assign the reference to a variable
+   * that is declared in the scope of the `describe()` block. Since we would, most likely, want 
+   * the variable to have the same name of the reference we have a problem, since the parameter
+   * to the `inject()` function would hide the outer variable.
+   *
+   * To help with this, the injected parameters can, optionally, be enclosed with underscores.
+   * These are ignored by the injector when the reference name is resolved.
+   * 
+   * For example, the parameter `_myService_` would be resolved as the reference `myService`.
+   * Since it is available in the function body as _myService_, we can then assign it to a variable
+   * defined in an outer scope.
+   * 
+   * ```
+   * // Defined out reference variable outside
+   * var myService;
+   *
+   * // Wrap the parameter in underscores
+   * beforeEach( inject( function(_myService_){
+   *   myService = _myService_;
+   * })); 
+   *
+   * // Use myService in a series of tests.
+   * it('makes use of myService', function() {
+   *   myService.doStuff();
+   * });
+   * 
+   * ```
+   * 
+   * See also {@link angular.mock.module angular.mock.module}
+   *
+   * ## Example
    * Example of what a typical jasmine tests looks like with the inject method.
    * <pre>
    *
@@ -1926,11 +2056,11 @@ angular.mock.clearDataCache = function() {
    *       inject(function(version) {
    *         expect(version).toEqual('overridden');
    *       });
-   *     ));
+   *     });
    *   });
    *
    * </pre>
-   *
+   * 
    * @param {...Function} fns any number of functions which will be injected using the injector.
    */
   window.inject = angular.mock.inject = function() {

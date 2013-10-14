@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.0-rc.2
+ * @license AngularJS v1.2.0-rc.3
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -16,7 +16,7 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *
  * `ngResource` is the name of the optional Angular module that adds support for interacting with
  * [RESTful](http://en.wikipedia.org/wiki/Representational_State_Transfer) server-side data sources.
- * `ngReource` provides the {@link ngResource.$resource `$resource`} serivce.
+ * `ngResource` provides the {@link ngResource.$resource `$resource`} service.
  *
  * {@installModule resource}
  *
@@ -94,7 +94,7 @@ var $resourceMinErr = angular.$$minErr('$resource');
  *     caching.
  *   - **`timeout`** – `{number|Promise}` – timeout in milliseconds, or {@link ng.$q promise} that
  *     should abort the request when resolved.
- *   - **`withCredentials`** - `{boolean}` - whether to to set the `withCredentials` flag on the
+ *   - **`withCredentials`** - `{boolean}` - whether to set the `withCredentials` flag on the
  *     XHR object. See {@link https://developer.mozilla.org/en/http_access_control#section_5
  *     requests with credentials} for more information.
  *   - **`responseType`** - `{string}` - see {@link
@@ -352,6 +352,9 @@ angular.module('ngResource', ['ng']).
 
         var urlParams = self.urlParams = {};
         forEach(url.split(/\W/), function(param){
+          if (param === 'hasOwnProperty') {
+            throw $resourceMinErr('badname', "hasOwnProperty is not a valid parameter name.");
+          }
           if (!(new RegExp("^\\d+$").test(param)) && param && (new RegExp("(^|[^\\\\]):" + param + "(\\W|$)").test(url))) {
               urlParams[param] = true;
           }
@@ -471,7 +474,7 @@ angular.module('ngResource', ['ng']).
             }
           });
 
-          httpConfig.data = data;
+          if (hasBody) httpConfig.data = data;
           route.setUrlParams(httpConfig, extend({}, extractParams(data, action.params || {}), params), action.url);
 
           var promise = $http(httpConfig).then(function(response) {
@@ -497,8 +500,6 @@ angular.module('ngResource', ['ng']).
 
             value.$resolved = true;
 
-            (success||noop)(value, response.headers);
-
             response.resource = value;
 
             return response;
@@ -508,8 +509,15 @@ angular.module('ngResource', ['ng']).
             (error||noop)(response);
 
             return $q.reject(response);
-          }).then(responseInterceptor, responseErrorInterceptor);
+          });
 
+          promise = promise.then(
+              function(response) {
+                var value = responseInterceptor(response);
+                (success||noop)(value, response.headers);
+                return value;
+              },
+              responseErrorInterceptor);
 
           if (!isInstanceCall) {
             // we are creating instance / collection

@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.0-rc.2
+ * @license AngularJS v1.2.0-rc.3
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -108,12 +108,12 @@ ngTouch.factory('$swipe', [function() {
         totalX = 0;
         totalY = 0;
         lastPos = startCoords;
-        eventHandlers['start'] && eventHandlers['start'](startCoords);
+        eventHandlers['start'] && eventHandlers['start'](startCoords, event);
       });
 
       element.on('touchcancel', function(event) {
         active = false;
-        eventHandlers['cancel'] && eventHandlers['cancel']();
+        eventHandlers['cancel'] && eventHandlers['cancel'](event);
       });
 
       element.on('touchmove mousemove', function(event) {
@@ -141,20 +141,19 @@ ngTouch.factory('$swipe', [function() {
         if (totalY > totalX) {
           // Allow native scrolling to take over.
           active = false;
-          eventHandlers['cancel'] && eventHandlers['cancel']();
+          eventHandlers['cancel'] && eventHandlers['cancel'](event);
           return;
         } else {
           // Prevent the browser from scrolling.
           event.preventDefault();
-
-          eventHandlers['move'] && eventHandlers['move'](coords);
+          eventHandlers['move'] && eventHandlers['move'](coords, event);
         }
       });
 
       element.on('touchend mouseup', function(event) {
         if (!active) return;
         active = false;
-        eventHandlers['end'] && eventHandlers['end'](getCoordinates(event));
+        eventHandlers['end'] && eventHandlers['end'](getCoordinates(event), event);
       });
     }
   };
@@ -398,7 +397,7 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
         }
 
         if (!angular.isDefined(attr.disabled) || attr.disabled === false) {
-          element.triggerHandler('click', event);
+          element.triggerHandler('click', [event]);
         }
       }
 
@@ -415,9 +414,9 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
     // - On mobile browsers, the simulated "fast" click will call this.
     // - But the browser's follow-up slow click will be "busted" before it reaches this handler.
     // Therefore it's safe to use this directive on both mobile and desktop.
-    element.on('click', function(event) {
+    element.on('click', function(event, touchend) {
       scope.$apply(function() {
-        clickHandler(scope, {$event: event});
+        clickHandler(scope, {$event: (touchend || event)});
       });
     });
 
@@ -524,18 +523,18 @@ function makeSwipeDirective(directiveName, direction, eventName) {
       }
 
       $swipe.bind(element, {
-        'start': function(coords) {
+        'start': function(coords, event) {
           startCoords = coords;
           valid = true;
         },
-        'cancel': function() {
+        'cancel': function(event) {
           valid = false;
         },
-        'end': function(coords) {
+        'end': function(coords, event) {
           if (validSwipe(coords)) {
             scope.$apply(function() {
               element.triggerHandler(eventName);
-              swipeHandler(scope);
+              swipeHandler(scope, {$event: event});
             });
           }
         }
