@@ -9,9 +9,14 @@ describe('controllers', function(){
   it('should ....', inject(function() {
     //spec body
     expect(true).toBeTruthy();
+    // var c1 = controller('MyCtrl1');
   }));
 
   it('should ....', inject(function() {
     //spec body
   }));
+
+  it('a case ....', function() {
+    //spec body
+  });
 });
