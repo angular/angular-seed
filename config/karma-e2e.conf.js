@@ -28,6 +28,8 @@ module.exports = function(config){
             'karma-ng-scenario'
             ],
 
+    reporters: ['progress', 'junit'],
+
     junitReporter : {
       outputFile: 'test_out/e2e.xml',
       suite: 'e2e'
