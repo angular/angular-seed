@@ -27,7 +27,7 @@ describe('my app', function() {
     });
 
     it('should decrease remaining when click second checkbox', function() {
-      expect(repeater('ul li').count()).toEqual(4);
+      expect(repeater('#todoList li').count()).toEqual(2);
       expect(element('#todoRemaining').text()).
         toMatch(/1 of 2 remaining/);
     });
