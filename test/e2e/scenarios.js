@@ -26,6 +26,12 @@ describe('my app', function() {
         toMatch(/partial for view 1/);
     });
 
+    it('should decrease remaining when click second checkbox', function() {
+      expect(repeater('ul li').count()).toEqual(4);
+      expect(element('#todoRemaining').text()).
+        toMatch(/1 of 2 remaining/);
+    });
+
   });
 
 

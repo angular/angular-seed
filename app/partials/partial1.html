@@ -4,7 +4,7 @@
 </hr>
 <h2>Todo</h2>
 <div ng-controller="MyCtrl2">
-	<span>{{remaining()}} of {{todos.length}} remaining</span>
+	<span id="todoRemaining">{{remaining()}} of {{todos.length}} remaining</span>
 	[ <a href="" ng-click="archive()">archive</a> ]
 	<ul>
 		<li ng-repeat="todo in todos">
@@ -13,8 +13,8 @@
 		</li>
 	</ul>
 	<form ng-submit="addTodo()">
-		<input type="text" ng-model="todoText" size="30" placeholder="add new todo here">
-		<input class="btn-primary" type="submit" value="add">
+		<input id="todoInput" type="text" ng-model="todoText" size="30" placeholder="add new todo here">
+		<input id="todoAdd" class="btn-primary" type="submit" value="add">
 	</form>
 
 </div>
