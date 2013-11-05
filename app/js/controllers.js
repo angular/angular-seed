@@ -4,7 +4,7 @@
 
 angular.module('myApp.controllers', []).
   controller('MyCtrl1', [function() {
-    require(["./js/TodoCtrl"], function(TodoCtrl) {
+    require(['./js/TodoCtrl'], function(TodoCtrl) {
         console.log(TodoCtrl);
         window.TodoCtrl = TodoCtrl;
         //This function is called when scripts/helper/util.js is loaded.
@@ -38,5 +38,19 @@ angular.module('myApp.controllers', []).
                if (!todo.done) $scope.todos.push(todo);
            });
         };
+  }])
+  .controller('PhoneListCtrl', ['$scope', '$location', function($scope, $location) {
+    $scope.phones = [
+      {"name": "Nexus S",
+       "snippet": "Fast just got faster with Nexus S.",
+       "age": 0},
+      {"name": "Motorola XOOM™ with Wi-Fi",
+       "snippet": "The Next, Next Generation tablet.",
+       "age": 1},
+      {"name": "MOTOROLA XOOM™",
+       "snippet": "The Next, Next Generation tablet.",
+       "age": 2}
+    ];
+    $scope.orderProp = 'age';
   }]);
 

@@ -14,7 +14,7 @@ module.exports = function(config){
 
     frameworks: ['ng-scenario'],
 
-    singleRun : true,
+    singleRun : false,
 
     proxies : {
       '/': 'http://localhost:8000/'

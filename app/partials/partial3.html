@@ -1,0 +1,25 @@
+<!-- http://www.ituring.com.cn/article/13471 -->
+<div ng-controller="PhoneListCtrl">
+
+	<p>This is the partial for view 3.</p>
+
+	<span ng-bind-template="Google Phone Gallery: {{query}}">Google Phone Gallery</span>
+
+	<p>
+	  Phone List Search: <input	ng-model="query" />
+	  Sort by:
+		<select ng-model="orderProp">
+		  <option value="name">Alphabetical</option>
+		  <option value="age">Newest</option>
+		</select>
+	</p>
+	<div id="status">Current filter: {{query}}</div>
+
+
+	  <ul class="phones">
+	    <li ng-repeat="phone in phones | filter: query | orderBy: orderProp">
+	      {{phone.name}}
+	    <p>{{phone.snippet}}</p>
+	    </li>
+  </ul>
+</div>
