@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.0-rc.3
+ * @license AngularJS v1.2.0
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -12,20 +12,25 @@
  *
  * # ngTouch
  *
- * `ngTouch` is the name of the optional Angular module that provides touch events and other
- * helpers for touch-enabled devices.
- * The implementation is based on jQuery Mobile touch event handling
- * ([jquerymobile.com](http://jquerymobile.com/))
+ * The `ngTouch` module provides touch events and other helpers for touch-enabled devices.
+ * The implementation is based on jQuery Mobile touch event handling 
+ * ([jquerymobile.com](http://jquerymobile.com/)).
  *
  * {@installModule touch}
  *
  * See {@link ngTouch.$swipe `$swipe`} for usage.
+ *
+ * <div doc-module-components="ngTouch"></div>
+ *
  */
 
 // define ngTouch module
+/* global -ngTouch */
 var ngTouch = angular.module('ngTouch', []);
 
-/**
+/* global ngTouch: false */
+
+    /**
      * @ngdoc object
      * @name ngTouch.$swipe
      *
@@ -158,6 +163,8 @@ ngTouch.factory('$swipe', [function() {
     }
   };
 }]);
+
+/* global ngTouch: false */
 
 /**
  * @ngdoc directive
@@ -431,6 +438,8 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
   };
 }]);
 
+/* global ngTouch: false */
+
 /**
  * @ngdoc directive
  * @name ngTouch.directive:ngSwipeLeft
@@ -438,7 +447,8 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
  * @description
  * Specify custom behavior when an element is swiped to the left on a touchscreen device.
  * A leftward swipe is a quick, right-to-left slide of the finger.
- * Though ngSwipeLeft is designed for touch-based devices, it will work with a mouse click and drag too.
+ * Though ngSwipeLeft is designed for touch-based devices, it will work with a mouse click and drag
+ * too.
  *
  * Requires the {@link ngTouch `ngTouch`} module to be installed.
  *
@@ -467,7 +477,8 @@ ngTouch.directive('ngClick', ['$parse', '$timeout', '$rootElement',
  * @description
  * Specify custom behavior when an element is swiped to the right on a touchscreen device.
  * A rightward swipe is a quick, left-to-right slide of the finger.
- * Though ngSwipeRight is designed for touch-based devices, it will work with a mouse click and drag too.
+ * Though ngSwipeRight is designed for touch-based devices, it will work with a mouse click and drag
+ * too.
  *
  * Requires the {@link ngTouch `ngTouch`} module to be installed.
  *
