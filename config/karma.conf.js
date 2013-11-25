@@ -6,9 +6,14 @@ module.exports = function(config){
       'app/lib/angular/angular.js',
       'app/lib/angular/angular-*.js',
       'test/lib/angular/angular-mocks.js',
+      'app/js/require.js',
       'app/js/**/*.js',
       'test/unit/**/*.js'
     ],
+
+    // exclude : [
+    //   'app/js/TodoCtrl.js',
+    // ],
 
     autoWatch : true,
 
@@ -22,7 +27,7 @@ module.exports = function(config){
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-phantomjs-launcher',
-            'karma-jasmine'       
+            'karma-jasmine'
             ],
 
     junitReporter : {

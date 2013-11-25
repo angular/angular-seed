@@ -14,6 +14,8 @@ angular.module('myApp.controllers', []).
     });
   }])
   .controller('MyCtrl2', ['$scope', '$location', function($scope, $location) {
+        console.warn($scope.$parent);
+        console.warn($scope.$parent.$parent);
         console.log('init TodoCtrl', $scope, $location);
         $scope.todos = [
             {text:'learn angular', done:true},
@@ -40,6 +42,9 @@ angular.module('myApp.controllers', []).
         };
   }])
   .controller('PhoneListCtrl', ['$scope', '$location', function($scope, $location) {
+    console.warn($scope.$parent);
+    console.warn($scope.$parent.$parent);
+    console.warn($scope.$parent.$parent.$parent);
     $scope.phones = [
       {"name": "Nexus S",
        "snippet": "Fast just got faster with Nexus S.",

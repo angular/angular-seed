@@ -15,11 +15,13 @@
 	</p>
 	<div id="status">Current filter: {{query}}</div>
 
-
+	<fieldset>
+	  <legend>Repeats</legend>
 	  <ul class="phones">
 	    <li ng-repeat="phone in phones | filter: query | orderBy: orderProp">
 	      {{phone.name}}
 	    <p>{{phone.snippet}}</p>
 	    </li>
-  </ul>
+  	  </ul>
+    </fieldset>
 </div>

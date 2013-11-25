@@ -1,6 +1,6 @@
 'use strict';
 /* global define, angular, TodoCtrl, console */
-define(function() {
+define("TodoCtrl", function() {
     // some setup
     return {
         tag: 123,
