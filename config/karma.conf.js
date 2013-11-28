@@ -17,6 +17,8 @@ module.exports = function(config){
 
     autoWatch : true,
 
+    singleRun : true,
+
     frameworks: ['jasmine'],
 
     // browsers : ['Chrome'],
@@ -29,6 +31,8 @@ module.exports = function(config){
             'karma-phantomjs-launcher',
             'karma-jasmine'
             ],
+
+    reporters : ['progress', 'junit'],
 
     junitReporter : {
       outputFile: 'test_out/unit.xml',
