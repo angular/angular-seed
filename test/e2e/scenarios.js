@@ -49,10 +49,10 @@ describe('my app', function() {
 
   });
 
-  describe('view3', function() {
+  describe('view3 as included', function() {
 
     beforeEach(function() {
-      browser().navigateTo('#/view3');
+      browser().navigateTo('#/view1');
     });
 
 
@@ -68,9 +68,12 @@ describe('my app', function() {
 
     it('should display the current filter value within an element with id "status"',
     function() {
-        expect(element('#status').text()).toMatch(/Current filter: \s*$/);
+        expect(element('#status').text()).toMatch(/Current filter: \s*/);
         input('query').enter('nexus');
-        expect(element('#status').text()).toMatch(/Current filter: nexus\s*$/);
+        // pause();
+
+        expect(element('#status').text()).toMatch(/Current filter: nexus/);
+
         //alternative version of the last assertion that tests just the value of the binding
         using('#status').expect(binding('query')).toBe('nexus');
     });
