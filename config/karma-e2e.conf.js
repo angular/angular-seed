@@ -8,9 +8,12 @@ module.exports = function(config){
         'test/e2e/**/*.js'
     ],
 
+    exclude : [],
+
     autoWatch : true,
 
     browsers : ['Chrome'],
+    // browsers : ['Firefox'],
 
     frameworks: ['ng-scenario'],
 
