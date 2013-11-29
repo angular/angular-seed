@@ -17,8 +17,4 @@ describe('controllers', function(){
   it('should ....', inject(function() {
     //spec body
   }));
-
-  it('a case ....', function() {
-    //spec body
-  });
 });

@@ -1,2 +1,7 @@
 logs/*
 !.gitkeep
+node_modules/
+tmp
+.DS_Store
+test_out/
+
