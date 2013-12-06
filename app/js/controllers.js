@@ -2,10 +2,16 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', []).
-  controller('MyCtrl1', [function() {
+angular.module('myApp.controllers', [])
+.controller('MyCtrl1', [function() {
 
-  }])
-  .controller('MyCtrl2', [function() {
+}])
+.controller('MyCtrl2', [function() {
 
-  }]);
+}])
+.controller('HomeController', [function() {
+
+}])
+.controller('DataSummaryController', [function() {
+
+}]);

@@ -1,29 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" ng-app="myApp">
 <head>
-  <meta charset="utf-8">
-  <title>My AngularJS App</title>
-  <link rel="stylesheet" href="css/app.css"/>
+	<meta charset="utf-8">
+	<title>My AngularJS App</title>
+	<link rel="stylesheet" href="css/app.css"/>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 </head>
 <body>
-  <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
-  </ul>
+	<h1>Phenoscape Knowledgebase</h1>
+	<ul class="nav nav-pills">
+		<li><a href="#/home">Home</a></li>
+		<li><a href="#/datasummary">Data Summary</a></li>
+		<li><a href="#/view2">view2</a></li>
+	</ul>
 
-  <div ng-view></div>
+	<div ng-view></div>
 
-  <div>Angular seed app: v<span app-version></span></div>
-
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-  -->
-  <script src="lib/angular/angular.js"></script>
-  <script src="lib/angular/angular-route.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/services.js"></script>
-  <script src="js/controllers.js"></script>
-  <script src="js/filters.js"></script>
-  <script src="js/directives.js"></script>
-</body>
-</html>
+	<!-- In production use:
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+		-->
+		<script src="lib/angular/angular.js"></script>
+		<script src="lib/angular/angular-route.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/services.js"></script>
+		<script src="js/controllers.js"></script>
+		<script src="js/filters.js"></script>
+		<script src="js/directives.js"></script>
+	</body>
+	</html>
