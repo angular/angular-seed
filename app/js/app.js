@@ -11,7 +11,6 @@ angular.module('pkb', [
 ]).
 config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: 'HomeController'});
-	$routeProvider.when('/datasummary', {templateUrl: 'partials/datasummary.html', controller: 'DatasummaryController'});
-	$routeProvider.when('/view2', {templateUrl: 'partials/partial2.html', controller: 'MyCtrl2'});
+	$routeProvider.when('/contents', {templateUrl: 'partials/contents.html', controller: 'ContentsController'});
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);
