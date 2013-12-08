@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="myApp">
+<html lang="en" ng-app="pkb">
 <head>
 	<meta charset="utf-8">
-	<title>My AngularJS App</title>
+	<title>Phenoscape Knowledgebase</title>
 	<link rel="stylesheet" href="css/app.css"/>
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 </head>
 <body>
+	<div class="container" ng-controller="AppController">
 	<h1>Phenoscape Knowledgebase</h1>
 	<ul class="nav nav-pills">
-		<li><a href="#/home">Home</a></li>
-		<li><a href="#/datasummary">Data Summary</a></li>
-		<li><a href="#/view2">view2</a></li>
+		<li ng-class="homeActive"><a href="#/home">Home</a></li>
+		<li ng-class="datasummaryActive"><a href="#/datasummary">Data Summary</a></li>
 	</ul>
 
 	<div ng-view></div>
@@ -27,5 +27,6 @@
 		<script src="js/controllers.js"></script>
 		<script src="js/filters.js"></script>
 		<script src="js/directives.js"></script>
+	</div>
 	</body>
 	</html>
