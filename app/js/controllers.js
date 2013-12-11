@@ -7,6 +7,7 @@ angular.module('pkb.controllers', [])
 	$scope.setActiveTab = function (page) {
 		$scope.homeActive = '';
 		$scope.contentsActive = '';
+		$scope.presenceAbsenceActive = '';
 		$scope[page + 'Active'] = 'active';
 	}
 })
@@ -15,4 +16,16 @@ angular.module('pkb.controllers', [])
 })
 .controller('ContentsController', function($scope) {
 	$scope.setActiveTab('contents');
+})
+.controller('PresenceAbsenceController', function($scope, EntityPresence) {
+	$scope.setActiveTab('presenceAbsence');
+	$scope.presenceStates = [];
+	$scope.queryPresence = function () {
+		if ($scope.taxon && $scope.entity) {
+			$scope.presenceStates = EntityPresence.query({'taxon': $scope.taxon, 'entity': $scope.entity});
+		} else {
+			$scope.presenceStates = [];
+		}
+		
+	}
 });

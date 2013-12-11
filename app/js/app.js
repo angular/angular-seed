@@ -12,5 +12,6 @@ angular.module('pkb', [
 config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: 'HomeController'});
 	$routeProvider.when('/contents', {templateUrl: 'partials/contents.html', controller: 'ContentsController'});
+	$routeProvider.when('/presence_absence', {templateUrl: 'partials/presence_absence.html', controller: 'PresenceAbsenceController'});
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);
