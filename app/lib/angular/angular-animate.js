@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.4
+ * @license AngularJS v1.2.5
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -1243,7 +1243,7 @@ angular.module('ngAnimate', ['ng'])
           //make the element super hidden and override any CSS style values
           clone.attr('style','position:absolute; top:-9999px; left:-9999px');
           clone.removeAttr('id');
-          clone.html('');
+          clone.empty();
 
           forEach(oldClasses.split(' '), function(klass) {
             clone.removeClass(klass);
