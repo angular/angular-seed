@@ -1,7 +1,5 @@
 <h2>Genes affecting phenotypes of a structure</h2>
-<form action="/kb/genes_affecting_phenotype" method="get" onsubmit="document.getElementById('entity_in_bioportal_full_id\
-').setAttribute('name', 'entity'); document.getElementById('quality_in_bioportal_full_id').setAttribute('name', 'quality')\
-;">
+<form action="/kb/genes_affecting_phenotype" method="get" onsubmit="document.getElementById('entity_in_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('quality_in_bioportal_full_id').setAttribute('name', 'quality');">
 <label for="entity_in">Entity:</label>
 <input type="text" id="entity_in" name="entity_in" class="bp_form_complete-UBERON-name"/>
 <label for="quality_in">Quality:</label>
@@ -9,20 +7,17 @@
 <input type="submit"/>
 </form>
 <h2>Genes affecting “count” phenotypes of a structure</h2>
-<form action="/kb/genes_affecting_count_phenotype" method="get" onsubmit="document.getElementById('phenotype_bioportal_f\
-ull_id').setAttribute('name', 'iri');">
+<form action="/kb/genes_affecting_count_phenotype" method="get" onsubmit="document.getElementById('phenotype_bioportal_full_id').setAttribute('name', 'iri');">
 <label for="phenotype">Entity:</label>
 <input type="text" id="phenotype" name="phenotype" class="bp_form_complete-1404-name"/><input type="submit"/>
 </form>
 <h2>Genes expressed within a structure</h2>
-<form action="/kb/genes_expressed_in_structure" method="get" onsubmit="document.getElementById('expression_bioportal_ful\
-l_id').setAttribute('name', 'iri');">
+<form action="/kb/genes_expressed_in_structure" method="get" onsubmit="document.getElementById('expression_bioportal_full_id').setAttribute('name', 'iri');">
 <label for="expression">Entity:</label>
 <input type="text" id="expression" name="expression" class="bp_form_complete-1404-name"/><input type="submit"/>
 </form>
 <h2>Evidence for presence of a structure</h2>
-<form action="/kb/entity/presence" method="get" onsubmit="document.getElementById('entity_pres_bioportal_full_id').setAt\
-tribute('name', 'entity'); document.getElementById('taxon_pres_bioportal_full_id').setAttribute('name', 'taxon');">
+<form action="/kb/entity/presence" method="get" onsubmit="document.getElementById('entity_pres_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('taxon_pres_bioportal_full_id').setAttribute('name', 'taxon');">
 <label for="taxon_pres">Taxon:</label>
 <input type="text" id="taxon_pres" name="taxon_pres" class="bp_form_complete-VTO-name"/>
 <label for="entity_pres">Entity:</label>
@@ -30,8 +25,7 @@ tribute('name', 'entity'); document.getElementById('taxon_pres_bioportal_full_id
 <input type="submit"/>
 </form>
 <h2>Evidence for absence of a structure</h2>
-<form action="/kb/entity/absence" method="get" onsubmit="document.getElementById('entity_abs_bioportal_full_id').setAttr\
-ibute('name', 'entity'); document.getElementById('taxon_abs_bioportal_full_id').setAttribute('name', 'taxon');">
+<form action="/kb/entity/absence" method="get" onsubmit="document.getElementById('entity_abs_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('taxon_abs_bioportal_full_id').setAttribute('name', 'taxon');">
 <label for="taxon_abs">Taxon:</label>
 <input type="text" id="taxon_abs" name="taxon_abs" class="bp_form_complete-VTO-name"/>
 <label for="entity_abs">Entity:</label>
