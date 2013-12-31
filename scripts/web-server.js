@@ -40,7 +40,7 @@ function HttpServer(handlers) {
 
 HttpServer.prototype.start = function(port) {
   this.port = port;
-  this.server.listen(port);
+  this.server.listen(port, 'localhost');
   util.puts('Http Server running at http://localhost:' + port + '/');
 };
 
