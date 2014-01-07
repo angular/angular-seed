@@ -1,15 +1,15 @@
 #! /bin/sh
-if [ -n "$1" ]; then
-  mkdir tmp
-  curl https://raw.github.com/angular/code.angularjs.org/master/$1/angular-$1.zip -o tmp/angular.zip
-  rm -fr app/lib/angular
-  unzip tmp/angular.zip -d app/lib
-  mv app/lib/angular-$1 app/lib/angular
-  rm -fr app/lib/angular/docs
-  mv app/lib/angular/angular-mocks.js test/lib/angular
-  mv app/lib/angular/angular-scenario.js test/lib/angular
-  cp app/lib/angular/version.txt test/lib/angular
+NG_BUILD_DIR=$1
+if [[ ! -e "$NG_BUILD_DIR/angular.js" ]]; then
+  echo "Usage: update-angular <build-dir>"
+  exit 1
+fi
 
-else
-  echo "Usage: update-angular <version>"
-fi  
+rm -fr app/lib/angular
+mkdir app/lib/angular
+cp -r $NG_BUILD_DIR/* app/lib/angular
+rm -fr app/lib/angular/docs
+rm app/lib/angular/*.zip
+mv app/lib/angular/angular-mocks.js test/lib/angular
+mv app/lib/angular/angular-scenario.js test/lib/angular
+cp app/lib/angular/version.txt test/lib/angular
