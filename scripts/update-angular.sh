@@ -1,4 +1,5 @@
-#! /bin/sh
+#!/usr/bin/env bash
+
 NG_BUILD_DIR=$1
 if [[ ! -e "$NG_BUILD_DIR/angular.js" ]]; then
   echo "Usage: update-angular <build-dir>"

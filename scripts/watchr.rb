@@ -16,4 +16,3 @@ watch( '(app/js|test/unit)' )  do
   `echo "\n\ntest run started @ \`date\`" > #{log_file}`
   `scripts/test.sh &> #{log_file}`
 end
-
