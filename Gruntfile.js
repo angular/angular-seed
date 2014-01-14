@@ -3,14 +3,20 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
-        clean: ["dist"],
+        clean: ["dist", '.tmp'],
 
         copy: {
             main: {
                 expand: true,
                 cwd: 'app/',
-                src: '**',
+                src: ['**', '!js/**', '!lib/**', '!**/*.css'],
                 dest: 'dist/'
+            }
+        },
+
+        rev: {
+            files: {
+                src: ['dist/**/*.{js,css}', '!dist/js/shims/**']
             }
         },
 
@@ -22,16 +28,10 @@ module.exports = function (grunt) {
             html: ['dist/index.html']
         },
 
-        ngmin: {
-            dist: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: '.tmp/concat/js',
-                        src: '*.js',
-                        dest: '.tmp/concat/js'
-                    }
-                ]
+        uglify: {
+            options: {
+                report: 'min',
+                mangle: false
             }
         }
     });
@@ -41,13 +41,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-ngmin');
+    grunt.loadNpmTasks('grunt-rev');
     grunt.loadNpmTasks('grunt-usemin');
-    grunt.loadNpmTasks('grunt-contrib-watch');
 
-    // 4. Where we tell Grunt what to do when we type "grunt" into the terminal.
+    // Tell Grunt what to do when we type "grunt" into the terminal
     grunt.registerTask('default', [
-        'copy', 'useminPrepare', 'concat', 'ngmin', 'uglify', 'cssmin', 'usemin'
+        'copy', 'useminPrepare', 'concat', 'uglify', 'cssmin', 'rev', 'usemin'
     ]);
 };
-
