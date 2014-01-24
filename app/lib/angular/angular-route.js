@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.9
+ * @license AngularJS v1.2.10
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -190,7 +190,7 @@ function $RouteProvider(){
 
     path = path
       .replace(/([().])/g, '\\$1')
-      .replace(/(\/)?:(\w+)([\?|\*])?/g, function(_, slash, key, option){
+      .replace(/(\/)?:(\w+)([\?\*])?/g, function(_, slash, key, option){
         var optional = option === '?' ? option : null;
         var star = option === '*' ? option : null;
         keys.push({ name: key, optional: !!optional });
@@ -375,7 +375,7 @@ function $RouteProvider(){
      * @eventType broadcast on root scope
      * @description
      * Broadcasted before a route change. At this  point the route services starts
-     * resolving all of the dependencies needed for the route change to occurs.
+     * resolving all of the dependencies needed for the route change to occur.
      * Typically this involves fetching the view template as well as any dependencies
      * defined in `resolve` route property. Once  all of the dependencies are resolved
      * `$routeChangeSuccess` is fired.
