@@ -74,7 +74,14 @@
                 require: '^smartTable',
                 restrict: 'C',
                 link: function (scope, element, attr, ctrl) {
-
+                    
+                    var _config;
+                    if ((_config = scope.config) != null) {
+                        if (typeof _config.rowFunction === "function") {
+                            _config.rowFunction(scope, element, attr, ctrl);
+                        }
+                    }
+                    
                     element.bind('click', function () {
                         scope.$apply(function () {
                             ctrl.toggleSelection(scope.dataRow);
