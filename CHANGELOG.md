@@ -50,3 +50,6 @@
 ## v0.1.6
 * modify filter to be compatible with 1.2.X branch
 
+## v0.1.7
+* ability to pass a rowFunction (thanks to [pheuter](https://github.com/lorenzofox3/Smart-Table/pull/57))
+
