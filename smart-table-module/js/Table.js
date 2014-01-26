@@ -133,23 +133,13 @@
              */
             this.search = function (input, column) {
 
-                var j, l = scope.columns.length;
                 //update column and global predicate
                 if (column && scope.columns.indexOf(column) !== -1) {
-                    predicate.$ = '';
-                    column.filterPredicate = input;
+                    predicate[column.map] = input;
                 } else {
-                    for (j = 0; j < l; j++) {
-                        scope.columns[j].filterPredicate = '';
-                    }
-                    predicate.$ = input;
-                }
-
-                for (j = 0; j < l; j++) {
-                    predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
+                    predicate = {$: input};
                 }
                 scope.displayedCollection = this.pipe(scope.dataCollection);
-
             };
 
             /**

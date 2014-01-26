@@ -90,8 +90,10 @@
                     }, true);
 
                     //insert columns from column config
-                    //TODO add a way to clean all columns
                     scope.$watch('columnCollection', function (oldValue, newValue) {
+
+                        ctrl.clearColumns();
+
                         if (scope.columnCollection) {
                             for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
                                 ctrl.insertColumn(scope.columnCollection[i]);
@@ -115,7 +117,6 @@
                             ctrl.sortBy();//it will trigger the refresh... some hack ?
                         }
                     });
-
                 }
             };
         }])
@@ -310,7 +311,6 @@
             };
         }]);
 })(angular);
-
 /* Filters */
 (function (angular) {
     "use strict";
@@ -376,10 +376,7 @@
 
             function calculateNumberOfPages(array) {
 
-                if (!angular.isArray(array)) {
-                    return 1;
-                }
-                if (array.length === 0 || scope.itemsByPage < 1) {
+                if (!angular.isArray(array) || array.length === 0 || scope.itemsByPage < 1) {
                     return 1;
                 }
                 return Math.ceil(array.length / scope.itemsByPage);
@@ -474,20 +471,11 @@
 
                 //update column and global predicate
                 if (column && scope.columns.indexOf(column) !== -1) {
-                    predicate.$ = '';
-                    column.filterPredicate = input;
+                    predicate[column.map] = input;
                 } else {
-                    for (var j = 0, l = scope.columns.length; j < l; j++) {
-                        scope.columns[j].filterPredicate = '';
-                    }
-                    predicate.$ = input;
-                }
-
-                for (var j = 0, l = scope.columns.length; j < l; j++) {
-                    predicate[scope.columns[j].map] = scope.columns[j].filterPredicate;
+                    predicate = {$: input};
                 }
                 scope.displayedCollection = this.pipe(scope.dataCollection);
-
             };
 
             /**
@@ -536,6 +524,12 @@
                 arrayUtility.moveAt(scope.columns, oldIndex, newIndex);
             };
 
+            /**
+             * remove all columns
+             */
+            this.clearColumns = function () {
+                scope.columns.length = 0;
+            };
 
             /*///////////
              ROW API
@@ -606,10 +600,7 @@
                     }
                 }
             };
-
-
         }]);
-
 })(angular);
 
 

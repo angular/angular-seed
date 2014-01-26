@@ -46,3 +46,7 @@
 
 ## v0.1.5
 * add the clear column functionality
+
+## v0.1.6
+* modify filter to be compatible with 1.2.X branch
+

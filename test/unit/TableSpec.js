@@ -479,11 +479,6 @@ describe('Table module', function () {
         });
 
         describe('search data rows', function () {
-            var refArray = [
-                {id: 0, secondProperty: true, thirdProperty: 2},
-                {id: 1, secondProperty: true, thirdProperty: 3},
-                {id: 2, secondProperty: true, thirdProperty: 1}
-            ];
 
             beforeEach(function () {
                 scope.itemsByPage = 10;
@@ -495,6 +490,18 @@ describe('Table module', function () {
                 ctrl.insertColumn({map: 'id', isSortable: true});
                 ctrl.insertColumn({map: 'secondProperty', isSortable: false});
                 ctrl.insertColumn({map: 'thirdProperty', isSortable: true});
+            });
+
+            it('should not filter items with a null property by default', function () {
+                scope.dataCollection.push({id: 4, secondProperty: true, thirdProperty: null});
+                ctrl.search('');
+                expect(scope.displayedCollection.length).toBe(4);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1},
+                    {id: 4, secondProperty: true, thirdProperty: null}
+                ]);
             });
 
             it('should search globally if we dont specify a proper cololumn', function () {
@@ -617,7 +624,6 @@ describe('Table module', function () {
                 ctrl.updateDataRow(scope.displayedCollection[0], 'id', 2);
                 expect(eventHandler.listener).toHaveBeenCalled();
             }));
-
         });
     });
 });
