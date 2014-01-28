@@ -164,7 +164,7 @@
                     scope.$watch('dataRow', function (value) {
                         scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
                         if (isSimpleCell === true) {
-                            element.text(scope.formatedValue);
+                            element.html(scope.formatedValue);
                         }
                     }, true);
 
@@ -173,7 +173,7 @@
                             element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
                         } else {
-                            element.text(scope.formatedValue);
+                            element.html(scope.formatedValue);
                         }
                     }
 
