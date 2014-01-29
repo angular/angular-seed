@@ -53,3 +53,5 @@
 ## v0.1.7
 * ability to pass a rowFunction (thanks to [pheuter](https://github.com/lorenzofox3/Smart-Table/pull/57))
 
+## v0.1.8 
+* allow for HTML formatted cell contents: see pull request from TNGPS https://github.com/lorenzofox3/Smart-Table/pull/80
