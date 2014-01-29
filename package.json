@@ -1,6 +1,6 @@
 {
   "name": "Smart-Table",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "a table/grid for AngularJS",
   "main": "smart-table-module",
   "directories": {
