@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.10
+ * @license AngularJS v1.2.11
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -996,18 +996,18 @@ angular.mock.dump = function(object) {
  *
  * # Flushing HTTP requests
  *
- * The $httpBackend used in production, always responds to requests with responses asynchronously.
- * If we preserved this behavior in unit testing, we'd have to create async unit tests, which are
- * hard to write, follow and maintain. At the same time the testing mock, can't respond
+ * The $httpBackend used in production always responds to requests with responses asynchronously.
+ * If we preserved this behavior in unit testing we'd have to create async unit tests, which are
+ * hard to write, understand, and maintain. However, the testing mock can't respond
  * synchronously because that would change the execution of the code under test. For this reason the
  * mock $httpBackend has a `flush()` method, which allows the test to explicitly flush pending
- * requests and thus preserving the async api of the backend, while allowing the test to execute
+ * requests and thus preserve the async api of the backend while allowing the test to execute
  * synchronously.
  *
  *
  * # Unit testing with mock $httpBackend
- * The following code shows how to setup and use the mock backend in unit testing a controller.
- * First we create the controller under test
+ * The following code shows how to setup and use the mock backend when unit testing a controller.
+ * First we create the controller under test:
  *
   <pre>
   // The controller code
@@ -1032,7 +1032,7 @@ angular.mock.dump = function(object) {
   }
   </pre>
  *
- * Now we setup the mock backend and create the test specs.
+ * Now we setup the mock backend and create the test specs:
  *
   <pre>
     // testing controller
@@ -1954,7 +1954,7 @@ if(window.jasmine || window.mocha) {
 
   var currentSpec = null,
       isSpecRunning = function() {
-        return currentSpec && (window.mocha || currentSpec.queue.running);
+        return !!currentSpec;
       };
 
 
