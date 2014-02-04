@@ -50,6 +50,10 @@ applicable. Usually this is done by hosting the files by the backend server or t
 reverse-proxying the backend server(s) and a webserver(s).
 
 
+### Install package dependencies
+
+* install all dependencies `node install` in the root directory.
+
 ### Running unit tests
 
 We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
