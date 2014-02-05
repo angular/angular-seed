@@ -57,7 +57,7 @@ We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
 to use whatever works for you.
 
 Requires [node.js](http://nodejs.org/), Karma (`sudo npm install -g karma`) and a local
-or remote browser.
+or remote browser. Ensure karma is on your PATH (it would typically be installed in: node_modules/karma/bin/karma).
 
 * start `scripts/test.sh` (on windows: `scripts\test.bat`)
   * a browser will start and connect to the Karma server (Chrome is default browser, others can be captured by loading the same url as the one in Chrome or by changing the `config/karma.conf.js` file)
