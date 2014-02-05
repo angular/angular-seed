@@ -3,10 +3,16 @@
   "description": "A starter project for AngularJS",
   "repository": "https://github.com/angular/angular-seed",
   "devDependencies": {
-    "phantomjs" : "~1.9",
-    "karma" : "~0.10",
-    "karma-junit-reporter" : "~0.1",
-    "karma-jasmine" : "~0.1",
-    "karma-ng-scenario" : "~0.1"
+    "phantomjs": "~1.9",
+    "karma": "~0.10",
+    "karma-junit-reporter": "~0.1",
+    "karma-jasmine": "~0.1",
+    "karma-ng-scenario": "~0.1"
+  },
+  "dependencies": {
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt": "~0.4.2",
+    "grunt-ngmin": "0.0.3",
+    "grunt-contrib-uglify": "~0.2.7"
   }
 }
