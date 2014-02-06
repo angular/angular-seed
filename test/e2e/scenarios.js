@@ -1,28 +1,25 @@
 'use strict';
 
-/* http://docs.angularjs.org/guide/dev_guide.e2e-testing */
+/* https://github.com/angular/protractor/blob/master/docs/getting-started.md */
 
 describe('my app', function() {
 
-  beforeEach(function() {
-    browser().navigateTo('app/index.html');
-  });
-
+  browser.get('index.html');
 
   it('should automatically redirect to /view1 when location hash/fragment is empty', function() {
-    expect(browser().location().url()).toBe("/view1");
+    expect(browser.getLocationAbsUrl()).toMatch("/view1");
   });
 
 
   describe('view1', function() {
 
     beforeEach(function() {
-      browser().navigateTo('#/view1');
+      browser.get('index.html#/view1');
     });
 
 
     it('should render view1 when user navigates to /view1', function() {
-      expect(element('[ng-view] p:first').text()).
+      expect(element.all(by.css('[ng-view] p')).first().getText()).
         toMatch(/partial for view 1/);
     });
 
@@ -32,12 +29,12 @@ describe('my app', function() {
   describe('view2', function() {
 
     beforeEach(function() {
-      browser().navigateTo('#/view2');
+      browser.get('index.html#/view2');
     });
 
 
     it('should render view2 when user navigates to /view2', function() {
-      expect(element('[ng-view] p:first').text()).
+      expect(element.all(by.css('[ng-view] p')).first().getText()).
         toMatch(/partial for view 2/);
     });
 

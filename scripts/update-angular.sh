@@ -17,7 +17,6 @@ cp -r $NG_BUILD_DIR/* app/lib/angular
 rm -fr app/lib/angular/docs
 rm app/lib/angular/*.zip
 mv app/lib/angular/angular-mocks.js test/lib/angular
-mv app/lib/angular/angular-scenario.js test/lib/angular
 cp app/lib/angular/version.txt test/lib/angular
 
 # Update the inlined angular-loader in app/index-async.html
