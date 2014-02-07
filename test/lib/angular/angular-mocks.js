@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.11
+ * @license AngularJS v1.2.12
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -511,6 +511,7 @@ angular.mock.$IntervalProvider = function() {
     };
 
     $interval.cancel = function(promise) {
+      if(!promise) return false;
       var fnIndex;
 
       angular.forEach(repeatFns, function(fn, index) {
@@ -763,70 +764,39 @@ angular.mock.TzDate = function (offset, timestamp) {
 angular.mock.TzDate.prototype = Date.prototype;
 /* jshint +W101 */
 
-// TODO(matias): remove this IMMEDIATELY once we can properly detect the
-// presence of a registered module
-var animateLoaded;
-try {
-  angular.module('ngAnimate');
-  animateLoaded = true;
-} catch(e) {}
+angular.mock.animate = angular.module('ngAnimateMock', ['ng'])
 
-if(animateLoaded) {
-  angular.module('ngAnimate').config(['$provide', function($provide) {
+  .config(['$provide', function($provide) {
     var reflowQueue = [];
+
     $provide.value('$$animateReflow', function(fn) {
       reflowQueue.push(fn);
       return angular.noop;
     });
-    $provide.decorator('$animate', function($delegate) {
-      $delegate.triggerReflow = function() {
-        if(reflowQueue.length === 0) {
-          throw new Error('No animation reflows present');
-        }
-        angular.forEach(reflowQueue, function(fn) {
-          fn();
-        });
-        reflowQueue = [];
-      };
-      return $delegate;
-    });
-  }]);
-}
-
-angular.mock.animate = angular.module('mock.animate', ['ng'])
-
-  .config(['$provide', function($provide) {
 
     $provide.decorator('$animate', function($delegate) {
       var animate = {
         queue : [],
         enabled : $delegate.enabled,
-        flushNext : function(name) {
-          var tick = animate.queue.shift();
-
-          if (!tick) throw new Error('No animation to be flushed');
-          if(tick.method !== name) {
-            throw new Error('The next animation is not "' + name +
-              '", but is "' + tick.method + '"');
+        triggerReflow : function() {
+          if(reflowQueue.length === 0) {
+            throw new Error('No animation reflows present');
           }
-          tick.fn();
-          return tick;
+          angular.forEach(reflowQueue, function(fn) {
+            fn();
+          });
+          reflowQueue = [];
         }
       };
 
       angular.forEach(['enter','leave','move','addClass','removeClass'], function(method) {
         animate[method] = function() {
-          var params = arguments;
           animate.queue.push({
-            method : method,
-            params : params,
-            element : angular.isElement(params[0]) && params[0],
-            parent  : angular.isElement(params[1]) && params[1],
-            after   : angular.isElement(params[2]) && params[2],
-            fn : function() {
-              $delegate[method].apply($delegate, params);
-            }
+            event : method,
+            element : arguments[0],
+            args : arguments
           });
+          $delegate[method].apply($delegate, arguments);
         };
       });
 
@@ -2132,7 +2102,7 @@ if(window.jasmine || window.mocha) {
   window.inject = angular.mock.inject = function() {
     var blockFns = Array.prototype.slice.call(arguments, 0);
     var errorForStack = new Error('Declaration Location');
-    return isSpecRunning() ? workFn() : workFn;
+    return isSpecRunning() ? workFn.call(currentSpec) : workFn;
     /////////////////////
     function workFn() {
       var modules = currentSpec.$modules || [];
