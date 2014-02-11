@@ -6,7 +6,7 @@ projects.
 
 The seed contains AngularJS libraries, test libraries and a bunch of scripts all preconfigured for
 instant web development gratification. Just clone the repo (or download the zip/tarball), start up
-our (or yours) webserver and you are ready to develop and test your application.
+our (or your) webserver and you are ready to develop and test your application.
 
 The seed app doesn't do much, just shows how to wire two controllers and views together. You can
 check it out by opening app/index.html in your browser (might not work file `file://` scheme in
