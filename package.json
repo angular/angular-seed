@@ -10,6 +10,7 @@
     "karma-junit-reporter": "~0.1",
     "karma-jasmine": "~0.1",
     "karma-ng-scenario": "~0.1",
+    "protractor" : "~0.17.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.7",
     "grunt-contrib-cssmin": "~0.7.0",
