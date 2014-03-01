@@ -132,7 +132,6 @@ fetch the changes and merge them into your project with git.
       lib/
         angular/                --> angular testing libraries
           angular-mocks.js      --> mocks that replace certain angular services in tests
-          angular-scenario.js   --> angular's scenario (end-to-end) test runner library
           version.txt           --> version file
       unit/                     --> unit level specs/tests
         controllersSpec.js      --> specs for controllers
