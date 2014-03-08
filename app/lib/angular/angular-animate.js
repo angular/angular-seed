@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.14
+ * @license AngularJS v1.3.0-beta.1
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -707,8 +707,7 @@ angular.module('ngAnimate', ['ng'])
           /**
            *
            * @ngdoc function
-           * @name ng.$animate#setClass
-           * @methodOf ng.$animate
+           * @name $animate#setClass
            * @function
            * @description Adds and/or removes the given CSS classes to and from the element.
            * Once complete, the done() callback will be fired (if provided).
