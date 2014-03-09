@@ -217,7 +217,7 @@
                     scope.$watch('dataRow', function (value) {
                         scope.formatedValue = format(getter(row), column.formatFunction, column.formatParameter);
                         if (isSimpleCell === true) {
-                            element.text(scope.formatedValue);
+                            element.html(scope.formatedValue);
                         }
                     }, true);
 
@@ -226,7 +226,7 @@
                             element.html('<div editable-cell="" row="dataRow" column="column" type="column.type"></div>');
                             compile(element.contents())(scope);
                         } else {
-                            element.text(scope.formatedValue);
+                            element.html(scope.formatedValue);
                         }
                     }
 
@@ -622,12 +622,12 @@ angular.module("partials/defaultCell.html", []).run(["$templateCache", function(
 
 angular.module("partials/defaultHeader.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("partials/defaultHeader.html",
-    "<span class=\"header-content\" ng-class=\"{'sort-ascent':column.reverse==true,'sort-descent':column.reverse==false}\">{{column.label}}</span>");
+    "<span class=\"header-content\" ng-class=\"{'sort-ascent':column.reverse==false,'sort-descent':column.reverse==true}\">{{column.label}}</span>");
 }]);
 
 angular.module("partials/editableCell.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("partials/editableCell.html",
-    "<div ng-dblclick=\"toggleEditMode($event)\">\n" +
+    "<div ng-dblclick=\"isEditMode || toggleEditMode($event)\">\n" +
     "    <span ng-hide=\"isEditMode\">{{value | format:column.formatFunction:column.formatParameter}}</span>\n" +
     "\n" +
     "    <form ng-submit=\"submit()\" ng-show=\"isEditMode\" name=\"myForm\">\n" +

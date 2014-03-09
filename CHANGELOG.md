@@ -55,3 +55,7 @@
 
 ## v0.1.8 
 * allow for HTML formatted cell contents: see pull request from TNGPS https://github.com/lorenzofox3/Smart-Table/pull/80
+
+## v0.1.9
+* fix sort ascent/descent definition
+* merge pull request from [morrog](https://github.com/morrog) about db click issue
