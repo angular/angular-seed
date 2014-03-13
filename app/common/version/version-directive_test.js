@@ -2,8 +2,8 @@
 
 /* jasmine specs for directives go here */
 
-describe('directives', function() {
-  beforeEach(module('myApp.directives'));
+describe('version directive', function() {
+  beforeEach(module('myApp.version.directive'));
 
   describe('app-version', function() {
     it('should print current version', function() {
