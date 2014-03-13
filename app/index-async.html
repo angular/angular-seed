@@ -32,13 +32,14 @@ a=a.angular||(a.angular={});a.$$minErr=a.$$minErr||d;return a.module||(a.module=
 
     // load all of the dependencies asynchronously.
     $script([
-      'lib/angular/angular.js',
-      'lib/angular/angular-route.js',
-      'js/app.js',
-      'js/services.js',
-      'js/controllers.js',
-      'js/filters.js',
-      'js/directives.js'
+      'vendor/angular/angular.js',
+      'vendor/angular/angular-route.js',
+      'app/app.js',
+      'app/view1/view1.js',
+      'app/view2/view2.js',
+      'common/version/version-directive.js',
+      'common/version/version-filter.js',
+      'common/version/version-service.js',
     ], function() {
       // when all is done, execute bootstrap angular application
       angular.bootstrap(document, ['myApp']);
