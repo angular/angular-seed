@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.3.0-beta.1
+ * @license AngularJS v1.3.0-build.51+sha.e888dde
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -776,7 +776,7 @@ angular.module('ngAnimate', ['ng'])
           fireDOMOperation();
           fireBeforeCallbackAsync();
           fireAfterCallbackAsync();
-          fireDoneCallbackAsync();
+          closeAnimation();
           return;
         }
 
@@ -955,7 +955,7 @@ angular.module('ngAnimate', ['ng'])
                  animation, but class-based animations don't. An example of this
                  failing would be when a parent HTML tag has a ng-class attribute
                  causing ALL directives below to skip animations during the digest */
-              if(runner.isClassBased) {
+              if(runner && runner.isClassBased) {
                 cleanup(element, className);
               } else {
                 $$asyncCallback(function() {

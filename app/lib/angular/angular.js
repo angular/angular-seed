@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.3.0-beta.1
+ * @license AngularJS v1.3.0-build.51+sha.e888dde
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -68,7 +68,7 @@ function minErr(module) {
       return match;
     });
 
-    message = message + '\nhttp://errors.angularjs.org/1.3.0-beta.1/' +
+    message = message + '\nhttp://errors.angularjs.org/1.3.0-build.51+sha.e888dde/' +
       (module ? module + '/' : '') + code;
     for (i = 2; i < arguments.length; i++) {
       message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
@@ -1878,11 +1878,11 @@ function setupModuleLoader(window) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.3.0-beta.1',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.3.0-build.51+sha.e888dde',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 3,
-  dot: 0,
-  codeName: 'retractable-eyebrow'
+  dot: undefined,
+  codeName: 'undefined'
 };
 
 
@@ -8128,9 +8128,11 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
       jsonpDone = xhr = null;
 
       // fix status code when it is 0 (0 status is undocumented).
-      // Occurs when accessing file resources.
-      // On Android 4.1 stock browser it occurs while retrieving files from application cache.
-      status = (status === 0) ? (response ? 200 : 404) : status;
+      // Occurs when accessing file resources or on Android 4.1 stock browser
+      // while retrieving files from application cache.
+      if (status === 0) {
+        status = response ? 200 : urlResolve(url).protocol == 'file' ? 404 : 0;
+      }
 
       // normalize IE bug (http://bugs.jquery.com/ticket/1450)
       status = status == 1223 ? 204 : status;
@@ -11313,21 +11315,31 @@ function qFactory(nextTick, exceptionHandler) {
 }
 
 function $$RAFProvider(){ //rAF
-  this.$get = ['$window', function($window) {
+  this.$get = ['$window', '$timeout', function($window, $timeout) {
     var requestAnimationFrame = $window.requestAnimationFrame ||
-                                $window.webkitRequestAnimationFrame;
+                                $window.webkitRequestAnimationFrame ||
+                                $window.mozRequestAnimationFrame;
 
     var cancelAnimationFrame = $window.cancelAnimationFrame ||
-                               $window.webkitCancelAnimationFrame;
+                               $window.webkitCancelAnimationFrame ||
+                               $window.mozCancelAnimationFrame;
 
-    var raf = function(fn) {
-      var id = requestAnimationFrame(fn);
-      return function() {
-        cancelAnimationFrame(id);
-      };
-    };
+    var rafSupported = !!requestAnimationFrame;
+    var raf = rafSupported
+      ? function(fn) {
+          var id = requestAnimationFrame(fn);
+          return function() {
+            cancelAnimationFrame(id);
+          };
+        }
+      : function(fn) {
+          var timer = $timeout(fn, 16.66, false); // 1000 / 60 = 16.666
+          return function() {
+            $timeout.cancel(timer);
+          };
+        };
 
-    raf.supported = !!requestAnimationFrame;
+    raf.supported = rafSupported;
 
     return raf;
   }];
@@ -12414,7 +12426,7 @@ function $RootScopeProvider(){
  */
 function $$SanitizeUriProvider() {
   var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
-    imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file):|data:image\//;
+    imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|blob):|data:image\//;
 
   /**
    * @description
@@ -19936,9 +19948,11 @@ var ngPluralizeDirective = ['$locale', '$interpolate', function($locale, $interp
  * as **data-ng-repeat-start**, **x-ng-repeat-start** and **ng:repeat-start**).
  *
  * @animations
- * enter - when a new item is added to the list or when an item is revealed after a filter
- * leave - when an item is removed from the list or when an item is filtered out
- * move - when an adjacent item is filtered out causing a reorder or when the item contents are reordered
+ * **.enter** - when a new item is added to the list or when an item is revealed after a filter
+ *
+ * **.leave** - when an item is removed from the list or when an item is filtered out
+ *
+ * **.move** - when an adjacent item is filtered out causing a reorder or when the item contents are reordered
  *
  * @element ANY
  * @scope
