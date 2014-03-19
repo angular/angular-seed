@@ -476,6 +476,35 @@ describe('Table module', function () {
                 expect(scope.displayedCollection).toEqual(refArray);
             });
 
+            // test natural order
+            it('should test natural order if it is enabled', function () {
+                // turn on natural ordering
+                scope.isNaturalOrderEnabled = true;
+
+                //ascending
+                ctrl.sortBy(scope.columns[2]);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 2, secondProperty: true, thirdProperty: 1},
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3}
+                ]);
+
+                //descending
+                ctrl.sortBy(scope.columns[2]);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+
+                //natural order
+                ctrl.sortBy(scope.columns[0]);
+                expect(scope.displayedCollection).toEqual(refArray);
+
+                // turn off natural ordering
+                scope.isNaturalOrderEnabled = false;
+            });
+
         });
 
         describe('search data rows', function () {

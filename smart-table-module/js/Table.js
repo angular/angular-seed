@@ -11,7 +11,11 @@
             itemsByPage: 10,
             maxSize: 5,
 
-            //allows a third sorting option, which is the natural order
+            /*
+             * Enabling this allows a column to go back to natural order sort.
+             * Which is important in cases where you want to preserve the original
+             * state of the table
+             */
             isNaturalOrderEnabled: false,
 
             //just to remind available option
@@ -121,7 +125,7 @@
                         }
                         column.sortPredicate = column.sortPredicate || column.map;
 
-                        //handles case of natural order configuration
+                        //handles column.reverse when natural order is enabled
                         if(scope.isNaturalOrderEnabled){
                             if (column.reverse === undefined) {
                                 column.reverse = false;
