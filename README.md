@@ -56,8 +56,8 @@ We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
 [Karma](http://karma-runner.github.io) for your unit tests/specs, but you are free
 to use whatever works for you.
 
-Requires [node.js](http://nodejs.org/), Karma (`sudo npm install -g karma`) and a local
-or remote browser.
+Requires [node.js](http://nodejs.org/), Karma (run `npm install`; karma is in the package.json)
+and a local or remote browser.
 
 * start `scripts/test.sh` (on windows: `scripts\test.bat`)
   * a browser will start and connect to the Karma server (Chrome is default browser, others can be captured by loading the same url as the one in Chrome or by changing the `config/karma.conf.js` file)
