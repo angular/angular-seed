@@ -191,8 +191,8 @@ StaticServlet.prototype.sendDirectory_ = function(req, res, path) {
     var redirectUrl = url.format(url.parse(url.format(req.url)));
     return self.sendRedirect_(req, res, redirectUrl);
   }
-  fs.readdir(path, function(err, files) {
-    if (err)
+  fs.readdir(path, function(error, files) {
+    if (error)
       return self.sendError_(req, res, error);
 
     if (!files.length)
