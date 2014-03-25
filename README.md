@@ -4,35 +4,88 @@ This project is an application skeleton for a typical [AngularJS](http://angular
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
 projects.
 
-The seed contains AngularJS libraries, test libraries and a bunch of scripts all preconfigured for
-instant web development gratification. Just clone the repo (or download the zip/tarball), start up
-our (or your) webserver and you are ready to develop and test your application.
+The seed contains a sample AngularJS application and is preconfigured to install the Angular
+framework and a bunch of development and testing tools for instant web development gratification.
 
-The seed app doesn't do much, just shows how to wire two controllers and views together. You can
-check it out by opening app/index.html in your browser (might not work file `file://` scheme in
-certain browsers, see note below).
+The seed app doesn't do much, just shows how to wire two controllers and views together.
 
-_Note: While angular is client-side-only technology and it's possible to create angular webapps that
-don't require a backend server at all, we recommend hosting the project files using a local
+
+## Getting Started
+
+To get you started you can simply clone the angular-seed repository and run the preconfigured
+development web server...
+
+### Clone angular-seed
+
+Clone the angular-seed repository using [git][git]:
+
+```
+git clone https://github.com/angular/angular-seed.git
+cd angular-seed
+```
+
+### Run the Application
+
+We have preconfigured the project with node.js to download the latest stable version
+of AngularJS and install a simple development web server.  The simplest way to do this is:
+
+```
+npm start
+```
+
+Now browse to the app at `http://localhost:8080/app/index.html`.
+
+
+## The AngularJS Files
+
+The AngularJS files are not stored inside the angular-seed project, we download them from the
+[bower][bower] repository. [Bower][bower] is a [node.js][node] utility for managing client-side web
+application dependencies. It is installed via npm.
+
+**Running `npm start`, in the [Getting Started](#Getting-Started) section, automatically installed
+[bower][bower] locally for us.  You may prefer to have [bower][bower] installed globally**:
+
+```
+sudo npm install -g bower
+```
+
+Once we have bower installed, we can use it to get the Angular framework dependencies we need:
+
+```
+bower install
+```
+
+Bower will download all the necessary dependencies into the `bower_components` folder. Again, this
+is done automatically for us when we run `npm start`.
+
+## Serving the Application Files
+
+While angular is client-side-only technology and it's possible to create angular webapps that
+don't require a backend server at all, we recommend serving the project files using a local
 webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
 sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
-etc to function properly when an html page is opened via `file://` scheme instead of `http://`._
-
-
-## How to use angular-seed
-
-Clone the angular-seed repository and start hacking...
+etc to function properly when an html page is opened via `file://` scheme instead of `http://`.
 
 
 ### Running the app during development
 
-You can pick one of these options:
+The angular-seed project comes preconfigured with a local development webserver.  It is a node.js
+tool called `http-server`.  You can start this webserver with `npm start` but you may choose to
+install the tool globally:
 
-* serve this repository with your webserver
-* install node.js and run `scripts/web-server.js`
+```
+sudo npm install -g http-server
+```
 
-Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
-your browser.
+Then you can start your own development web server to server static files, from a folder, by
+running:
+
+```
+http-server
+```
+
+Alternatively, you can choose to configure your own webserver, such as apache or nginx. Just
+configure your server to serve the files under the `app/` directory.
 
 
 ### Running the app in production
@@ -47,35 +100,76 @@ somewhere, where they can be accessed by browsers.
 If your Angular app is talking to the backend server via xhr or other means, you need to figure
 out what is the best way to host the static files to comply with the same origin policy if
 applicable. Usually this is done by hosting the files by the backend server or through
-reverse-proxying the backend server(s) and a webserver(s).
+reverse-proxying the backend server(s) and webserver(s).
 
 
-### Running unit tests
+## Testing
+
+There are two kinds of tests in the angular-seed application: Unit tests and End to End tests.
+
+### Running Unit Tests
 
 We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
 [Karma](http://karma-runner.github.io) for your unit tests/specs, but you are free
 to use whatever works for you.
 
-Requires [node.js](http://nodejs.org/), Karma (`sudo npm install -g karma`) and a local
-or remote browser.
+The angular-seed app comes preconfigured with such tests and a Karma configuration file to run them.
 
-* start `scripts/test.sh` (on windows: `scripts\test.bat`)
-  * a browser will start and connect to the Karma server (Chrome is default browser, others can be captured by loading the same url as the one in Chrome or by changing the `config/karma.conf.js` file)
-* to run or re-run tests just change any of your source or test javascript files
+* the configuration is found at `test/karma.conf.js`
+* the unit tests are found in `test/unit/`.
+
+The easiest way to run the unit tests is to use the supplied npm script:
+
+```
+npm test
+```
+
+This script will ensure that the Karma dependencies are installed and then start the Karma test
+runner to execute the unit tests.  Karma will then sit and watch the application and test files for
+changes and re-run the tests whenever any of them change.
+
+The Karma Test Runner is a [node.js][node] tool.  You may choose to install the CLI tool globally
+
+```
+sudo npm install -g karma
+```
+
+You can then start Karma directly, passing it the test configuration file:
+
+```
+karma start test/karma.conf.js
+```
+
+A browser will start and connect to the Karma server (Chrome is default browser, others can be
+captured by loading the same url as the one in Chrome or by changing the `test/karma.conf.js`
+file). Karma will then re-run the tests when there are changes to any of the source or test
+javascript files.
+
 
 
 ### End to end testing
 
-We recommend using [protractor](https://github.com/angular/protractor) for end-to-end tests. It
-uses native events and has special features for Angular applications.
+We recommend using [Protractor][protractor] for end-to-end tests. It uses native events and has
+special features for Angular applications.
 
-Requires a webserver, node.js + `./scripts/web-server.js` or your backend server that hosts the angular static files.
+* the configuration is found at `test/protractor-conf.js`
+* the end-to-end tests are found in `test/e2e/`
 
-* create your end-to-end tests in `test/e2e/scenarios.js`
-* serve your project directory with your http/backend server or node.js + `scripts/web-server.js`
-* to run:
-  * run the tests from console with [Protractor](https://github.com/angular/protractor) via
-    `scripts/e2e-test.sh` (on windows: `scripts\e2e-test.bat`)
+Protractor simulates interaction with our web app and verifies that the application responds
+correctly. Therefore, our web server needs to be serving up the application, so that Protractor
+can interact with it.
+
+Once you have ensured that the development web server hosting our application is up and running
+(probably `npm start`) you can run the end-to-end tests using the supplied npm script:
+
+```
+npm run-script protractor
+```
+
+This script will ensure that the dependencies (including the Selenium Web Driver component) are
+up to date and then execute the end-to-end tests against the application being hosted on the
+development server.
+
 
 ### Continuous Integration
 
@@ -83,7 +177,7 @@ CloudBees have provided a CI/deployment setup:
 
 <a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/angular-js-clickstart/master/clickstart.json"><img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
 
-If you run this, you will get a cloned version of this repo to start working on in a private git repo, 
+If you run this, you will get a cloned version of this repo to start working on in a private git repo,
 along with a CI service (in Jenkins) hosted that will run unit and end to end tests in both Firefox and Chrome.
 
 ### Receiving updates from upstream
@@ -116,24 +210,12 @@ fetch the changes and merge them into your project with git.
         partial1.html
         partial2.html
 
-    config/karma.conf.js        --> config file for running unit tests with Karma
-    config/protractor-conf.js    --> config file for running e2e tests with Protractor
-
-    scripts/            --> handy shell/js/ruby scripts
-      e2e-test.sh       --> runs end-to-end tests with Karma (*nix)
-      e2e-test.bat      --> runs end-to-end tests with Karma (windows)
-      test.bat          --> autotests unit tests with Karma (windows)
-      test.sh           --> autotests unit tests with Karma (*nix)
-      web-server.js     --> simple development webserver based on node.js
-
-    test/               --> test source files and libraries
-      e2e/              -->
-        scenarios.js    --> end-to-end specs
-      lib/
-        angular/                --> angular testing libraries
-          angular-mocks.js      --> mocks that replace certain angular services in tests
-          version.txt           --> version file
-      unit/                     --> unit level specs/tests
+    test/               --> test config and source files
+      protractor-conf.js    --> config file for running e2e tests with Protractor
+      e2e/                  --> end-to-end specs
+        scenarios.js
+      karma.conf.js         --> config file for running unit tests with Karma
+      unit/                 --> unit level specs/tests
         controllersSpec.js      --> specs for controllers
         directivessSpec.js      --> specs for directives
         filtersSpec.js          --> specs for filters
@@ -142,3 +224,8 @@ fetch the changes and merge them into your project with git.
 ## Contact
 
 For more information on AngularJS please check out http://angularjs.org/
+
+[git]: http://git-scm.com/
+[bower]: http://bower.io
+[node]: http://nodejs.org
+[protractor]: https://github.com/angular/protractor
