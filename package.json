@@ -1,12 +1,28 @@
 {
-  "name": "angularjs-seed",
+  "name": "angular-seed",
+  "private": true,
+  "version": "0.0.0",
   "description": "A starter project for AngularJS",
   "repository": "https://github.com/angular/angular-seed",
+  "license": "MIT",
   "devDependencies": {
-    "phantomjs" : "~1.9",
-    "karma" : "~0.10",
-    "karma-junit-reporter" : "~0.1",
-    "karma-jasmine" : "~0.1",
-    "protractor" : "~0.17.0"
+    "phantomjs": "~1.9",
+    "karma": "~0.10",
+    "karma-junit-reporter": "~0.1",
+    "karma-jasmine": "~0.1",
+    "protractor": "~0.17.0",
+    "http-server": "^0.6.1",
+    "bower": "^1.3.1"
+  },
+  "scripts": {
+    "postinstall": "node node_modules/.bin/bower install; sed '/@@NG_LOADER@@/{\ns/@@NG_LOADER@@//g\nr bower_components/angular-loader/angular-loader.min.js\n}' app/index-async.html.template > app/index-async.html",
+
+    "prestart": "npm install",
+    "start": "node node_modules/.bin/http-server",
+
+    "pretest": "npm install",
+    "test": "node node_modules/.bin/karma start config/karma.conf.js",
+
+    "protractor": "npm install; node node_modules/.bin/webdriver-manager update; node node_modules/.bin/protractor config/protractor-conf.js"
   }
 }

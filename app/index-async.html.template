@@ -23,8 +23,8 @@
 
     // load all of the dependencies asynchronously.
     $script([
-      'lib/angular/angular.js',
-      'lib/angular/angular-route.js',
+      '../bower_components/angular/angular.js',
+      '../bower_components/angular-route/angular-route.js',
       'js/app.js',
       'js/services.js',
       'js/controllers.js',
