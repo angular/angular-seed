@@ -1,5 +1,6 @@
 module.exports = function(config){
-    config.set({
+  config.set({
+
     basePath : '../',
 
     files : [
@@ -17,7 +18,6 @@ module.exports = function(config){
     browsers : ['Chrome'],
 
     plugins : [
-            'karma-junit-reporter',
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-jasmine'
@@ -28,4 +28,5 @@ module.exports = function(config){
       suite: 'unit'
     }
 
-})}
+  });
+};

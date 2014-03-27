@@ -22,7 +22,7 @@
     "update-webdriver": "webdriver-manager update",
     "protractor": "protractor test/protractor-conf.js",
     "test-watch": "karma start test/karma.conf.js",
-    
-    "update-index-async": "node -e \"require('shelljs/global'); sed('@@NG_LOADER@@', cat('bower_components/angular-loader/angular-loader.min.js'), 'app/index-async.html.template').to('app/index-async.html');\""
+
+    "update-index-async": "node -e \"require('shelljs/global'); sed('-i', /\\/\\/@@NG_LOADER_START@@[\\s\\S]*\\/\\/@@NG_LOADER_END@@/, '//@@NG_LOADER_START@@\\n' + cat('bower_components/angular-loader/angular-loader.min.js') + '\\n//@@NG_LOADER_END@@', 'app/index-async.html');\""
   }
 }
