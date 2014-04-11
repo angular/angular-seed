@@ -63,3 +63,6 @@
 ## v0.2.0
 breaking change:
 * sort column has now 3 states ascend->descend->back to natural order
+
+## v0.2.1
+* make pagination markup "Twitter bootstrap 3" friendly
