@@ -4,12 +4,9 @@
     <meta charset="utf-8">
     <title>My AngularJS App</title>
     <link rel="stylesheet" href="css/app.css"/>
-    <link rel="stylesheet" href="css/bootstrap.css"/>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 </head>
 <body ng-controller="mainCtrl">
-<input type="text" ng-model="rowCollection[0].name"/>
-
-<button class="shuffle" ng-click="shuffleColumns()">Shuffle Columns</button>
 <smart-table class="table table-striped" table-title="Smart Table example" columns="columnCollection"
              rows="rowCollection" config="globalConfig"></smart-table>
 
