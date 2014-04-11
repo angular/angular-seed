@@ -447,41 +447,8 @@ describe('Table module', function () {
             });
 
             //not really unit test but more relevant here...
-            it('should sort by "map", first acending then descending ', function () {
-                //by id
-                ctrl.sortBy(scope.columns[0]);
-                expect(scope.displayedCollection).toEqual([
-                    {id: 2, secondProperty: true, thirdProperty: 1},
-                    {id: 1, secondProperty: true, thirdProperty: 3},
-                    {id: 0, secondProperty: true, thirdProperty: 2}
-                ]);
-                //switch to another column sortable
-                ctrl.sortBy(scope.columns[2]);
-                expect(scope.displayedCollection).toEqual([
-                    {id: 1, secondProperty: true, thirdProperty: 3},
-                    {id: 0, secondProperty: true, thirdProperty: 2},
-                    {id: 2, secondProperty: true, thirdProperty: 1}
-                ]);
+            it('should sort by "map", first ascending then descending finally back to natural order', function () {
 
-                //come back to the first one
-                ctrl.sortBy(scope.columns[0]);
-                expect(scope.displayedCollection).toEqual([
-                    {id: 2, secondProperty: true, thirdProperty: 1},
-                    {id: 1, secondProperty: true, thirdProperty: 3},
-                    {id: 0, secondProperty: true, thirdProperty: 2}
-                ]);
-
-                //descent
-                ctrl.sortBy(scope.columns[0]);
-                expect(scope.displayedCollection).toEqual(refArray);
-            });
-
-            // test natural order
-            it('should test natural order if it is enabled', function () {
-                // turn on natural ordering
-                scope.isNaturalOrderEnabled = true;
-
-                //ascending
                 ctrl.sortBy(scope.columns[2]);
                 expect(scope.displayedCollection).toEqual([
                     {id: 2, secondProperty: true, thirdProperty: 1},
@@ -489,7 +456,24 @@ describe('Table module', function () {
                     {id: 1, secondProperty: true, thirdProperty: 3}
                 ]);
 
-                //descending
+                //switch to another column sortable
+                //by id
+                ctrl.sortBy(scope.columns[0]);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3},
+                    {id: 2, secondProperty: true, thirdProperty: 1}
+                ]);
+
+                //back to thirdProperty
+                ctrl.sortBy(scope.columns[2]);
+                expect(scope.displayedCollection).toEqual([
+                    {id: 2, secondProperty: true, thirdProperty: 1},
+                    {id: 0, secondProperty: true, thirdProperty: 2},
+                    {id: 1, secondProperty: true, thirdProperty: 3}
+                ]);
+
+                //descent
                 ctrl.sortBy(scope.columns[2]);
                 expect(scope.displayedCollection).toEqual([
                     {id: 1, secondProperty: true, thirdProperty: 3},
@@ -498,13 +482,9 @@ describe('Table module', function () {
                 ]);
 
                 //natural order
-                ctrl.sortBy(scope.columns[0]);
+                ctrl.sortBy(scope.columns[2]);
                 expect(scope.displayedCollection).toEqual(refArray);
-
-                // turn off natural ordering
-                scope.isNaturalOrderEnabled = false;
             });
-
         });
 
         describe('search data rows', function () {

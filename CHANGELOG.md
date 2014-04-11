@@ -59,3 +59,7 @@
 ## v0.1.9
 * fix sort ascent/descent definition
 * merge pull request from [morrog](https://github.com/morrog) about db click issue
+
+## v0.2.0
+breaking change:
+* sort column has now 3 states ascend->descend->back to natural order

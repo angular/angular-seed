@@ -392,7 +392,7 @@
 
             function sortDataRow(array, column) {
                 var sortAlgo = (scope.sortAlgorithm && angular.isFunction(scope.sortAlgorithm)) === true ? scope.sortAlgorithm : filter('orderBy');
-                if (column) {
+                if (column && !(column.reverse === undefined)) {
                     return arrayUtility.sort(array, sortAlgo, column.sortPredicate, column.reverse);
                 } else {
                     return array;
@@ -458,11 +458,20 @@
                     if (column.isSortable === true) {
                         // reset the last column used
                         if (lastColumnSort && lastColumnSort !== column) {
-                            lastColumnSort.reverse = 'none';
+                            lastColumnSort.reverse = undefined;
+                        }
+                        column.sortPredicate = column.sortPredicate || column.map;
+
+                        if (column.reverse === undefined) {
+                            column.reverse = false;
+                        }
+                        else if (column.reverse === false) {
+                            column.reverse = true;
+                        }
+                        else {
+                            column.reverse = undefined;
                         }
 
-                        column.sortPredicate = column.sortPredicate || column.map;
-                        column.reverse = column.reverse !== true;
                         lastColumnSort = column;
                     }
                 }

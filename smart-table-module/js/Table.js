@@ -11,13 +11,6 @@
             itemsByPage: 10,
             maxSize: 5,
 
-            /*
-             * Enabling this allows a column to go back to natural order sort.
-             * Which is important in cases where you want to preserve the original
-             * state of the table
-             */
-            isNaturalOrderEnabled: false,
-
             //just to remind available option
             sortAlgorithm: '',
             filterAlgorithm: ''
@@ -125,20 +118,14 @@
                         }
                         column.sortPredicate = column.sortPredicate || column.map;
 
-                        //handles column.reverse when natural order is enabled
-                        if(scope.isNaturalOrderEnabled){
-                            if (column.reverse === undefined) {
-                                column.reverse = false;
-                            }
-                            else if (column.reverse === false) {
-                                column.reverse = true;
-                            }
-                            else {
-                                column.reverse = undefined;
-                            }
+                        if (column.reverse === undefined) {
+                            column.reverse = false;
+                        }
+                        else if (column.reverse === false) {
+                            column.reverse = true;
                         }
                         else {
-                            column.reverse = column.reverse !== true;
+                            column.reverse = undefined;
                         }
 
                         lastColumnSort = column;
