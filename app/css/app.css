@@ -28,3 +28,7 @@
   content: "";
   padding: 0;
 }
+
+.menu > li.active {
+    font-weight: bold;
+}
