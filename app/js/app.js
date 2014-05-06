@@ -10,7 +10,25 @@ angular.module('myApp', [
   'myApp.controllers'
 ]).
 config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/view1', {templateUrl: 'partials/partial1.html', controller: 'MyCtrl1'});
-  $routeProvider.when('/view2', {templateUrl: 'partials/partial2.html', controller: 'MyCtrl2'});
-  $routeProvider.otherwise({redirectTo: '/view1'});
+  $routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: 'HomeCtrl'});
+  $routeProvider.when('/editor', {templateUrl: 'partials/editor.html', controller: 'EditorCtrl'});
+  $routeProvider.otherwise({redirectTo: '/home'});
+}]);
+angular.module('myApp')
+    .directive('bsActiveLink', ['$location', function ($location) {
+    return {
+        restrict: 'A', //use as attribute 
+        replace: false,
+        link: function (scope, elem) {
+            //after the route has changed
+            scope.$on("$routeChangeSuccess", function () {
+                var selectors = ['li > [href="/#' + $location.path() + '"]',
+                    'li > [href="#' + $location.path() + '"]', //html5: false
+                'li > [href="' + $location.path() + '"]']; //html5: true
+                $(elem).find(selectors.join(',')) //find the matching link
+                .parent('li').addClass('active') //add active class to the matching element
+                .siblings('li').removeClass('active'); //remove it from the sibling elements
+            });
+        }
+    }
 }]);
