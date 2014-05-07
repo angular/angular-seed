@@ -25,6 +25,9 @@ angular.module('myApp.controllers', [])
         $scope.dell = function() {
             iFrame.contentWindow.delete_node_link();
         }
+        $scope.getHeight = function() {
+            return window.innerHeight - 100;
+        }
 
     }])
         .controller('NavBarCtrl', ['$scope', '$location', function($scope, $location) {
