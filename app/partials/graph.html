@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Directed Graph Editor</title>
+        <link rel="stylesheet" href="../css/d3-graph.css">
+        <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css">
+    </head>
+
+    <body>     
+
+        <div class="panel panel-success info-table-big" id="n-table" style="display:none; overflow: auto;"  >
+            <div class="panel-heading">Node settings</div>
+            <table width="350">
+                <tr >
+                    <td width="50%">Id:</td><td><input type="text" id="n-id"></td>
+                </tr>
+                <tr >
+                    <td width="50%">Description:</td><td><input type="text" id="n-descr"></td>
+                </tr>
+                <tr >
+                    <td width="50%">Command:</td><td><input type="text" id="n-cmd"></td>
+                </tr>
+                <tr >
+                    <td width="50%">Architecture:</td><td><input type="text" id="n-arch"></td>
+                </tr>
+                <tr >
+                    <td width="50%">OS:</td><td><input type="text" id="n-os"></td>
+                </tr>
+                <tr >
+                    <td width="50%">RAM:</td><td><input type="text" id="n-ram"></td>
+                </tr>
+                <tr >
+                    <td width="50%">CPU time:</td><td><input type="text" id="n-cputime"></td>
+                </tr>
+                <tr >
+                    <td width="50%">Input file:</td><td ><input type="file" id="n-inf"></td>
+                </tr>
+                <tr >
+                    <td width="50%">Output file:</td><td ><input type="file" id="n-outf"></td>
+                </tr>
+                <tr >
+                    <td width="50%">STD in:</td><td ><input type="file" id="n-stdinf"></td>
+                </tr>
+                <tr >
+                    <td width="50%">STD out:</td><td ><input type="file" id="n-stdoutf"></td>
+                </tr>
+                <tr >
+                    <td width="50%">STD err:</td><td ><input type="file" id="n-stderrf"></td>
+                </tr>
+                <tr >
+                    <td  width="175" ><input type="button" id="n-bsave" value="Применить" onclick="savenode()"></td>
+                    <td width="175"   ><input type="button" id="n-close" value="Закрыть" onclick="closeEl(document.getElementById('n-table'))"></td>
+                </tr>
+            </table>       
+        </div>
+        <div class="info-table-small" id="l-table" style="display: none"  >
+            <b>Параметры сети</b>
+            <table width="350">
+                <tr >
+                    <td width="40%"><input type="radio" id="syn" name="r-syn" value="syn" > syn
+                        <input type="radio" id="notsyn" name="r-syn" value="notsyn" > notsyn</td> 
+                </tr >
+                <tr >
+                    <td width="40%">Data transfer size:</td><td><input type="text" id="l-capacity"></td>
+                </tr>
+                <tr >
+                    <td width="40%">Time/speed:</td><td><input type="text" id="l-speed"></td>
+                </tr>   
+                <tr >
+                    <td  width="175" ><input type="button" id="l-bsave" value="Применить" onclick="savelink()"></td>
+                    <td width="175"   ><input type="button" id="l-close" value="Закрыть" onclick="closeEl(document.getElementById('l-table'))"></td>
+                </tr>
+            </table>       
+        </div>
+        <script src="../js/libs/FileSaver.js"></script>
+        <script src="../bower_components/d3/d3.js"></script>  
+        <script src="../js/d3-graph.js"></script>                      
+
+    </body>
+</html>
