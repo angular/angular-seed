@@ -31,6 +31,7 @@ var selected_node = null,
     clickNode = null;
 var flAdd_node = false,
     flDelete = false,
+    flFirstClickNode=true;
     flsynchronize = true;
 
 
@@ -75,6 +76,8 @@ path = svg.append('svg:g').selectAll('path');
 circle = svg.append('svg:g').selectAll('g');
 
 // mouse event vars
+first_click_node=null,
+    second_click_node=null,
 selected_node = null,
     selected_link = null,
     mousedown_link = null,
@@ -318,6 +321,69 @@ function restart() {
 
             restart();
 
+        })
+.on('click', function (d) {
+            if (flDelete) {
+                nodes.splice(nodes.indexOf(mousedown_node), 1);
+                spliceLinksForNode(mousedown_node);
+            }
+            if (flAdd_node || flDelete) {
+                circle.call(force.drag);
+                return;
+            }
+            else {
+                circle
+                    .on('mousedown.drag', null)
+                    .on('touchstart.drag', null);
+            }
+           if(flFirstClickNode){
+               first_click_node = d;
+               restart();
+           }else{
+                second_click_node=d;
+               // needed by FF
+               drag_line
+                   .classed('hidden', true)
+                   .style('marker-end', '');
+
+               if (second_click_node === first_click_node) {
+                   resetMouseVars();
+                   return;
+               }
+
+               // unenlarge target node
+               d3.select(this).attr('transform', '');
+
+
+               // add link to graph (update if exists)
+               // NB: links are strictly source < target; arrows separately specified by booleans
+               var source, target, direction;
+               if (first_click_node.id < second_click_node.id) {
+                   source = first_click_node;
+                   target = second_click_node;
+                   direction = 'right';
+               } else {
+                   source = second_click_node;
+                   target = first_click_node;
+                   direction = 'left';
+               }
+
+               var link;
+               link = links.filter(function (l) {
+                   return (l.source === source && l.target === target);
+               })[0];
+
+               if (link) {
+                   link[direction] = true;
+               } else {
+                   link = {source: source, target: target, left: false, right: false, synchronize: false};
+                   link[direction] = true;
+                   links.push(link);
+               }
+
+               restart();
+           }
+            flFirstClickNode=!flFirstClickNode;
         });
 
     // show node IDs
@@ -560,3 +626,4 @@ function initD3Force() {
     drag = force.drag()
         .on("dragstart", dragstart);
 }
+
