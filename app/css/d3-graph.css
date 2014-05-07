@@ -8,26 +8,26 @@ svg {
   user-select: none;
 }
 
-svg:not(.active):not(.ctrl) {
-  cursor: crosshair;
-}
+/*svg:not(.active):not(.ctrl) {*/
+  /*cursor: crosshair;*/
+/*}*/
 
 path.linksyn {
   fill: none;
   stroke: #fc575e;
   stroke-width: 4px;
-  cursor: default;
+  /*cursor: default;*/
   
 }
 path.link {
   fill: none;
   stroke: #000;
   stroke-width: 4px;
-  cursor: default;
+  /*cursor: default;*/
   
 }
 svg:not(.active):not(.ctrl) path.link {
-  cursor: pointer;
+  /*cursor: pointer;*/
 }
 
 path.link.selected {
@@ -42,14 +42,9 @@ path.link.hidden {
   stroke-width: 0;
 }
 
-circle.node {
-  stroke-width: 1.5px;
-  cursor: pointer;
-}
-
-circle.node.reflexive {
-  stroke: #000 !important;
-  stroke-width: 2.5px;
+image.node {
+  stroke-width: 3.2px;
+  /*cursor: pointer;*/
 }
 
 text {

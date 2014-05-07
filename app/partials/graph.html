@@ -49,14 +49,14 @@
                     <td width="50%">STD err:</td><td ><input type="file" id="n-stderrf"></td>
                 </tr>
                 <tr >
-                    <td  width="175" ><input type="button" id="n-bsave" value="Применить" onclick="savenode()"></td>
+                    <td  width="175" ><input type="button" id="n-bsave" value="Применить" onclick="saveNode()"></td>
                     <td width="175"   ><input type="button" id="n-close" value="Закрыть" onclick="closeEl(document.getElementById('n-table'))"></td>
                 </tr>
             </table>       
         </div>
-        <div class="info-table-small" id="l-table" style="display: none"  >
-            <b>Параметры сети</b>
-            <table width="350">
+        <div class="panel panel-success info-table-small" id="l-table" style="display: none"  >
+            <div class="panel-heading">Network settings</div>
+            <table width="320">
                 <tr >
                     <td width="40%"><input type="radio" id="syn" name="r-syn" value="syn" > syn
                         <input type="radio" id="notsyn" name="r-syn" value="notsyn" > notsyn</td> 
@@ -68,7 +68,7 @@
                     <td width="40%">Time/speed:</td><td><input type="text" id="l-speed"></td>
                 </tr>   
                 <tr >
-                    <td  width="175" ><input type="button" id="l-bsave" value="Применить" onclick="savelink()"></td>
+                    <td  width="175" ><input type="button" id="l-bsave" value="Применить" onclick="saveLink()"></td>
                     <td width="175"   ><input type="button" id="l-close" value="Закрыть" onclick="closeEl(document.getElementById('l-table'))"></td>
                 </tr>
             </table>       

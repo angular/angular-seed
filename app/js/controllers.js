@@ -10,14 +10,12 @@ angular.module('myApp.controllers', [])
         var iFrame = document.getElementById("graph");
         $scope.create = function() {
 
-
-
         }
         $scope.open = function() {
             alert("open");
         }
         $scope.addNode = function() {
-            iFrame.contentWindow.addNode();
+             iFrame.contentWindow.addNode();
         }
         $scope.addLink = function() {
             iFrame.contentWindow.addLink();
@@ -25,6 +23,13 @@ angular.module('myApp.controllers', [])
         $scope.dell = function() {
             iFrame.contentWindow.delete_node_link();
         }
+         $scope.clearSpace = function() {
+            iFrame.contentWindow.clearSpace();
+        }
+        $scope.save = function() {
+            iFrame.contentWindow.save();
+        }
+
         $scope.getHeight = function() {
             return window.innerHeight - 100;
         }
