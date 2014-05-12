@@ -28,3 +28,7 @@ body { padding-top: 70px; }
   content: "";
   padding: 0;
 }
+.table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
+    background-color: #ffffff;
+    color:#000000;
+}
