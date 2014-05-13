@@ -225,7 +225,7 @@ install the tool globally:
 sudo npm install -g http-server
 ```
 
-Then you can start your own development web server to serve static files, from a folder, by
+Then you can start your own development web server to serve static files from a folder by
 running:
 
 ```
