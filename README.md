@@ -119,7 +119,7 @@ npm test
 
 This script will start the Karma test runner to execute the unit tests. Moreover, Karma will sit and
 watch the source and test files for changes and then re-run the tests whenever any of them change.
-This is the recommended strategy; if you unit tests are being run every time you save a file then
+This is the recommended strategy; if your unit tests are being run every time you save a file then
 you receive instant feedback on any changes that break the expected code functionality.
 
 You can also ask Karma to do a single run of the tests and then exit.  This is useful if you want to
@@ -225,7 +225,7 @@ install the tool globally:
 sudo npm install -g http-server
 ```
 
-Then you can start your own development web server to server static files, from a folder, by
+Then you can start your own development web server to serve static files from a folder by
 running:
 
 ```
@@ -243,7 +243,7 @@ the general rule is that all you need in production are all the files under the 
 Everything else should be omitted.
 
 Angular apps are really just a bunch of static html, css and js files that just need to be hosted
-somewhere, where they can be accessed by browsers.
+somewhere they can be accessed by browsers.
 
 If your Angular app is talking to the backend server via xhr or other means, you need to figure
 out what is the best way to host the static files to comply with the same origin policy if
