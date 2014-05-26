@@ -13,6 +13,7 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: 'HomeCtrl'});
   $routeProvider.when('/editor', {templateUrl: 'partials/editor.html', controller: 'EditorCtrl'});
   $routeProvider.when('/tasks', {templateUrl: 'partials/tasks.html', controller: 'TasksCtrl'});
+        $routeProvider.when('/monitor', {templateUrl: 'partials/monitor.html', controller: 'MonitorCtrl'});
   $routeProvider.otherwise({redirectTo: '/home'});
 }]);
 angular.module('myApp')
