@@ -66,3 +66,7 @@ breaking change:
 
 ## v0.2.1
 * make pagination markup "Twitter bootstrap 3" friendly
+
+## v0.2.2
+* use watchCollection instead of watch
+* add timer on the filter input to make it smoother

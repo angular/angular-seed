@@ -1,7 +1,7 @@
 'use strict';
 // Declare app level module which depends on filters, and services
 var app = angular.module('myApp', ['smartTable.table']).
-    controller('mainCtrl', ['$scope', function (scope) {
+    controller('mainCtrl', ['$scope', '$http', function (scope, http) {
 
         var
             nameAsset = ['Pierre', 'Pol', 'Jacques', 'Laurent', 'Nicolas'],
@@ -26,6 +26,18 @@ var app = angular.module('myApp', ['smartTable.table']).
         for (var i = 0; i < 400; i++) {
             scope.rowCollection.push(generateRandomItem(i));
         }
+
+
+//        http.get('column.json').then(function (result) {
+//            scope.columnCollection = result.data;
+//            return http.get('data.json');
+//        }).then(function (row) {
+//            scope.rowCollection = row.data;
+//        });
+
+//        http.get('data.json').then(function (result) {
+//            scope.rowCollection = result.data;
+//        });
 
         scope.columnCollection = [
             {label: 'id', map: 'id'},

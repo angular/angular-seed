@@ -1,4 +1,4 @@
-**/.DS_Store
+.DS_Store
 nbproject
 manifest.mf
 build.xml
@@ -6,3 +6,7 @@ build.xml
 .project
 .settings
 .idea/*
+.example-app
+.test_out
+.logs
+.node_modules

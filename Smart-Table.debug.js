@@ -90,7 +90,7 @@
                     }, true);
 
                     //insert columns from column config
-                    scope.$watch('columnCollection', function (oldValue, newValue) {
+                    scope.$watchCollection('columnCollection', function (oldValue, newValue) {
 
                         ctrl.clearColumns();
 
@@ -109,13 +109,11 @@
                                 });
                             }
                         }
-                    }, true);
+                    });
 
                     //if item are added or removed into the data model from outside the grid
-                    scope.$watch('dataCollection.length', function (oldValue, newValue) {
-                        if (oldValue !== newValue) {
-                            ctrl.sortBy();//it will trigger the refresh... some hack ?
-                        }
+                    scope.$watchCollection('dataCollection', function (oldValue, newValue) {
+                        ctrl.sortBy();//it will trigger the refresh... some hack ?
                     });
                 }
             };
@@ -127,14 +125,14 @@
                 require: '^smartTable',
                 restrict: 'C',
                 link: function (scope, element, attr, ctrl) {
-                    
+
                     var _config;
                     if ((_config = scope.config) != null) {
                         if (typeof _config.rowFunction === "function") {
                             _config.rowFunction(scope, element, attr, ctrl);
                         }
                     }
-                    
+
                     element.bind('click', function () {
                         scope.$apply(function () {
                             ctrl.toggleSelection(scope.dataRow);
@@ -144,7 +142,7 @@
             };
         })
         //header cell with sorting functionality or put a checkbox if this column is a selection column
-        .directive('smartTableHeaderCell',function () {
+        .directive('smartTableHeaderCell', function () {
             return {
                 restrict: 'C',
                 require: '^smartTable',
@@ -179,7 +177,7 @@
             }
         })
         //the global filter
-        .directive('smartTableGlobalSearch', ['templateUrlList', function (templateList) {
+        .directive('smartTableGlobalSearch', ['templateUrlList', '$timeout', function (templateList, timer) {
             return {
                 restrict: 'C',
                 require: '^smartTable',
@@ -190,11 +188,19 @@
                 replace: false,
                 link: function (scope, element, attr, ctrl) {
 
+                    var promise = null;
                     scope.searchValue = '';
 
+
                     scope.$watch('searchValue', function (value) {
-                        //todo perf improvement only filter on blur ?
-                        ctrl.search(value);
+                        if (promise !== null) {
+                            timer.cancel(promise);
+                        }
+
+                        promise = timer(function () {
+                            ctrl.search(value);
+                            promise = null;
+                        }, 200);
                     });
                 }
             }
