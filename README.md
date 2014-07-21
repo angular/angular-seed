@@ -1,3 +1,6 @@
+Please, when submitting an issue try first to replicate with a plunker, jsfiddle etc.
+check this [plunkr](http://plnkr.co/edit/8Qectt?p=preview) to get started
+
 # Smart Table— an easy to use table/grid 
 
 This project is a lightweight table/grid builder. It is meant to be easy configurable but also easy customisable
