@@ -70,32 +70,38 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
 
 ## Directory Layout
 
-    app/                --> all of the files to be used in production
-      css/              --> css files
-        app.css         --> default stylesheet
-      img/              --> image files
-      index.html        --> app layout file (the main html template file of the app)
-      index-async.html  --> just like index.html, but loads js files asynchronously
-      js/               --> javascript files
-        app.js          --> application
-        controllers.js  --> application controllers
-        directives.js   --> application directives
-        filters.js      --> custom angular filters
-        services.js     --> custom angular services
-      partials/             --> angular view partials (partial html templates)
-        partial1.html
-        partial2.html
-
-    test/               --> test config and source files
+    app/                    --> all of the files to be used in production
+      assets/               --> all static asset files
+        css/                --> css files
+          app.css           --> default stylesheet
+        img/                --> image files
+      components/           --> all app specific modules
+        directives/         --> application level directives
+          appVersion.js     --> custom directive that returns the current app version
+        filters/            --> application level filters
+          interpolate.js    --> custom interpolation filter
+        services/           --> application level services
+          appVersionService.js  --> custom service that returns the current app version
+        view1/              --> a custom module for this application
+          view1.html        --> the template rendered for this module
+          view1.js          --> the application logic for this module
+        view2/              --> a custom module for this application
+          view2.html        --> the template rendered for this module
+          view2.js          --> the application logic for this module
+      app.js                --> application
+      index.html            --> app layout file (the main html template file of the app)
+      index-async.html      --> just like index.html, but loads js files asynchronously
+    test/                   --> test config and source files
       protractor-conf.js    --> config file for running e2e tests with Protractor
       e2e/                  --> end-to-end specs
         scenarios.js
       karma.conf.js         --> config file for running unit tests with Karma
       unit/                 --> unit level specs/tests
-        controllersSpec.js      --> specs for controllers
-        directivessSpec.js      --> specs for directives
-        filtersSpec.js          --> specs for filters
-        servicesSpec.js         --> specs for services
+        directivessSpec.js      --> specs for application level directives
+        filtersSpec.js          --> specs for application level filters
+        servicesSpec.js         --> specs for application level services
+        view1Spec.js            --> specs for the view1 module
+        view2Spec.js            --> specs for the view2 module
 
 
 ## Testing
