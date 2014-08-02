@@ -78,16 +78,21 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
       components/           --> all app specific modules
         directives/         --> application level directives
           appVersion.js     --> custom directive that returns the current app version
+          appVersion_test.js     --> tests for appVersion directive
         filters/            --> application level filters
           interpolate.js    --> custom interpolation filter
+          interpolate_test.js    --> tests for interpolation filter
         services/           --> application level services
           appVersionService.js  --> custom service that returns the current app version
-        view1/              --> a custom module for this application
-          view1.html        --> the template rendered for this module
-          view1.js          --> the application logic for this module
-        view2/              --> a custom module for this application
-          view2.html        --> the template rendered for this module
-          view2.js          --> the application logic for this module
+          appVersionService_test.js  --> tests for appVersion service
+      view1/              --> a custom module for this application
+        view1.html        --> the template rendered for this module
+        view1.js          --> the application logic for this module
+        view1_test.js     --> tests for view1 module
+      view2/              --> a custom module for this application
+        view2.html        --> the template rendered for this module
+        view2.js          --> the application logic for this module
+        view2_test.js     --> tests for view1 module
       app.js                --> application
       index.html            --> app layout file (the main html template file of the app)
       index-async.html      --> just like index.html, but loads js files asynchronously
@@ -96,13 +101,6 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
       e2e/                  --> end-to-end specs
         scenarios.js
       karma.conf.js         --> config file for running unit tests with Karma
-      unit/                 --> unit level specs/tests
-        directivessSpec.js      --> specs for application level directives
-        filtersSpec.js          --> specs for application level filters
-        servicesSpec.js         --> specs for application level services
-        view1Spec.js            --> specs for the view1 module
-        view2Spec.js            --> specs for the view2 module
-
 
 ## Testing
 
