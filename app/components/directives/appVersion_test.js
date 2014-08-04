@@ -2,12 +2,12 @@
 
 /* jasmine specs for directives go here */
 
-describe('directives', function() {
-  beforeEach(module('myApp.directives'));
+describe('the version directive', function() {
+  beforeEach(angular.mock.module('appVersion'));
 
   describe('app-version', function() {
     it('should print current version', function() {
-      module(function($provide) {
+      angular.mock.module(function($provide) {
         $provide.value('version', 'TEST_VER');
       });
       inject(function($compile, $rootScope) {

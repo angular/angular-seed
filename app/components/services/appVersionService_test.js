@@ -2,8 +2,8 @@
 
 /* jasmine specs for services go here */
 
-describe('service', function() {
-  beforeEach(module('myApp.services'));
+describe('the app version service', function() {
+  beforeEach(angular.mock.module('appVersionService'));
 
 
   describe('version', function() {
