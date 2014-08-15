@@ -17,9 +17,10 @@
 
                     var templateObject;
 
-                    scope.$watch('config', function (config) {
-                        var newConfig = angular.extend({}, defaultConfig, config),
-                            length = scope.columns !== undefined ? scope.columns.length : 0;
+                    var applyConfig = function()
+                    {
+                        var newConfig = angular.extend({}, defaultConfig, scope.config),
+                            length    = scope.columns !== undefined ? scope.columns.length : 0;
 
                         ctrl.setGlobalConfig(newConfig);
 
@@ -34,13 +35,17 @@
                             //add selection box column if required
                             ctrl.insertColumn({cellTemplateUrl: templateList.selectionCheckbox, headerTemplateUrl: templateList.selectAllCheckbox, isSelectionColumn: true}, 0);
                         }
-                    }, true);
+                    }
+                    
+                    scope.$watch('config', applyConfig, true);
 
                     //insert columns from column config
                     scope.$watchCollection('columnCollection', function (oldValue, newValue) {
 
                         ctrl.clearColumns();
 
+                        applyConfig();
+                        
                         if (scope.columnCollection) {
                             for (var i = 0, l = scope.columnCollection.length; i < l; i++) {
                                 ctrl.insertColumn(scope.columnCollection[i]);
