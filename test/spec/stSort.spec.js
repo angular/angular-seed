@@ -45,7 +45,7 @@ describe('stSort Directive', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
         spyOn(controllerMock, 'reset').andCallThrough();
         var ths = element.find('th');
-        ths[0].click();
+        angular.element(ths[0]).triggerHandler('click');
         expect(controllerMock.sortBy).toHaveBeenCalledWith('name', false);
         expect(controllerMock.reset).not.toHaveBeenCalled();
         expect(hasClass(ths[0], 'st-sort-ascent')).toBe(true);
@@ -56,8 +56,8 @@ describe('stSort Directive', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
         spyOn(controllerMock, 'reset').andCallThrough();
         var ths = element.find('th');
-        ths[0].click();
-        ths[0].click();
+        angular.element(ths[0]).triggerHandler('click');
+        angular.element(ths[0]).triggerHandler('click');
         expect(controllerMock.sortBy.calls[1].args).toEqual(['name', true]);
         expect(controllerMock.sortBy.calls.length).toBe(2);
         expect(controllerMock.reset).not.toHaveBeenCalled();
@@ -69,9 +69,10 @@ describe('stSort Directive', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
         spyOn(controllerMock, 'reset').andCallThrough();
         var ths = element.find('th');
-        ths[0].click();
-        ths[0].click();
-        ths[0].click();
+        angular.element(ths[0]).triggerHandler('click');
+        angular.element(ths[0]).triggerHandler('click');
+        angular.element(ths[0]).triggerHandler('click');
+
         expect(controllerMock.sortBy.calls.length).toBe(2);
         expect(controllerMock.reset).toHaveBeenCalled();
     });
@@ -80,7 +81,8 @@ describe('stSort Directive', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
         spyOn(controllerMock, 'reset').andCallThrough();
         var ths = element.find('th');
-        ths[0].click();
+        angular.element(ths[0]).triggerHandler('click');
+
         expect(controllerMock.sortBy).toHaveBeenCalledWith('name',false);
         expect(hasClass(ths[0], 'st-sort-ascent')).toBe(true);
         expect(hasClass(ths[0], 'st-sort-descent')).toBe(false);
@@ -94,7 +96,7 @@ describe('stSort Directive', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
         spyOn(controllerMock, 'reset').andCallThrough();
         var ths = element.find('th');
-        ths[2].click();
+        angular.element(ths[2]).triggerHandler('click');
         expect(controllerMock.sortBy).toHaveBeenCalledWith(scope.getters.age,false);
     });
 

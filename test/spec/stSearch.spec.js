@@ -1,4 +1,4 @@
-describe('stSort Directive', function () {
+describe('stSearch Directive', function () {
 
     var controllerMock = {
         search: angular.noop
@@ -20,11 +20,6 @@ describe('stSort Directive', function () {
         rootScope = $rootScope;
         scope = $rootScope.$new();
         scope.rowCollection = [];
-        scope.getters = {
-            age: function (row) {
-                return 7;
-            }
-        };
 
         var template = '<table st-table="rowCollection">' +
             '<thead>' +

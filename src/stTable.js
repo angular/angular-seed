@@ -75,15 +75,14 @@
                 tableState.sort = {};
                 this.pipe();
                 $scope.$broadcast('st:reset');
-            }
+            };
         }])
         .directive('stTable', function () {
             return {
                 restrict: 'A',
                 controller: 'stTableController',
                 link: function (scope, element, attr, ctrl) {
-
                 }
-            }
-        })
+            };
+        });
 })(angular);

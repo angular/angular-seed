@@ -154,4 +154,68 @@ describe('st table Controller', function () {
         ctrl.reset();
     });
 
+    it('should select only a single row at the tiem', function () {
+        ctrl.select(scope.data[3], 'single');
+        var selected = scope.data.filter(function (value) {
+            return value.isSelected === true;
+        });
+        expect(selected.length).toBe(1);
+        expect(selected[0]).toEqual(scope.data[3]);
+
+        ctrl.select(scope.data[2], 'single');
+
+        selected = scope.data.filter(function (value) {
+            return value.isSelected === true;
+        });
+
+        expect(selected.length).toBe(1);
+        expect(selected[0]).toEqual(scope.data[2]);
+    });
+
+    it('should select multiple row', function () {
+        ctrl.select(scope.data[3]);
+        ctrl.select(scope.data[4]);
+        var selected = scope.data.filter(function (val) {
+            return val.isSelected === true;
+        });
+        expect(selected.length).toBe(2);
+        expect(selected).toEqual([scope.data[3], scope.data[4]]);
+    });
+
+    it('should unselect an item on mode single', function () {
+        ctrl.select(scope.data[3], 'single');
+        var selected = scope.data.filter(function (value) {
+            return value.isSelected === true;
+        });
+        expect(selected.length).toBe(1);
+        expect(selected[0]).toEqual(scope.data[3]);
+
+        ctrl.select(scope.data[3], 'single');
+
+        selected = scope.data.filter(function (value) {
+            return value.isSelected === true;
+        });
+
+        expect(selected.length).toBe(0);
+    });
+
+
+    it('should unselect an item on mode multiple', function () {
+        ctrl.select(scope.data[3]);
+        ctrl.select(scope.data[4]);
+        var selected = scope.data.filter(function (val) {
+            return val.isSelected === true;
+        });
+        expect(selected.length).toBe(2);
+        expect(selected).toEqual([scope.data[3], scope.data[4]]);
+
+        ctrl.select(scope.data[3]);
+        selected=scope.data.filter(function (val) {
+            return val.isSelected === true;
+        });
+        expect(selected.length).toBe(1);
+        expect(selected).toEqual([scope.data[4]]);
+    });
+
+
 });
