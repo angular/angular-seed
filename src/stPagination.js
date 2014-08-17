@@ -14,8 +14,12 @@
                 replace: true,
                 link: function (scope, element, attrs, ctrl) {
 
-                    var itemsByPage = ng.isNumber(attrs.stItemsByPage) ? parseInt(attrs.stItemsByPage, 10) : 10;
-                    var displayedPages = ng.isNumber(attrs.stDisplayedPages) ? parseInt(attrs.stDisplayedPages, 10) : 5;
+                    function isnan(value) {
+                        return typeof value === 'number' && isNaN(value);
+                    }
+
+                    var itemsByPage = isnan(parseInt(attrs.stItemsByPage, 10)) ? parseInt(attrs.stItemsByPage, 10) : 10;
+                    var displayedPages = isnan(parseInt(attrs.stDisplayedPages, 10)) ? parseInt(attrs.stDisplayedPages, 10) : 5;
 
                     scope.currentPage = 1;
                     scope.pages = [];
