@@ -7,7 +7,7 @@ var stylish = require('jshint-stylish');
 var pluginList = ['stSearch', 'stSelectRow', 'stSort', 'stPagination'];
 var disFolder = './dist/';
 
-var src=(['smart-table.module', 'stTable']).concat(pluginList).map(function (val) {
+var src = (['smart-table.module', 'stTable']).concat(pluginList).map(function (val) {
     return 'src/' + val + '.js';
 });
 
@@ -36,6 +36,12 @@ gulp.task('karma-CI', function (done) {
     karma.start(conf, done);
 });
 
+gulp.task('debug', function () {
+    gulp.src(src)
+        .pipe(concat('smart-table.debug.js'))
+        .pipe(gulp.dest(disFolder));
+});
+
 gulp.task('test', ['karma-CI']);
 
-gulp.task('build', ['test', 'plugins']);
+gulp.task('build', ['test', 'plugins', 'debug']);

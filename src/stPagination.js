@@ -1,7 +1,3 @@
-/**
- * this is the implementation of https://github.com/angular-ui/bootstrap/blob/master/src/pagination/pagination.js adapted to smart-table needs
- */
-
 (function (ng) {
     'use strict';
     ng.module('smart-table')
@@ -14,12 +10,12 @@
                 replace: true,
                 link: function (scope, element, attrs, ctrl) {
 
-                    function isnan(value) {
-                        return typeof value === 'number' && isNaN(value);
+                    function isNotNan(value) {
+                        return !(typeof value === 'number' && isNaN(value));
                     }
 
-                    var itemsByPage = isnan(parseInt(attrs.stItemsByPage, 10)) == false ? parseInt(attrs.stItemsByPage, 10) : 10;
-                    var displayedPages = isnan(parseInt(attrs.stDisplayedPages, 10)) == false ? parseInt(attrs.stDisplayedPages, 10) : 5;
+                    var itemsByPage = isNotNan(parseInt(attrs.stItemsByPage, 10)) == true ? parseInt(attrs.stItemsByPage, 10) : 10;
+                    var displayedPages = isNotNan(parseInt(attrs.stDisplayedPages, 10)) == true ? parseInt(attrs.stDisplayedPages, 10) : 5;
 
                     scope.currentPage = 1;
                     scope.pages = [];
@@ -31,7 +27,7 @@
                         function () {
                             var paginationState = ctrl.tableState().pagination;
                             var start = 1;
-                            var end = start + displayedPages;
+                            var end;
                             var i;
                             scope.currentPage = Math.floor(paginationState.start / paginationState.number) + 1;
 
