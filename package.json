@@ -1,6 +1,6 @@
 {
-  "name": "smart-table-v2",
-  "version": "0.0.0",
+  "name": "smart-table",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {

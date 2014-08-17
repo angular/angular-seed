@@ -93,6 +93,47 @@ describe('st table Controller', function () {
         ])
     });
 
+    it('should slice the collection', function () {
+        ctrl.slice(1, 2);
+        expect(scope.data.length).toBe(2);
+        expect(scope.data).toEqual([
+            {name: 'Francoise', firstname: 'Frere', age: 99},
+            {name: 'Renard', firstname: 'Olivier', age: 33}
+        ]);
+    });
+
+    it('should remembered the last slice length but start back to zero when sorting', function () {
+        ctrl.slice(1, 2);
+        expect(scope.data.length).toBe(2);
+        expect(scope.data).toEqual([
+            {name: 'Francoise', firstname: 'Frere', age: 99},
+            {name: 'Renard', firstname: 'Olivier', age: 33}
+        ]);
+
+        ctrl.sortBy('firstname');
+        expect(scope.data.length).toBe(2);
+        expect(scope.data).toEqual([
+            {name: 'Faivre', firstname: 'Blandine', age: 44},
+            {name: 'Leponge', firstname: 'Bob', age: 22}
+        ]);
+    });
+
+    it('should remembered the last slice length but start back to zero when filtering', function () {
+        ctrl.slice(1, 2);
+        expect(scope.data.length).toBe(2);
+        expect(scope.data).toEqual([
+            {name: 'Francoise', firstname: 'Frere', age: 99},
+            {name: 'Renard', firstname: 'Olivier', age: 33}
+        ]);
+
+        ctrl.search('re','name');
+        expect(scope.data.length).toBe(2);
+        expect(scope.data).toEqual([
+            {name: 'Renard', firstname: 'Laurent', age: 66},
+            {name: 'Renard', firstname: 'Olivier', age: 33}
+        ]);
+    });
+
     it('should remember sort state when filtering', function () {
         ctrl.sortBy('firstname');
         expect(scope.data).toEqual([
@@ -199,7 +240,6 @@ describe('st table Controller', function () {
         expect(selected.length).toBe(0);
     });
 
-
     it('should unselect an item on mode multiple', function () {
         ctrl.select(scope.data[3]);
         ctrl.select(scope.data[4]);
@@ -210,7 +250,7 @@ describe('st table Controller', function () {
         expect(selected).toEqual([scope.data[3], scope.data[4]]);
 
         ctrl.select(scope.data[3]);
-        selected=scope.data.filter(function (val) {
+        selected = scope.data.filter(function (val) {
             return val.isSelected === true;
         });
         expect(selected.length).toBe(1);

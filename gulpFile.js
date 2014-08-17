@@ -4,7 +4,7 @@ var uglify = require('gulp-uglify');
 var karma = require('karma').server;
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
-var pluginList = ['stSearch', 'stSelectRow', 'stSort'];
+var pluginList = ['stSearch', 'stSelectRow', 'stSort', 'stPagination'];
 var disFolder = './dist/';
 
 var src=(['smart-table.module', 'stTable']).concat(pluginList).map(function (val) {
@@ -15,9 +15,7 @@ var src=(['smart-table.module', 'stTable']).concat(pluginList).map(function (val
 gulp.task('plugins', function () {
     gulp.src(src)
         .pipe(concat('smart-table.min.js'))
-        .pipe(uglify(
-//            {mangle: false}//if true then angular throw error at run time, need to find out
-        ))
+        .pipe(uglify())
         .pipe(gulp.dest(disFolder));
 });
 

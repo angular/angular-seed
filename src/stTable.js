@@ -14,7 +14,9 @@
             var tableState = {
                 sort: {},
                 search: {},
-                pagination: {}
+                pagination: {
+                    start: 0
+                }
             };
 
             /**
@@ -25,6 +27,7 @@
             this.sortBy = function sortBy(predicate, reverse) {
                 tableState.sort.predicate = predicate;
                 tableState.sort.reverse = reverse === true;
+                tableState.pagination.start = 0;
                 this.pipe();
                 $scope.$broadcast('st:sort', {predicate: predicate});
             };
@@ -39,7 +42,9 @@
                 var prop = predicate ? predicate : '$';
                 predicateObject[prop] = input;
                 tableState.search.predicateObject = predicateObject;
+                tableState.pagination.start = 0;
                 this.pipe();
+                $scope.$broadcast('st:search', {input: input, predicate: predicate});
             };
 
             /**
@@ -48,6 +53,10 @@
             this.pipe = function pipe() {
                 var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
                 filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                if (tableState.pagination.number !== undefined) {
+                    tableState.pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / tableState.pagination.number) : 1;
+                    filtered = filtered.slice(tableState.pagination.start, tableState.pagination.start + tableState.pagination.number);
+                }
                 setter($scope, filtered);
             };
 
@@ -75,8 +84,39 @@
              */
             this.reset = function reset() {
                 tableState.sort = {};
+                tableState.pagination.start = 0;
                 this.pipe();
                 $scope.$broadcast('st:reset');
+            };
+
+
+            /**
+             * take a slice of the current sorted/filtered collection (pagination)
+             *
+             * @param start index of the slice
+             * @param number the number of item in the slice
+             */
+            this.slice = function splice(start, number) {
+                tableState.pagination.start = start;
+                tableState.pagination.number = number;
+                this.pipe();
+                $scope.$broadcast('st:splice', {start: start, number: number});
+            };
+
+            /**
+             * return the currently displayed dataSet
+             * @returns [array] the currently displayed dataSet
+             */
+            this.dataSet = function getDataSet() {
+                return getter($scope);
+            };
+
+            /**
+             * return the current state of the table
+             * @returns {{sort: {}, search: {}, pagination: {start: number}}}
+             */
+            this.tableState = function getTableState() {
+                return tableState;
             };
         }])
         .directive('stTable', function () {
