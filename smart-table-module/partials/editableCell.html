@@ -1,7 +1,0 @@
-<div ng-dblclick="isEditMode || toggleEditMode($event)">
-    <span ng-hide="isEditMode">{{value | format:column.formatFunction:column.formatParameter}}</span>
-
-    <form ng-submit="submit()" ng-show="isEditMode" name="myForm">
-        <input name="myInput" ng-model="value" type="type" input-type/>
-    </form>
-</div>
