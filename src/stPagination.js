@@ -18,8 +18,8 @@
                         return typeof value === 'number' && isNaN(value);
                     }
 
-                    var itemsByPage = !isnan(parseInt(attrs.stItemsByPage, 10)) ? parseInt(attrs.stItemsByPage, 10) : 10;
-                    var displayedPages = !isnan(parseInt(attrs.stDisplayedPages, 10)) ? parseInt(attrs.stDisplayedPages, 10) : 5;
+                    var itemsByPage = isnan(parseInt(attrs.stItemsByPage, 10)) == false ? parseInt(attrs.stItemsByPage, 10) : 10;
+                    var displayedPages = isnan(parseInt(attrs.stDisplayedPages, 10)) == false ? parseInt(attrs.stDisplayedPages, 10) : 5;
 
                     scope.currentPage = 1;
                     scope.pages = [];
