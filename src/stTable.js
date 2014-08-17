@@ -1,4 +1,4 @@
-(function (ng) {
+(function (ng, undefined) {
     'use strict';
     ng.module('smart-table')
         .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
@@ -13,7 +13,8 @@
             var safeCopy = ng.copy(getter($scope));
             var tableState = {
                 sort: {},
-                search: {}
+                search: {},
+                pagination: {}
             };
 
             /**
@@ -46,7 +47,8 @@
              */
             this.pipe = function pipe() {
                 var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
-                setter($scope, orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse));
+                filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                setter($scope, filtered);
             };
 
             /**
