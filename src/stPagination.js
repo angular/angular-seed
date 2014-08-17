@@ -14,8 +14,8 @@
                 replace: true,
                 link: function (scope, element, attrs, ctrl) {
 
-                    var itemsByPage = attrs.stItemsByPage || 10;
-                    var displayedPages = attrs.stDisplayedPages || 5;
+                    var itemsByPage = ng.isNumber(attrs.stItemsByPage) ? parseInt(attrs.stItemsByPage, 10) : 10;
+                    var displayedPages = ng.isNumber(attrs.stDisplayedPages) ? parseInt(attrs.stDisplayedPages, 10) : 5;
 
                     scope.currentPage = 1;
                     scope.pages = [];
