@@ -9,8 +9,9 @@
                 },
                 link: function (scope, element, attrs, ctrl) {
 
-                    if(ng.isFunction(scope.stPipe)){
-                        ctrl.pipe=scope.stPipe.bind(ctrl, ctrl.tableState());
+                    if (ng.isFunction(scope.stPipe)) {
+                        ctrl.preventPipeOnWatch();
+                        ctrl.pipe = scope.stPipe.bind(ctrl, ctrl.tableState());
                     }
                 }
             };

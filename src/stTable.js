@@ -16,6 +16,7 @@
                     start: 0
                 }
             };
+            var pipeAfterSafeCopy = true;
             var ctrl = this;
 
             if ($attrs.stSafeSrc) {
@@ -25,7 +26,7 @@
                 }, function (val) {
                     if (val) {
                         safeCopy = ng.copy(val);
-                        if (!ng.equals(safeCopy, displayGetter($scope))) {
+                        if (pipeAfterSafeCopy === true) {
                             ctrl.pipe();
                         }
                     }
@@ -130,6 +131,14 @@
              */
             this.tableState = function getTableState() {
                 return tableState;
+            };
+
+            /**
+             * Usually when the safe copy is updated the pipe function is called.
+             * Calling this method will prevent it, which is something required when using a custom pipe function
+             */
+            this.preventPipeOnWatch = function preventPipe() {
+                pipeAfterSafeCopy = false;
             };
         }])
         .directive('stTable', ['$parse', function ($parse) {
