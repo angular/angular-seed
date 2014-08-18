@@ -8,11 +8,12 @@
     ng.module('smart-table')
         .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
             var propertyName = $attrs.stTable;
-            var getter = $parse(propertyName);
-            var setter = getter.assign;
+            var displayGetter = $parse(propertyName);
+            var displaySetter = displayGetter.assign;
+            var safeGetter;
             var orderBy = $filter('orderBy');
             var filter = $filter('filter');
-            var safeCopy = ng.copy(getter($scope));
+            var safeCopy = ng.copy(displayGetter($scope));
             var tableState = {
                 sort: {},
                 search: {},
@@ -20,12 +21,21 @@
                     start: 0
                 }
             };
+            var ctrl = this;
 
-            $scope.$watch(function () {
-                return getter($scope).length
-            }, function (newValue, oldValue) {
-                this.pipe();
-            });
+            if ($attrs.stSafeSrc) {
+                safeGetter = $parse($attrs.stSafeSrc);
+                $scope.$watchCollection(function () {
+                    return safeGetter($scope);
+                }, function (val) {
+                    if (val) {
+                        safeCopy = ng.copy(val);
+                        if (!ng.equals(safeCopy, displayGetter($scope))) {
+                            ctrl.pipe();
+                        }
+                    }
+                });
+            }
 
             /**
              * sort the rows
@@ -65,7 +75,7 @@
                     tableState.pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / tableState.pagination.number) : 1;
                     filtered = filtered.slice(tableState.pagination.start, tableState.pagination.start + tableState.pagination.number);
                 }
-                setter($scope, filtered);
+                displaySetter($scope, filtered);
             };
 
             /**
@@ -74,11 +84,11 @@
              * @param mode "single" or "multiple"
              */
             this.select = function select(row, mode) {
-                var rows = getter($scope);
+                var rows = displayGetter($scope);
                 var index = rows.indexOf(row);
                 if (index !== -1) {
                     if (mode === 'single') {
-                        ng.forEach(getter($scope), function (value, key) {
+                        ng.forEach(displayGetter($scope), function (value, key) {
                             value.isSelected = key === index ? !value.isSelected : false;
                         });
                     } else {
@@ -116,7 +126,7 @@
              * @returns [array] the currently displayed dataSet
              */
             this.dataSet = function getDataSet() {
-                return getter($scope);
+                return displayGetter($scope);
             };
 
             /**
@@ -127,14 +137,14 @@
                 return tableState;
             };
         }])
-        .directive('stTable', function () {
+        .directive('stTable', ['$parse', function ($parse) {
             return {
                 restrict: 'A',
                 controller: 'stTableController',
                 link: function (scope, element, attr, ctrl) {
                 }
             };
-        });
+        }]);
 })(angular);
 
 (function (ng) {
