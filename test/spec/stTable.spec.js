@@ -95,6 +95,21 @@ describe('st table Controller', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ])
         });
+
+        it('should add different columns', function () {
+            ctrl.search('re', 'name');
+            expect(scope.data).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
+
+            ctrl.search('re', 'firstname');
+
+            expect(scope.data).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66}
+            ]);
+        });
     });
 
     describe('slice', function () {

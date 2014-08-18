@@ -8,13 +8,10 @@
     ng.module('smart-table')
         .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
             var propertyName = $attrs.stTable;
-
             var getter = $parse(propertyName);
             var setter = getter.assign;
-
             var orderBy = $filter('orderBy');
             var filter = $filter('filter');
-
             var safeCopy = ng.copy(getter($scope));
             var tableState = {
                 sort: {},
@@ -23,6 +20,12 @@
                     start: 0
                 }
             };
+
+            $scope.$watch(function () {
+                return getter($scope).length
+            }, function (newValue, oldValue) {
+                this.pipe();
+            });
 
             /**
              * sort the rows
@@ -43,7 +46,7 @@
              * @param predicate [optional] the property name against you want to check the match, otherwise it will search on all properties
              */
             this.search = function search(input, predicate) {
-                var predicateObject = {};
+                var predicateObject = tableState.search.predicateObject || {};
                 var prop = predicate ? predicate : '$';
                 predicateObject[prop] = input;
                 tableState.search.predicateObject = predicateObject;
