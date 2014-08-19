@@ -32,24 +32,28 @@ describe('stSearch Directive', function () {
         element = $compile(template)(scope);
     }));
 
-    it('should call the controller with the predicate', function () {
+    it('should call the controller with the predicate', inject(function ($timeout) {
         spyOn(controllerMock, 'search').andCallThrough();
         var ths = element.find('th');
 
         var input = angular.element(ths[0].children[0]);
         input[0].value = 'blah';
         input.triggerHandler('input');
+        expect(controllerMock.search).not.toHaveBeenCalled();
+        $timeout.flush();
         expect(controllerMock.search).toHaveBeenCalledWith('blah', 'name');
-    });
+    }));
 
-    it('should call the controller with falsy value', function () {
+    it('should call the controller with falsy value', inject(function ($timeout) {
         spyOn(controllerMock, 'search').andCallThrough();
         var ths = element.find('th');
 
         var input = angular.element(ths[1].children[0]);
         input[0].value = 'blah';
         input.triggerHandler('input');
+        expect(controllerMock.search).not.toHaveBeenCalled();
+        $timeout.flush();
         expect(controllerMock.search.calls[0].args[0]).toEqual('blah');
         expect(!controllerMock.search.calls[0].args[1]).toBe(true);
-    });
+    }));
 });
