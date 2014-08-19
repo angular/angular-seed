@@ -487,6 +487,7 @@ function restore() {
 }
 
 function showData(el, node) {
+
     ntable = document.getElementById("n-table");
     ntable.style.display = 'block';
     doc = document.getElementsByTagName('body');
@@ -495,11 +496,11 @@ function showData(el, node) {
     var height_of_doc = doc[0].clientHeight;
     var width_of_doc = doc[0].clientWidth;
     var height_of_table = ntable.clientHeight;
-    console.log("----------------")
-    console.log("height_of_table=" + height_of_table)
-    console.log("height_of_doc=" + height_of_doc)
-    console.log("p=" + point[1])
-    console.log("pEl=" + pointel[1])
+   // console.log("----------------")
+  //  console.log("height_of_table=" + height_of_table)
+  //  console.log("height_of_doc=" + height_of_doc)
+  //  console.log("p=" + point[1])
+   // console.log("pEl=" + pointel[1])
     var width_of_table = ntable.clientWidth;
     if ((point[0] + width_of_table) > width_of_doc) {
         ntable.style.left = (point[0] - width_of_table) - pointel[0] - rNode + 'px';
@@ -508,24 +509,26 @@ function showData(el, node) {
     }
 
     if ((point[1] + height_of_table) > height_of_doc) {
-        console.log("-1")
+  //      console.log("-1")
         ntable.style.top = point[1] - ((point[1] + height_of_table) - height_of_doc) - 40 + 'px';
     } else {
-        console.log("-2")
+  //      console.log("-2")
         ntable.style.top = point[1] - pointel[1] + 'px';
     }
+
     document.getElementById('n-id').value = node.id;
     document.getElementById('n-descr').value = node.descr;
-    document.getElementById('n-cmd').value = node.cmd;
+   // document.getElementById('n-cmd').name = "www.sh";
     document.getElementById('n-arch').value = node.arch;
     document.getElementById('n-os').value = node.os;
     document.getElementById('n-ram').value = node.ram;
+    document.getElementById('n-disk').value = node.disk;
     document.getElementById('n-cputime').value = node.cputime;
-    // document.getElementById('n-fz').setAttribute("value",node.fz);
-    // document.getElementById('n-memory').value = node.fdata;
-
-
+   // document.getElementById('n-inf').value = node.inf;
+    document.getElementById('n-stdoutf').value = node.stdoutf;
+    document.getElementById('n-stderrf').value = node.stderrf;
 }
+
 function showDadaLink(link) {
     ntable = document.getElementById("l-table");
     ntable.style.display = 'block';
@@ -557,19 +560,20 @@ function closeEl(el) {
     el.style.display = 'none';
 }
 function saveNode() {
+    console.log("saveNode");
     ntable = document.getElementById("n-table");
     var id = clickNode.id;
-    //nodes[id].name = document.getElementById('n-name').value;
+    nodes[id].id = document.getElementById('n-id').value;
     nodes[id].descr = document.getElementById('n-descr').value;
-    nodes[id].cmd = document.getElementById('n-cmd').value;
     nodes[id].arch = document.getElementById('n-arch').value;
     nodes[id].os = document.getElementById('n-os').value;
     nodes[id].ram = document.getElementById('n-ram').value;
+    nodes[id].disk = document.getElementById('n-disk').value;
     nodes[id].cputime = document.getElementById('n-cputime').value;
-    // nodes[id].fz=document.getElementById('n-fz').files[0].name;
-    //nodes[id].fdata=document.getElementById('n-fdata').files[0].name;
+    nodes[id].inf = document.getElementById('n-inf').value;
+    nodes[id].stdoutf = document.getElementById('n-stdoutf').value;
+    nodes[id].stderrf = document.getElementById('n-stderrf').value;
     closeEl(ntable);
-
 }
 function saveLink() {
     ntable = document.getElementById("l-table");

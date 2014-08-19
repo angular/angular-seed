@@ -5,13 +5,16 @@
         <title>Directed Graph Editor</title>
         <link rel="stylesheet" href="../css/d3-graph.css">
         <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+
     </head>
 
-    <body>     
-
+    <body>
+    <form action="/api/upload-file/node" method="post" enctype="multipart/form-data">
         <div class="panel panel-success info-table-big" id="n-table" style="display:none; overflow: auto;"  >
             <div class="panel-heading">Node settings</div>
             <table width="350">
+                <input type="text" hidden="" name="id" value="qwer2123eew4452">
                 <tr >
                     <td width="50%">Id:</td><td><input type="text" id="n-id"></td>
                 </tr>
@@ -19,7 +22,7 @@
                     <td width="50%">Description:</td><td><input type="text" id="n-descr"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Executable:</td><td><input type="file" id="n-cmd"></td>
+                    <td width="50%">Executable:</td><td><input type="file" id="n-cmd" name="selectedFile"><input type="text" id="n-cmd-name" hidden="" name="fileName"></td>
                 </tr>
                 <tr >
                     <td width="50%">Architecture:</td><td><input type="text" id="n-arch"></td>
@@ -37,7 +40,7 @@
                     <td width="50%">CPU time:</td><td><input type="text" id="n-cputime"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Input file:</td><td ><input type="file" id="n-inf"></td>
+                    <td width="50%">Input file:</td><td ><input type="file" id="n-inf" name="selectedFile1"><input type="text" id="n-inf-name" hidden="" name="fileName1"></td>
                 </tr>
                 <tr >
                     <td width="50%">STD out:</td><td ><input type="text" id="n-stdoutf"></td>
@@ -46,11 +49,13 @@
                     <td width="50%">STD err:</td><td ><input type="text" id="n-stderrf"></td>
                 </tr>
                 <tr >
-                    <td  width="175" ><input type="button" id="n-bsave" value="Применить" onclick="saveNode()"></td>
+                    <td  width="175" ><input type="submit" id="n-bsave" value="Применить"  onclick="saveNode()"></td>
                     <td width="175"   ><input type="button" id="n-close" value="Закрыть" onclick="closeEl(document.getElementById('n-table'))"></td>
                 </tr>
             </table>       
         </div>
+        </form>
+
         <div class="panel panel-success info-table-small" id="l-table" style="display: none"  >
             <div class="panel-heading">Network settings</div>
             <table width="320">
@@ -71,8 +76,16 @@
             </table>       
         </div>
         <script src="../js/libs/FileSaver.js"></script>
-        <script src="../bower_components/d3/d3.js"></script>  
-        <script src="../js/d3-graph.js"></script>                      
+        <script src="../bower_components/d3/d3.js"></script>
 
+        <script src="../js/d3-graph.js"></script>
+        <script type="text/javascript">
+        document.getElementById('n-cmd').onchange = function () {
+            document.getElementById('n-cmd-name').value=this.files[0].name;
+        };
+        document.getElementById('n-inf').onchange = function () {
+            document.getElementById('n-inf-name').value=this.files[0].name;
+        };
+    </script>
     </body>
 </html>
