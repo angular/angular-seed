@@ -13,7 +13,7 @@
             var safeGetter;
             var orderBy = $filter('orderBy');
             var filter = $filter('filter');
-            var safeCopy = ng.copy(displayGetter($scope));
+            var safeCopy = copyRefs(displayGetter($scope));
             var tableState = {
                 sort: {},
                 search: {},
@@ -24,16 +24,31 @@
             var pipeAfterSafeCopy = true;
             var ctrl = this;
 
+            function copyRefs(src) {
+                return [].concat(src);
+            }
+
+            function updateSafeCopy() {
+                safeCopy = copyRefs(safeGetter($scope));
+                if (pipeAfterSafeCopy === true) {
+                    ctrl.pipe();
+                }
+            }
+
             if ($attrs.stSafeSrc) {
                 safeGetter = $parse($attrs.stSafeSrc);
-                $scope.$watchCollection(function () {
+                $scope.$watch(function () {
+                    return safeGetter($scope).length
+                }, function (newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        updateSafeCopy()
+                    }
+                });
+                $scope.$watch(function () {
                     return safeGetter($scope);
-                }, function (val) {
-                    if (val) {
-                        safeCopy = ng.copy(val);
-                        if (pipeAfterSafeCopy === true) {
-                            ctrl.pipe();
-                        }
+                }, function (newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        updateSafeCopy();
                     }
                 });
             }
@@ -122,13 +137,6 @@
                 $scope.$broadcast('st:splice', {start: start, number: number});
             };
 
-            /**
-             * return the currently displayed dataSet
-             * @returns [array] the currently displayed dataSet
-             */
-            this.dataSet = function getDataSet() {
-                return displayGetter($scope);
-            };
 
             /**
              * return the current state of the table
@@ -139,6 +147,22 @@
             };
 
             /**
+             * Use a different filter function than the angular FilterFilter
+             * @param filterName the name under which the custom filter is registered
+             */
+            this.setFilterFunction = function setFilterFunction(filterName) {
+                filter = $filter(filterName);
+            };
+
+            /**
+             *User a different function than the angular orderBy
+             * @param sortFunctionName the name under which the custom order function is registered
+             */
+            this.setSortFunction = function setSortFunction(sortFunctionName) {
+                orderBy = $filter(sortFunctionName);
+            };
+
+            /**
              * Usually when the safe copy is updated the pipe function is called.
              * Calling this method will prevent it, which is something required when using a custom pipe function
              */
@@ -146,36 +170,42 @@
                 pipeAfterSafeCopy = false;
             };
         }])
-        .directive('stTable', ['$parse', function ($parse) {
+        .directive('stTable', function () {
             return {
                 restrict: 'A',
                 controller: 'stTableController',
                 link: function (scope, element, attr, ctrl) {
                 }
             };
-        }]);
+        });
 })(angular);
 
 (function (ng) {
     'use strict';
     ng.module('smart-table')
-        .directive('stSearch', function () {
+        .directive('stSearch', ['$timeout', function ($timeout) {
             return {
                 replace: true,
                 require: '^stTable',
                 link: function (scope, element, attr, ctrl) {
                     var tableCtrl = ctrl;
                     var predicate = attr.stSearch || '';
+                    var promise = null;
+                    var throttle= attr.stDelay || 400;
 
                     element.bind('input', function (evt) {
                         evt = evt.originalEvent || evt;
-                        scope.$apply(function () {
+                        if (promise !== null) {
+                            $timeout.cancel(promise);
+                        }
+                        promise = $timeout(function () {
                             tableCtrl.search(evt.target.value, predicate);
-                        });
+                            promise = null;
+                        }, throttle);
                     });
                 }
             }
-        })
+        }])
 })(angular);
 
 (function (ng) {
@@ -262,6 +292,10 @@
         }])
 })(angular);
 
+/**
+ * this is the implementation of https://github.com/angular-ui/bootstrap/blob/master/src/pagination/pagination.js adapted to smart-table needs
+ */
+
 (function (ng) {
     'use strict';
     ng.module('smart-table')
@@ -274,12 +308,8 @@
                 replace: true,
                 link: function (scope, element, attrs, ctrl) {
 
-                    function isNotNan(value) {
-                        return !(typeof value === 'number' && isNaN(value));
-                    }
-
-                    var itemsByPage = isNotNan(parseInt(attrs.stItemsByPage, 10)) == true ? parseInt(attrs.stItemsByPage, 10) : 10;
-                    var displayedPages = isNotNan(parseInt(attrs.stDisplayedPages, 10)) == true ? parseInt(attrs.stDisplayedPages, 10) : 5;
+                    var itemsByPage = attrs.stItemsByPage || 10;
+                    var displayedPages = attrs.stDisplayedPages || 5;
 
                     scope.currentPage = 1;
                     scope.pages = [];
