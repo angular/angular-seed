@@ -27,7 +27,7 @@
                         function () {
                             var paginationState = ctrl.tableState().pagination;
                             var start = 1;
-                            var end = start + displayedPages;
+                            var end;
                             var i;
                             scope.currentPage = Math.floor(paginationState.start / paginationState.number) + 1;
 

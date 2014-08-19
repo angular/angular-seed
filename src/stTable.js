@@ -2,7 +2,6 @@
     'use strict';
     ng.module('smart-table')
         .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
-
             var propertyName = $attrs.stTable;
             var displayGetter = $parse(propertyName);
             var displaySetter = displayGetter.assign;
@@ -166,12 +165,12 @@
                 pipeAfterSafeCopy = false;
             };
         }])
-        .directive('stTable', ['$parse', function ($parse) {
+        .directive('stTable', function () {
             return {
                 restrict: 'A',
                 controller: 'stTableController',
                 link: function (scope, element, attr, ctrl) {
                 }
             };
-        }]);
+        });
 })(angular);
