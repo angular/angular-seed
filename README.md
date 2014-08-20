@@ -70,39 +70,33 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
 
 ## Directory Layout
 
-    app/                    --> all of the files to be used in production
-      assets/               --> all static asset files
-        css/                --> css files
-          app.css           --> default stylesheet
-        img/                --> image files
-      components/           --> all app specific modules
-        directives/         --> application level directives
-          appVersion.js     --> custom directive that returns the current app version
-        filters/            --> application level filters
-          interpolate.js    --> custom interpolation filter
-        services/           --> application level services
-          appVersionService.js  --> custom service that returns the current app version
-        view1/              --> a custom module for this application
-          view1.html        --> the template rendered for this module
-          view1.js          --> the application logic for this module
-        view2/              --> a custom module for this application
-          view2.html        --> the template rendered for this module
-          view2.js          --> the application logic for this module
-      app.js                --> application
-      index.html            --> app layout file (the main html template file of the app)
-      index-async.html      --> just like index.html, but loads js files asynchronously
-    test/                   --> test config and source files
-      protractor-conf.js    --> config file for running e2e tests with Protractor
-      e2e/                  --> end-to-end specs
-        scenarios.js
-      karma.conf.js         --> config file for running unit tests with Karma
-      unit/                 --> unit level specs/tests
-        directivessSpec.js      --> specs for application level directives
-        filtersSpec.js          --> specs for application level filters
-        servicesSpec.js         --> specs for application level services
-        view1Spec.js            --> specs for the view1 module
-        view2Spec.js            --> specs for the view2 module
-
+```
+app/                    --> all of the source files for the application
+  app.css               --> default stylesheet
+  components/           --> all app specific modules
+    version/              --> version related components
+      version.js                 --> version module declaration and basic "version" value service
+      version_test.js            --> "version" value service tests
+      version-directive.js       --> custom directive that returns the current app version
+      version-directive_test.js  --> version directive tests
+      interpolate-filter.js      --> custom interpolation filter
+      interpolate-filter_test.js --> interpolate filter tests
+  view1/                --> the view1 view template and logic
+    view1.html            --> the partial template
+    view1.js              --> the controller logic
+    view1_test.js         --> tests of the controller
+  view2/                --> the view2 view template and logic
+    view2.html            --> the partial template
+    view2.js              --> the controller logic
+    view2_test.js         --> tests of the controller
+  app.js                --> main application module
+  index.html            --> app layout file (the main html template file of the app)
+  index-async.html      --> just like index.html, but loads js files asynchronously
+karma.conf.js         --> config file for running unit tests with Karma
+e2e-tests/            --> end-to-end tests
+  protractor-conf.js    --> Protractor config file
+  scenarios.js          --> end-to-end scenarios to be run by Protractor
+```
 
 ## Testing
 
@@ -114,8 +108,8 @@ The angular-seed app comes preconfigured with unit tests. These are written in
 [Jasmine][jasmine], which we run with the [Karma Test Runner][karma]. We provide a Karma
 configuration file to run them.
 
-* the configuration is found at `test/karma.conf.js`
-* the unit tests are found in `test/unit/`.
+* the configuration is found at `karma.conf.js`
+* the unit tests are found in next to the code they are testing and are named as `..._test.js`.
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
@@ -143,8 +137,8 @@ The angular-seed app comes with end-to-end tests, again written in [Jasmine][jas
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `test/protractor-conf.js`
-* the end-to-end tests are found in `test/e2e/`
+* the configuration is found at `e2e-tests/protractor-conf.js`
+* the end-to-end tests are found in `e2e-tests/scenarios.js`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
@@ -235,7 +229,7 @@ Then you can start your own development web server to serve static files from a 
 running:
 
 ```
-http-server
+http-server -a localhost -p 8000
 ```
 
 Alternatively, you can choose to configure your own webserver, such as apache or nginx. Just

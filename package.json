@@ -20,14 +20,14 @@
     "start": "http-server -a localhost -p 8000",
 
     "pretest": "npm install",
-    "test": "karma start test/karma.conf.js",
-    "test-single-run": "karma start test/karma.conf.js  --single-run",
+    "test": "karma start karma.conf.js",
+    "test-single-run": "karma start karma.conf.js  --single-run",
 
     "preupdate-webdriver": "npm install",
     "update-webdriver": "webdriver-manager update",
 
     "preprotractor": "npm run update-webdriver",
-    "protractor": "protractor test/protractor-conf.js",
+    "protractor": "protractor e2e-tests/protractor-conf.js",
 
     "update-index-async": "node -e \"require('shelljs/global'); sed('-i', /\\/\\/@@NG_LOADER_START@@[\\s\\S]*\\/\\/@@NG_LOADER_END@@/, '//@@NG_LOADER_START@@\\n' + cat('app/bower_components/angular-loader/angular-loader.min.js') + '\\n//@@NG_LOADER_END@@', 'app/index-async.html');\""
   }

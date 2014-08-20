@@ -10,5 +10,5 @@ before_script:
   - sleep 1 # give server time to start
 
 script:
-  - node_modules/.bin/karma start test/karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
-  - node_modules/.bin/protractor test/protractor-conf.js --browser=firefox
+  - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
+  - node_modules/.bin/protractor e2e-tests/protractor.conf.js --browser=firefox
