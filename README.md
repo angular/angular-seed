@@ -93,7 +93,7 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
       karma.conf.js         --> config file for running unit tests with Karma
       unit/                 --> unit level specs/tests
         controllersSpec.js      --> specs for controllers
-        directivessSpec.js      --> specs for directives
+        directivesSpec.js      --> specs for directives
         filtersSpec.js          --> specs for filters
         servicesSpec.js         --> specs for services
 
