@@ -29,7 +29,9 @@
                                 index++;
                                 var stateIndex = index % 2;
                                 if (index % 3 === 0) {
-                                    ctrl.reset();
+                                    //manual reset
+                                    ctrl.tableState().sort = {};
+                                    ctrl.tableState().pagination.start = 0;
                                 } else {
                                     ctrl.sortBy(predicate, stateIndex === 0);
                                     element
@@ -40,13 +42,16 @@
                         }
                     });
 
-                    scope.$on('st:sort', function (event, args) {
-                        if (args.predicate !== predicate) {
-                            reset();
+                    scope.$watch(function () {
+                        return ctrl.tableState().sort;
+                    }, function (newValue, oldValue) {
+                        if (newValue !== oldValue) {
+                            if (newValue.predicate !== predicate) {
+                                reset();
+                            }
                         }
-                    });
+                    }, true);
 
-                    scope.$on('st:reset', reset);
                 }
             };
         }])

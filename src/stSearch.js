@@ -5,11 +5,20 @@
             return {
                 replace: true,
                 require: '^stTable',
+                scope: {
+                    predicate: '=?stSearch'
+                },
                 link: function (scope, element, attr, ctrl) {
                     var tableCtrl = ctrl;
-                    var predicate = attr.stSearch || '';
                     var promise = null;
-                    var throttle= attr.stDelay || 400;
+                    var throttle = attr.stDelay || 400;
+
+                    scope.$watch('predicate', function (newValue, oldValue) {
+                        if (newValue !== oldValue) {
+                            ctrl.tableState().search = {};
+                            tableCtrl.search(element[0].value || '', newValue);
+                        }
+                    });
 
                     element.bind('input', function (evt) {
                         evt = evt.originalEvent || evt;
@@ -17,7 +26,7 @@
                             $timeout.cancel(promise);
                         }
                         promise = $timeout(function () {
-                            tableCtrl.search(evt.target.value, predicate);
+                            tableCtrl.search(evt.target.value, scope.predicate || '');
                             promise = null;
                         }, throttle);
                     });

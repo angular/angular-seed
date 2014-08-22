@@ -191,35 +191,6 @@ describe('st table Controller', function () {
         });
     });
 
-    describe('reset', function () {
-        it('should reset sort sate', function () {
-            ctrl.sortBy('firstname');
-            expect(scope.data).toEqual([
-                {name: 'Faivre', firstname: 'Blandine', age: 44},
-                {name: 'Leponge', firstname: 'Bob', age: 22},
-                {name: 'Francoise', firstname: 'Frere', age: 99},
-                {name: 'Renard', firstname: 'Laurent', age: 66},
-                {name: 'Renard', firstname: 'Olivier', age: 33}
-            ]);
-
-            ctrl.reset();
-
-            ctrl.search('re', 'name');
-            expect(scope.data).toEqual([
-                {name: 'Renard', firstname: 'Laurent', age: 66},
-                {name: 'Renard', firstname: 'Olivier', age: 33},
-                {name: 'Faivre', firstname: 'Blandine', age: 44}
-            ]);
-        });
-
-        it('should broadcast event when reset', function () {
-            scope.$on('st:reset', function () {
-                expect(true).toBe(true);
-            });
-            ctrl.reset();
-        });
-    });
-
     describe('select', function () {
         it('should select only a single row at the tiem', function () {
             ctrl.select(scope.data[3], 'single');
