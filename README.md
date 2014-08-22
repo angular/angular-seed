@@ -238,7 +238,7 @@ configure your server to serve the files under the `app/` directory.
 
 ### Running the App in Production
 
-This really depends on how complex is your app and the overall infrastructure of your system, but
+This really depends on how complex your app is and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
 Everything else should be omitted.
 
