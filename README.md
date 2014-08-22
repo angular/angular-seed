@@ -16,7 +16,7 @@ To get you started you can simply clone the angular-seed repository and install 
 
 ### Prerequisites
 
-You need git to clone the angular-seed repository. You can get it from
+You need git to clone the angular-seed repository. You can get git from
 [http://git-scm.com/](http://git-scm.com/).
 
 We also use a number of node.js tools to initialize and test angular-seed. You must have node.js and
@@ -238,7 +238,7 @@ configure your server to serve the files under the `app/` directory.
 
 ### Running the App in Production
 
-This really depends on how complex is your app and the overall infrastructure of your system, but
+This really depends on how complex your app is and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
 Everything else should be omitted.
 
