@@ -12,6 +12,9 @@
     "angular-mocks": "~1.2.x",
     "bootstrap": "3.1.1",
     "d3": "latest",
-     "jquery": "1.10.2"
+    "angular-cookies": "latest",
+    "bootstrapValidator": "latest",
+    "jquery": "1.10.2",
+    "angular-md5": "~0.1.7"
   }
 }

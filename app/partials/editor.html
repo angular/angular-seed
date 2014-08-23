@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" ng-if="currentUser">
     <table border = "0" cellspacing = 10>
         <tr><td valign="top" width="5%">
                 <div class="btn-group-vertical" >
@@ -24,3 +24,4 @@
             </td></tr>
     </table>
 </div>
+<div class="alert alert-danger container" role="alert" ng-if="!currentUser">You do not have access to this page. Please sign in or registration.</div>

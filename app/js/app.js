@@ -4,6 +4,8 @@
 // Declare app level module which depends on filters, and services
 angular.module('myApp', [
   'ngRoute',
+  'ngCookies',
+    'angular-md5',
   'myApp.filters',
   'myApp.services',
   'myApp.directives',
@@ -13,9 +15,22 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: 'HomeCtrl'});
   $routeProvider.when('/editor', {templateUrl: 'partials/editor.html', controller: 'EditorCtrl'});
   $routeProvider.when('/tasks', {templateUrl: 'partials/tasks.html', controller: 'TasksCtrl'});
-        $routeProvider.when('/monitor', {templateUrl: 'partials/monitor.html', controller: 'MonitorCtrl'});
+  $routeProvider.when('/monitor', {templateUrl: 'partials/monitor.html', controller: 'MonitorCtrl'});
+  $routeProvider.when('/registration', {templateUrl: '../partials/registration.html', controller: 'RegistrationCtrl'});
   $routeProvider.otherwise({redirectTo: '/home'});
-}]);
+}]).constant('AUTH_EVENTS', {
+        loginSuccess: 'auth-login-success',
+        loginFailed: 'auth-login-failed',
+        logoutSuccess: 'auth-logout-success',
+        sessionTimeout: 'auth-session-timeout',
+        notAuthenticated: 'auth-not-authenticated',
+        notAuthorized: 'auth-not-authorized'
+    }).constant('USER_ROLES', {
+        all: '*',
+        admin: 'admin',
+        editor: 'editor',
+        guest: 'guest'
+    });
 angular.module('myApp')
     .directive('bsActiveLink', ['$location', function ($location) {
     return {

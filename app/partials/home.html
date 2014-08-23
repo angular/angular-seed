@@ -4,7 +4,8 @@
 	<h1>Welcome to WEB-GRID WMS</h1>
 	<p class="lead">Create, Edit, Share and Execute Grid Workflows</p>
 	<p>
-		<a class="btn btn-lg btn-success" href="#editor">Get started today</a>
+		<a class="btn btn-lg btn-success" href="#editor" ng-if="currentUser">Get started today</a>
+        <a class="btn btn-lg btn-success" href="#registration" ng-if="!currentUser">Registration</a>
 	</p>
 </div>
 

@@ -1,0 +1,72 @@
+<div class="container" ng-if="!currentUser">
+    <h1>Register Now</h1>
+
+    <form id="attributeForm" method="post" class="form-horizontal"
+          data-bv-message="This value is not valid"
+          data-bv-feedbackicons-valid="glyphicon glyphicon-ok"
+          data-bv-feedbackicons-invalid="glyphicon glyphicon-remove"
+          data-bv-feedbackicons-validating="glyphicon glyphicon-refresh">
+
+        <div class="form-group">
+            <label class="control-label">Given Name</label>
+            <input name="name" type="text" class="form-control" ng-model="user.name"  data-bv-notempty="true"
+                   data-bv-notempty-message="The first name is required and cannot be empty"/>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Email</label>
+            <input class="form-control" name="email" type="email" ng-model="user.email"
+                   data-bv-notempty="true"
+                   data-bv-notempty-message="The email is required and cannot be empty"
+                   data-bv-emailaddress="true"
+                   data-bv-emailaddress-message="The input is not a valid email address" />
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Login</label>
+            <input   type="text" class="form-control" ng-model="user.login" name="login"
+                     data-bv-notempty="true"
+                     data-bv-notempty-message="The login is required and cannot be empty"/>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Password</label>
+            <input  name="password" type="password" class="form-control" class="form-control" ng-model="user.password"
+
+                   data-bv-notempty="true"
+                   data-bv-notempty-message="The password is required and cannot be empty"
+
+                   data-bv-identical="true"
+                   data-bv-identical-field="passwordConfirm"
+                   data-bv-identical-message="The password and its confirm are not the same"
+
+                   data-bv-different="true"
+                   data-bv-different-field="username"
+                   data-bv-different-message="The password cannot be the same as username" >
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Password Confirm</label>
+            <input  name ="passwordConfirm" type="password" class="form-control" data-bv-notempty="true"
+                   data-bv-notempty="true"
+                   data-bv-notempty-message="The confirm password is required and cannot be empty"
+
+                   data-bv-identical="true"
+                   data-bv-identical-field="password"
+                   data-bv-identical-message="The password and its confirm are not the same"
+
+                   data-bv-different="true"
+                   data-bv-different-field="username"
+                   data-bv-different-message="The password cannot be the same as username" >
+        </div>
+
+        <button class="btn btn-success">Submit</button>
+    </form>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#attributeForm').bootstrapValidator();
+        });
+    </script>
+</div>
+
+<div class="alert alert-danger container" role="alert" ng-if="currentUser">You are sign in.</div>

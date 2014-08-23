@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" ng-if="currentUser">
     <div class="row">
         <div class="col-xs-1">
             <div class="btn-group-vertical pull-right" style="padding-top: 35px">
@@ -57,3 +57,4 @@
         </div>
 
 </div> <!-- /container -->
+<div class="alert alert-danger container" role="alert" ng-if="!currentUser">You do not have access to this page. Please sign in or registration.</div>
