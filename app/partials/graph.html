@@ -10,46 +10,47 @@
     </head>
 
     <body>
-    <form action="/api/upload-file/node" method="post" enctype="multipart/form-data">
+    <form action="/api/nodes/create" method="post" enctype="multipart/form-data" ng-controller="ApplicationController">
         <div class="panel panel-success info-table-big" id="n-table" style="display:none; overflow: auto;"  >
             <div class="panel-heading">Node settings</div>
             <table width="350">
-                <input type="text" hidden="" name="id" value="qwer2123eew4452">
+
                 <tr >
-                    <td width="50%">Id:</td><td><input type="text" id="n-id"></td>
+                    <td width="50%">Id:</td><td><input type="text" id="n-id" name="id"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Description:</td><td><input type="text" id="n-descr"></td>
+                    <td width="50%">Description:</td><td><input type="text" id="n-descr" name="description"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Executable:</td><td><input type="file" id="n-cmd" name="selectedFile"><input type="text" id="n-cmd-name" hidden="" name="fileName"></td>
+                    <td width="50%">Executable:</td><td><input type="file" id="n-cmd" name="cmdFile"><input type="text" id="n-cmd-name" hidden="" name="fileNameCmd"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Architecture:</td><td><input type="text" id="n-arch"></td>
+                    <td width="50%">Architecture:</td><td><input type="text" id="n-arch" name="architecture"></td>
                 </tr>
                 <tr >
-                    <td width="50%">OS:</td><td><input type="text" id="n-os"></td>
+                    <td width="50%">OS:</td><td><input type="text" id="n-os" name="os"></td>
                 </tr>
                 <tr >
-                    <td width="50%">RAM:</td><td><input type="text" id="n-ram"></td>
+                    <td width="50%">RAM:</td><td><input type="text" id="n-ram" name="ram"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Disk:</td><td><input type="text" id="n-disk"></td>
+                    <td width="50%">Disk:</td><td><input type="text" id="n-disk" name="disk"></td>
                 </tr>
                 <tr >
-                    <td width="50%">CPU time:</td><td><input type="text" id="n-cputime"></td>
+                    <td width="50%">CPU time:</td><td><input type="text" id="n-cputime" name="cputime"></td>
                 </tr>
                 <tr >
-                    <td width="50%">Input file:</td><td ><input type="file" id="n-inf" name="selectedFile1"><input type="text" id="n-inf-name" hidden="" name="fileName1"></td>
+                    <td width="50%">Input file:</td><td ><input type="file" id="n-inf" name="inputFile"><input type="text" id="n-inf-name" hidden="" name="fileNameInput"></td>
                 </tr>
                 <tr >
-                    <td width="50%">STD out:</td><td ><input type="text" id="n-stdoutf"></td>
+                    <td width="50%">STD out:</td><td ><input type="text" id="n-stdoutf" name="stdout"></td>
                 </tr>
                 <tr >
-                    <td width="50%">STD err:</td><td ><input type="text" id="n-stderrf"></td>
+                    <td width="50%">STD err:</td><td ><input type="text" id="n-stderrf" name="stderr"></td>
                 </tr>
                 <tr >
-                    <td  width="175" ><input type="submit" id="n-bsave" value="Применить"  onclick="saveNode()"></td>
+                    <td  width="175" ><input type="submit" id="n-submit" value="Отправить"  onclick="closeEl(document.getElementById('n-table'))"></td>
+                    <!--<td  width="175" ><input type="submit" id="n-bsave" value="Применить"  onclick="saveNode()"></td>-->
                     <td width="175"   ><input type="button" id="n-close" value="Закрыть" onclick="closeEl(document.getElementById('n-table'))"></td>
                 </tr>
             </table>       
@@ -80,12 +81,37 @@
 
         <script src="../js/d3-graph.js"></script>
         <script type="text/javascript">
+            function getCookie(name) {
+                  var matches = document.cookie.match(new RegExp(
+                  "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+                ))
+                  return matches ? decodeURIComponent(matches[1]) : undefined
+            	}
         document.getElementById('n-cmd').onchange = function () {
             document.getElementById('n-cmd-name').value=this.files[0].name;
+            var userId =getCookie("uid");
+            var newinput = document.createElement('input');
+            newinput.setAttribute('id',"uid");
+            newinput.setAttribute('name',"uid");
+            newinput.setAttribute('type',"text");
+            newinput.setAttribute('hidden',"");
+            newinput.setAttribute('value',userId);
+            document.getElementById('n-table').appendChild(newinput);
+            var userId =getCookie("taskUid");
+            newinput = document.createElement('input');
+            newinput.setAttribute('id',"taskUid");
+            newinput.setAttribute('name',"taskUid");
+            newinput.setAttribute('type',"text");
+            newinput.setAttribute('hidden',"");
+            newinput.setAttribute('value',userId);
+            document.getElementById('n-table').appendChild(newinput);
         };
         document.getElementById('n-inf').onchange = function () {
             document.getElementById('n-inf-name').value=this.files[0].name;
         };
+
+
+
     </script>
     </body>
 </html>

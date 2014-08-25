@@ -12,38 +12,92 @@ angular.module('myApp.controllers', [])
 
   $scope.setCurrentUser = function (user) {
     $scope.currentUser = user;
-    $cookieStore.put('user',user);
+      if(user!=null) {
+          $cookieStore.put('user', user);
+          $cookieStore.put('uid', user.uid);
+      }
   };
+  $scope.getId = function () {
+      return $scope.currentUser.uid;
+   };
+  $scope. getUniqueId = function (prefix) {
+            var d = new Date().getTime();
+            d += (parseInt(Math.random() * 100)).toString();
+            if (undefined === prefix) {
+                prefix = 'uid-';
+            }
+            d = prefix + d;
+            return d;
+        };
 })
         .controller('HomeCtrl', ['$scope', function($scope) {
 
-    }]).controller('EditorCtrl', ['$scope', function($scope) {
-        var iFrame = document.getElementById("graph");
-        $scope.create = function() {
-
+    }]).controller('EditorCtrl',function($scope,$cookieStore,EditService) {
+        var iFrame = document.getElementsByTagName('iframe');
+        $scope.task = {
+            name:'',
+            server:'',
+            description:'',
+            uid:'',
+            userUid:''
+        };
+        $scope.create = function(task) {
+            document.getElementById('b-add-node').disabled = false;
+            document.getElementById('b-add-link').disabled = false;
+            document.getElementById('b-del').disabled = false;
+            document.getElementById('b-clear').disabled = false;
+            document.getElementById('b-send').disabled = false;
+            document.getElementById('task-panel').style.display='none';
+            $scope.task.userUid=$scope.getId();
+            EditService.createTask($scope.task).then(function (task) {
+                alert("Task created successfully.");
+                $cookieStore.put('taskUid',  task.uid);
+            }, function () {
+                alert("Something wrong.");
+            });
+        }
+        $scope.showCreatePanel = function() {
+            var taskPanel = document.getElementById("task-panel");
+            taskPanel.style.display = 'block';
+            var doc = document.getElementsByTagName('body');
+            var height_of_doc = doc[0].clientHeight;
+            var width_of_doc = doc[0].clientWidth;
+            var height_of_table = taskPanel.clientHeight;
+            var width_of_table = taskPanel.clientHeight;
+            taskPanel.style.top=height_of_doc/2-height_of_table/2+'px';
+            taskPanel.style.left=width_of_doc/2-width_of_table/2+'px';
         }
         $scope.open = function() {
             alert("open");
+
         }
         $scope.addNode = function() {
-             iFrame.contentWindow.addNode();
+      //      iFrame[0].contentWindow.document.getElementById('uid').value=$scope.currentUser.uid;
+         // console.log(iFrame[0].contentWindow.document.getElementById('uid').value);
+             iFrame[0].contentWindow.addNode();
         }
         $scope.addLink = function() {
-            iFrame.contentWindow.addLink();
+            iFrame[0].contentWindow.addLink();
         }
         $scope.dell = function() {
-            iFrame.contentWindow.delete_node_link();
+            iFrame[0].contentWindow.delete_node_link();
         }
-         $scope.clearSpace = function() {
-            iFrame.contentWindow.clearSpace();
+        $scope.clearSpace = function() {
+            iFrame[0].contentWindow.clearSpace();
         }
         $scope.save = function() {
-            iFrame.contentWindow.save();
+            iFrame[0].contentWindow.save();
         }
 
         $scope.send = function() {
             console.log("send");
-
+            $scope.task.uid= $cookieStore.get('taskUid');
+            EditService.send($scope.task).then(function (task) {
+                alert("Task send successfully.");
+                $cookieStore.remove('taskUid');
+            }, function () {
+                alert("Something wrong.");
+            });
 
         }
 
@@ -51,7 +105,7 @@ angular.module('myApp.controllers', [])
             return window.innerHeight - 100;
         }
 
-    }])
+    })
         .controller('NavBarCtrl', ['$scope', '$location', function($scope, $location) {
         $scope.isActive = function(viewLocation) {
             var active = (viewLocation === $location.path());
@@ -64,25 +118,38 @@ angular.module('myApp.controllers', [])
     .controller('MonitorCtrl', ['$scope', '$location', function($scope, $location) {
 
     }])
-    .controller('RegistrationCtrl',  function($scope,md5, RegistrationService) {
-        $scope.user = {
+    .controller('RegistrationCtrl',  function($scope,md5,$location, RegistrationService) {
+        $scope.credential = {
             name:'',
             email:'',
             login: '',
             password: ''
         };
-        $scope.registration = function (user) {
-            user.password=md5.createHash(user.password);
-            RegistrationService.registration(user).then(function (user) {
-                $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+
+        $scope.registration = function (credential) {
+            credential.password=md5.createHash(credential.password);
+            console.log(credential);
+            RegistrationService.registration(credential).then(function (user) {
                 $scope.setCurrentUser(user);
+                $location.path( "#/home" );
             }, function () {
-                $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
-                alert("Login or password are incorrect");
+                alert("Something wrong.");
+            });
+        };
+        $scope.checkLogin = function (credential) {
+            if(typeof credential != 'undefined')
+            RegistrationService.checkLogin(credential).then(function (user) {
+                if (user==""){
+                    document.getElementById('login-used').style.display="none";
+                    document.getElementById('submit').disabled = false;
+                }else{
+                    document.getElementById('login-used').style.display="inline";
+                    document.getElementById('submit').disabled = true;
+                }
             });
         };
     })
-    .controller('LoginController', function ($scope, $rootScope,md5, AUTH_EVENTS, AuthService) {
+    .controller('LoginController', function ($scope, $rootScope,md5,  AuthService) {
         $scope.credentials = {
             login: '',
             password: ''
@@ -90,11 +157,15 @@ angular.module('myApp.controllers', [])
         $scope.login = function (credentials) {
             credentials.password=md5.createHash(credentials.password);
             AuthService.login(credentials).then(function (user) {
-                $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
-                $scope.setCurrentUser(user);
+                if(user==""){
+                    alert("Login or password are incorrect");
+                    credentials.password='';
+                }else {
+                    $scope.setCurrentUser(user);
+                }
             }, function () {
-                $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
                 alert("Login or password are incorrect");
+                credentials.password='';
             });
         };
     });

@@ -51,7 +51,6 @@ angular.module('myApp.services', []).
         var registrationService = {};
 
         registrationService.registration = function (user) {
-
             return $http
                 .post('/api/users/registration', user)
                 .then(function (res) {
@@ -59,6 +58,32 @@ angular.module('myApp.services', []).
                     return res.data;
                 });
         };
-
+        registrationService.checkLogin = function (user) {
+            return $http
+                .post('/api/users/checklogin', user)
+                .then(function (res) {
+                    return res.data;
+                });
+        };
         return registrationService;
+    }).factory('EditService', function ($http) {
+        var editService = {};
+
+        editService.createTask = function (task) {
+            return $http
+                .post('/api/tasks/create', task)
+                .then(function (res) {
+                    console.log('task:');
+                    console.log(res);
+                    return res.data;
+                });
+        };
+        editService.send = function (task) {
+            return $http
+                .post('/api/tasks/start', task)
+                .then(function (res) {
+                    return res.data;
+                });
+        };
+        return editService;
     });

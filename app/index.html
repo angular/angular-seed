@@ -12,8 +12,22 @@
   <link rel="stylesheet" href="css/app.css"/>
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css//bootstrap-theme.min.css">
-  <link rel="stylesheet" href="bower_components/bootstrapValidator/dist/css/bootstrapValidator.css"/>
 <link rel="stylesheet" href="css/d3-graph.css">
+    <style type="text/css">
+        .error { color: red; }
+        .err { color: red; }
+        .free { color: green; }
+        .task-form {
+            left: 100px;
+            top: 100px;
+            width:380px;
+            height:350px;
+            position: absolute;
+            z-index: 999;
+            font-family: sans-serif;
+            font-size: 13px;
+        }
+    </style>
 </head>
 <body ng-controller="ApplicationController">
      <!-- Fixed navbar -->
@@ -34,7 +48,7 @@
             <li ng-class="{ active: isActive('/home') }" ><a href="#/home" >Home</a></li>
             <li ng-class="{ active: isActive('/editor') }" ng-if="currentUser"><a href="#/editor">Editor</a></li>
             <li ng-class="{ active: isActive('/tasks') }" ng-if="currentUser"><a href="#/tasks">My tasks</a></li>
-            <li ng-class="{ active: isActive('/monitor') }" ng-if="currentUser"><a href="#/monitor">Grid Monitor</a></li>
+            <!--<li ng-class="{ active: isActive('/monitor') }" ng-if="currentUser"><a href="#/monitor">Grid Monitor</a></li>-->
           </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -77,9 +91,9 @@
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
   <script src="bower_components/angular-cookies/angular-cookies.js"></script>
-  <script src="bower_components/bootstrapValidator/dist/js/bootstrapValidator.js"></script>
-     <script src="bower_components/angular-md5/angular-md5.js"></script>
-     <script src="js/my.js"></script>
+  <script src="bower_components/angular-md5/angular-md5.js"></script>
+  <script src="bower_components/jquery-validation/dist/jquery.validate.js"></script>
+     <script src="bower_components/jquery-validation/dist/additional-methods.js"></script>
   <script src="js/app.js"></script>
   <script src="js/services.js"></script>
   <script src="js/controllers.js"></script>

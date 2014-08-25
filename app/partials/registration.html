@@ -1,72 +1,59 @@
 <div class="container" ng-if="!currentUser">
     <h1>Register Now</h1>
 
-    <form id="attributeForm" method="post" class="form-horizontal"
-          data-bv-message="This value is not valid"
-          data-bv-feedbackicons-valid="glyphicon glyphicon-ok"
-          data-bv-feedbackicons-invalid="glyphicon glyphicon-remove"
-          data-bv-feedbackicons-validating="glyphicon glyphicon-refresh">
+    <form id="attributeForm" class="form-horizontal" name="registrationForm" ng-controller="RegistrationCtrl">
 
         <div class="form-group">
             <label class="control-label">Given Name</label>
-            <input name="name" type="text" class="form-control" ng-model="user.name"  data-bv-notempty="true"
-                   data-bv-notempty-message="The first name is required and cannot be empty"/>
+            <input name="name" minlength="2" type="text" required class="form-control" ng-model="credentials.name"/>
         </div>
         <div class="form-group">
             <label class="control-label">Email</label>
-            <input class="form-control" name="email" type="email" ng-model="user.email"
-                   data-bv-notempty="true"
-                   data-bv-notempty-message="The email is required and cannot be empty"
-                   data-bv-emailaddress="true"
-                   data-bv-emailaddress-message="The input is not a valid email address" />
+            <input class="form-control" type="email" name="email" required ng-model="credentials.email"/>
         </div>
 
         <div class="form-group">
             <label class="control-label">Login</label>
-            <input   type="text" class="form-control" ng-model="user.login" name="login"
-                     data-bv-notempty="true"
-                     data-bv-notempty-message="The login is required and cannot be empty"/>
+            <input id="login"  type="text" class="form-control" ng-model="credentials.login" name="login" required onblur="checkLogin();"/>
+            <label id="login-used" class="err" for="login" style="display: none">Login is used.</label>
         </div>
 
         <div class="form-group">
             <label class="control-label">Password</label>
-            <input  name="password" type="password" class="form-control" class="form-control" ng-model="user.password"
-
-                   data-bv-notempty="true"
-                   data-bv-notempty-message="The password is required and cannot be empty"
-
-                   data-bv-identical="true"
-                   data-bv-identical-field="passwordConfirm"
-                   data-bv-identical-message="The password and its confirm are not the same"
-
-                   data-bv-different="true"
-                   data-bv-different-field="username"
-                   data-bv-different-message="The password cannot be the same as username" >
+            <input  id ="passwordC" name ="passwordC" type="password" class="form-control" />
         </div>
 
         <div class="form-group">
             <label class="control-label">Password Confirm</label>
-            <input  name ="passwordConfirm" type="password" class="form-control" data-bv-notempty="true"
-                   data-bv-notempty="true"
-                   data-bv-notempty-message="The confirm password is required and cannot be empty"
-
-                   data-bv-identical="true"
-                   data-bv-identical-field="password"
-                   data-bv-identical-message="The password and its confirm are not the same"
-
-                   data-bv-different="true"
-                   data-bv-different-field="username"
-                   data-bv-different-message="The password cannot be the same as username" >
+            <input  id="password" name="password" type="password" class="form-control" class="form-control" ng-model="credentials.password"/>
         </div>
 
-        <button class="btn btn-success">Submit</button>
+
+
+        <button id="submit" type="submit" class="btn btn-success">Submit</button>
     </form>
 
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('#attributeForm').bootstrapValidator();
+    <script>
+        $.validator.setDefaults({
+            submitHandler: function() {
+                angular.element($('#attributeForm')).scope().registration(angular.element($('#attributeForm')).scope().credentials);
+            }
         });
+        function checkLogin() {
+            angular.element($('#attributeForm')).scope().checkLogin(angular.element($('#attributeForm')).scope().credentials);
+        }
+        $("#attributeForm").validate({
+            rules: {
+                password: "required",
+                passwordC: "required",
+                password: {
+                    equalTo: '#passwordC'
+                }
+            }
+        });
+
     </script>
 </div>
 
 <div class="alert alert-danger container" role="alert" ng-if="currentUser">You are sign in.</div>
+

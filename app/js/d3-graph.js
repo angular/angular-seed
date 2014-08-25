@@ -517,16 +517,16 @@ function showData(el, node) {
     }
 
     document.getElementById('n-id').value = node.id;
-    document.getElementById('n-descr').value = node.descr;
+    document.getElementById('n-descr').value = node.descr=="undefined" ?  node.descr : "";
    // document.getElementById('n-cmd').name = "www.sh";
-    document.getElementById('n-arch').value = node.arch;
-    document.getElementById('n-os').value = node.os;
-    document.getElementById('n-ram').value = node.ram;
-    document.getElementById('n-disk').value = node.disk;
-    document.getElementById('n-cputime').value = node.cputime;
+    document.getElementById('n-arch').value = node.arch =="undefined" ?  node.arch : "";
+    document.getElementById('n-os').value = node.os =="undefined" ?  node.os : "";
+    document.getElementById('n-ram').value = node.ram =="undefined" ?  node.ram : "";
+    document.getElementById('n-disk').value = node.disk =="undefined" ?  node.disk : "";
+    document.getElementById('n-cputime').value = node.cputime =="undefined" ?  node.cputime : "";
    // document.getElementById('n-inf').value = node.inf;
-    document.getElementById('n-stdoutf').value = node.stdoutf;
-    document.getElementById('n-stderrf').value = node.stderrf;
+    document.getElementById('n-stdoutf').value = node.stdoutf =="undefined" ?  node.stdoutf : "";
+    document.getElementById('n-stderrf').value = node.stderrf =="undefined" ?  node.stderrf : "";
 }
 
 function showDadaLink(link) {
