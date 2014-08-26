@@ -49,8 +49,8 @@
                     <td width="50%">STD err:</td><td ><input type="text" id="n-stderrf" name="stderr"></td>
                 </tr>
                 <tr >
-                    <td  width="175" ><input type="submit" id="n-submit" value="Отправить"  onclick="closeEl(document.getElementById('n-table'))"></td>
-                    <!--<td  width="175" ><input type="submit" id="n-bsave" value="Применить"  onclick="saveNode()"></td>-->
+
+                    <td  width="175" ><input type="submit" id="n-bsave" value="Применить"  onclick="saveNode()"></td>
                     <td width="175"   ><input type="button" id="n-close" value="Закрыть" onclick="closeEl(document.getElementById('n-table'))"></td>
                 </tr>
             </table>       
@@ -89,7 +89,7 @@
             	}
         document.getElementById('n-cmd').onchange = function () {
             document.getElementById('n-cmd-name').value=this.files[0].name;
-            var userId =getCookie("uid");
+            var userId =getCookie("uid").replace(/\"/g,'');
             var newinput = document.createElement('input');
             newinput.setAttribute('id',"uid");
             newinput.setAttribute('name',"uid");
@@ -97,7 +97,7 @@
             newinput.setAttribute('hidden',"");
             newinput.setAttribute('value',userId);
             document.getElementById('n-table').appendChild(newinput);
-            var userId =getCookie("taskUid");
+            var userId =getCookie("taskUid").replace(/\"/g,'');
             newinput = document.createElement('input');
             newinput.setAttribute('id',"taskUid");
             newinput.setAttribute('name',"taskUid");

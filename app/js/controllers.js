@@ -39,6 +39,7 @@ angular.module('myApp.controllers', [])
             server:'',
             description:'',
             uid:'',
+            status:'',
             userUid:''
         };
         $scope.create = function(task) {
@@ -49,6 +50,7 @@ angular.module('myApp.controllers', [])
             document.getElementById('b-send').disabled = false;
             document.getElementById('task-panel').style.display='none';
             $scope.task.userUid=$scope.getId();
+            $scope.task.status='CREATED';
             EditService.createTask($scope.task).then(function (task) {
                 alert("Task created successfully.");
                 $cookieStore.put('taskUid',  task.uid);
@@ -92,6 +94,7 @@ angular.module('myApp.controllers', [])
         $scope.send = function() {
             console.log("send");
             $scope.task.uid= $cookieStore.get('taskUid');
+
             EditService.send($scope.task).then(function (task) {
                 alert("Task send successfully.");
                 $cookieStore.remove('taskUid');
