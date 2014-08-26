@@ -7,11 +7,13 @@
                 scope: {
                     stPipe: '='
                 },
-                link: function (scope, element, attrs, ctrl) {
+                link: {
+                    pre: function (scope, element, attrs, ctrl) {
 
-                    if (ng.isFunction(scope.stPipe)) {
-                        ctrl.preventPipeOnWatch();
-                        ctrl.pipe = ng.bind(ctrl, scope.stPipe, ctrl.tableState());
+                        if (ng.isFunction(scope.stPipe)) {
+                            ctrl.preventPipeOnWatch();
+                            ctrl.pipe = ng.bind(ctrl, scope.stPipe, ctrl.tableState());
+                        }
                     }
                 }
             };
