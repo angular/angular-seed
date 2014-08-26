@@ -5,3 +5,7 @@ Note that if you want to search against a property name you have now to put in u
 ```markup
 <input st-search="'name'"/>
 ```
+
+## version 1.1.1
+
+* fix #146 and #148, set stPipe before stPagination is called. Thanks [brianchance](https://github.com/brianchance)
