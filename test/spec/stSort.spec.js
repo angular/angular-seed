@@ -111,4 +111,40 @@ describe('stSort Directive', function () {
 
     });
 
+    it('should sort by default a column', inject(function ($compile) {
+        spyOn(controllerMock, 'sortBy').andCallThrough();
+        var template = '<table st-table="rowCollection">' +
+            '<thead>' +
+            '<tr><th st-sort="name">firstname</th>' +
+            '<th st-sort-default st-sort="lastname">lastname</th>' +
+            '<th st-sort="getters.age">age</th>' +
+            '</tr>' +
+            '</table>';
+
+        element = $compile(template)(scope);
+
+        var ths = element.find('th');
+        expect(controllerMock.sortBy).toHaveBeenCalledWith('lastname', false);
+        expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
+        expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
+    }));
+
+    it('should sort by default a column in reverse mode', inject(function ($compile) {
+        spyOn(controllerMock, 'sortBy').andCallThrough();
+        var template = '<table st-table="rowCollection">' +
+            '<thead>' +
+            '<tr><th st-sort="name">firstname</th>' +
+            '<th st-sort-default="reverse" st-sort="lastname">lastname</th>' +
+            '<th st-sort="getters.age">age</th>' +
+            '</tr>' +
+            '</table>';
+
+        element = $compile(template)(scope);
+
+        var ths = element.find('th');
+        expect(controllerMock.sortBy).toHaveBeenCalledWith('lastname', true);
+        expect(hasClass(ths[1], 'st-sort-ascent')).toBe(false);
+        expect(hasClass(ths[1], 'st-sort-descent')).toBe(true);
+    }));
+
 });

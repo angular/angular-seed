@@ -1,4 +1,4 @@
-(function (ng) {
+(function (ng, undefined) {
     'use strict';
     ng.module('smart-table')
         .directive('stSort', ['$parse', function ($parse) {
@@ -19,28 +19,35 @@
                             .removeClass('st-sort-descent');
                     }
 
+                    function sort() {
+                        index++;
+                        var stateIndex = index % 2;
+                        if (index % 3 === 0) {
+                            //manual reset
+                            ctrl.tableState().sort = {};
+                            ctrl.tableState().pagination.start = 0;
+                        } else {
+                            ctrl.sortBy(predicate, stateIndex === 0);
+                            element
+                                .removeClass('st-sort-' + states[(stateIndex + 1) % 2])
+                                .addClass('st-sort-' + states[stateIndex]);
+                        }
+                    }
+
                     if (ng.isFunction(getter(scope))) {
                         predicate = getter(scope);
                     }
 
                     element.bind('click', function sortClick() {
                         if (predicate) {
-                            scope.$apply(function () {
-                                index++;
-                                var stateIndex = index % 2;
-                                if (index % 3 === 0) {
-                                    //manual reset
-                                    ctrl.tableState().sort = {};
-                                    ctrl.tableState().pagination.start = 0;
-                                } else {
-                                    ctrl.sortBy(predicate, stateIndex === 0);
-                                    element
-                                        .removeClass('st-sort-' + states[(stateIndex + 1) % 2])
-                                        .addClass('st-sort-' + states[stateIndex]);
-                                }
-                            });
+                            scope.$apply(sort);
                         }
                     });
+
+                    if (attr.stSortDefault !== undefined) {
+                        index = attr.stSortDefault === 'reverse' ? 1 : 0;
+                        sort();
+                    }
 
                     scope.$watch(function () {
                         return ctrl.tableState().sort;
