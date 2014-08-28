@@ -278,6 +278,10 @@ along with a CI service (in Jenkins) hosted that will run unit and end to end te
 
 For more information on AngularJS please check out http://angularjs.org/
 
+## Troubleshooting
+
+Check [troubleshoot.rst](troubleshoot.rst) for common errors and solutions.
+
 [git]: http://git-scm.com/
 [bower]: http://bower.io
 [npm]: https://www.npmjs.org/
