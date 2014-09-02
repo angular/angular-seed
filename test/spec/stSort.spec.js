@@ -2,10 +2,16 @@ describe('stSort Directive', function () {
 
     var tableState;
     var controllerMock = {
-        sortBy: angular.noop,
+        sortBy: function (predicate, reverse) {
+            tableState.sort = {
+                predicate: predicate,
+                reverse: reverse === true
+            }
+        },
         tableState: function () {
             return tableState;
-        }
+        },
+        pipe: angular.noop
     };
 
     var rootScope;
@@ -71,6 +77,7 @@ describe('stSort Directive', function () {
 
     it('should reset the sort state on the third call', function () {
         spyOn(controllerMock, 'sortBy').andCallThrough();
+        spyOn(controllerMock, 'pipe').andCallThrough();
         var ths = element.find('th');
         angular.element(ths[0]).triggerHandler('click');
         angular.element(ths[0]).triggerHandler('click');
@@ -83,8 +90,8 @@ describe('stSort Directive', function () {
         expect(tableState.sort).toEqual({});
         expect(tableState.pagination.start).toEqual(0);
 
-
         expect(controllerMock.sortBy.calls.length).toBe(2);
+        expect(controllerMock.pipe).toHaveBeenCalled();
     });
 
     it('should support getter function as predicate', function () {
@@ -123,6 +130,8 @@ describe('stSort Directive', function () {
 
         element = $compile(template)(scope);
 
+        scope.$apply();
+
         var ths = element.find('th');
         expect(controllerMock.sortBy).toHaveBeenCalledWith('lastname', false);
         expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
@@ -140,6 +149,8 @@ describe('stSort Directive', function () {
             '</table>';
 
         element = $compile(template)(scope);
+
+        scope.$apply();
 
         var ths = element.find('th');
         expect(controllerMock.sortBy).toHaveBeenCalledWith('lastname', true);

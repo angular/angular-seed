@@ -10,27 +10,19 @@
                     var predicate = attr.stSort;
                     var getter = $parse(predicate);
                     var index = 0;
-                    var states = ['descent', 'ascent', 'natural'];
+                    var states = ['natural', 'ascent', 'descent'];
 
-                    function reset() {
-                        index = 0;
-                        element
-                            .removeClass('st-sort-ascent')
-                            .removeClass('st-sort-descent');
-                    }
-
+                    //view --> table state
                     function sort() {
                         index++;
-                        var stateIndex = index % 2;
                         if (index % 3 === 0) {
                             //manual reset
+                            index = 0;
                             ctrl.tableState().sort = {};
                             ctrl.tableState().pagination.start = 0;
+                            ctrl.pipe();
                         } else {
-                            ctrl.sortBy(predicate, stateIndex === 0);
-                            element
-                                .removeClass('st-sort-' + states[(stateIndex + 1) % 2])
-                                .addClass('st-sort-' + states[stateIndex]);
+                            ctrl.sortBy(predicate, index % 2 === 0);
                         }
                     }
 
@@ -49,16 +41,22 @@
                         sort();
                     }
 
+                    //table state --> view
                     scope.$watch(function () {
                         return ctrl.tableState().sort;
                     }, function (newValue, oldValue) {
-                        if (newValue !== oldValue) {
-                            if (newValue.predicate !== predicate) {
-                                reset();
-                            }
+                        if (newValue.predicate !== predicate) {
+                            index = 0;
+                            element
+                                .removeClass('st-sort-ascent')
+                                .removeClass('st-sort-descent');
+                        } else {
+                            index = newValue.reverse === true ? 2 : 1;
+                            element
+                                .removeClass('st-sort-' + states[(index + 1) % 2])
+                                .addClass('st-sort-' + states[index]);
                         }
                     }, true);
-
                 }
             };
         }])

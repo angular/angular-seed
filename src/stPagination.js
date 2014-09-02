@@ -20,7 +20,7 @@
                     scope.currentPage = 1;
                     scope.pages = [];
 
-
+                    //table state --> view
                     scope.$watch(function () {
                             return ctrl.tableState().pagination;
                         },
@@ -49,6 +49,7 @@
 
                         }, true);
 
+                    //view -> table state
                     scope.selectPage = function (page) {
                         if (page > 0 && page <= scope.numPages) {
                             ctrl.slice((page - 1) * itemsByPage, itemsByPage);

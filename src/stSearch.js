@@ -20,6 +20,17 @@
                         }
                     });
 
+                    //table state -> view
+                    scope.$watch(function () {
+                        return ctrl.tableState().search
+                    }, function (newValue, oldValue) {
+                        var predicateExpression = scope.predicate || '$';
+                        if (newValue.predicateObject && newValue.predicateObject[predicateExpression] !== element[0].value) {
+                            element[0].value = newValue.predicateObject[predicateExpression];
+                        }
+                    }, true);
+
+                    // view -> table state
                     element.bind('input', function (evt) {
                         evt = evt.originalEvent || evt;
                         if (promise !== null) {

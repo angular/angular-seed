@@ -189,6 +189,17 @@
                         }
                     });
 
+                    //table state -> view
+                    scope.$watch(function () {
+                        return ctrl.tableState().search
+                    }, function (newValue, oldValue) {
+                        var predicateExpression = scope.predicate || '$';
+                        if (newValue.predicateObject && newValue.predicateObject[predicateExpression] !== element[0].value) {
+                            element[0].value = newValue.predicateObject[predicateExpression];
+                        }
+                    }, true);
+
+                    // view -> table state
                     element.bind('input', function (evt) {
                         evt = evt.originalEvent || evt;
                         if (promise !== null) {
@@ -246,27 +257,19 @@
                     var predicate = attr.stSort;
                     var getter = $parse(predicate);
                     var index = 0;
-                    var states = ['descent', 'ascent', 'natural'];
+                    var states = ['natural', 'ascent', 'descent'];
 
-                    function reset() {
-                        index = 0;
-                        element
-                            .removeClass('st-sort-ascent')
-                            .removeClass('st-sort-descent');
-                    }
-
+                    //view --> table state
                     function sort() {
                         index++;
-                        var stateIndex = index % 2;
                         if (index % 3 === 0) {
                             //manual reset
+                            index = 0;
                             ctrl.tableState().sort = {};
                             ctrl.tableState().pagination.start = 0;
+                            ctrl.pipe();
                         } else {
-                            ctrl.sortBy(predicate, stateIndex === 0);
-                            element
-                                .removeClass('st-sort-' + states[(stateIndex + 1) % 2])
-                                .addClass('st-sort-' + states[stateIndex]);
+                            ctrl.sortBy(predicate, index % 2 === 0);
                         }
                     }
 
@@ -285,16 +288,22 @@
                         sort();
                     }
 
+                    //table state --> view
                     scope.$watch(function () {
                         return ctrl.tableState().sort;
                     }, function (newValue, oldValue) {
-                        if (newValue !== oldValue) {
-                            if (newValue.predicate !== predicate) {
-                                reset();
-                            }
+                        if (newValue.predicate !== predicate) {
+                            index = 0;
+                            element
+                                .removeClass('st-sort-ascent')
+                                .removeClass('st-sort-descent');
+                        } else {
+                            index = newValue.reverse === true ? 2 : 1;
+                            element
+                                .removeClass('st-sort-' + states[(index + 1) % 2])
+                                .addClass('st-sort-' + states[index]);
                         }
                     }, true);
-
                 }
             };
         }])
@@ -322,7 +331,7 @@
                     scope.currentPage = 1;
                     scope.pages = [];
 
-
+                    //table state --> view
                     scope.$watch(function () {
                             return ctrl.tableState().pagination;
                         },
@@ -351,6 +360,7 @@
 
                         }, true);
 
+                    //view -> table state
                     scope.selectPage = function (page) {
                         if (page > 0 && page <= scope.numPages) {
                             ctrl.slice((page - 1) * itemsByPage, itemsByPage);
