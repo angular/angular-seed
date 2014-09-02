@@ -195,7 +195,7 @@
                     }, function (newValue, oldValue) {
                         var predicateExpression = scope.predicate || '$';
                         if (newValue.predicateObject && newValue.predicateObject[predicateExpression] !== element[0].value) {
-                            element[0].value = newValue.predicateObject[predicateExpression];
+                            element[0].value = newValue.predicateObject[predicateExpression] || '';
                         }
                     }, true);
 
