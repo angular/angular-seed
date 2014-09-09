@@ -47,21 +47,6 @@ describe('st table Controller', function () {
             ]);
         });
 
-        it('should broadcast an event when sorting', function () {
-            childScope.$on('st:sort', function (event, args) {
-                expect(args.predicate).toEqual('firstname');
-            });
-
-            ctrl.sortBy('firstname');
-            expect(scope.data).toEqual([
-                {name: 'Faivre', firstname: 'Blandine', age: 44},
-                {name: 'Leponge', firstname: 'Bob', age: 22},
-                {name: 'Francoise', firstname: 'Frere', age: 99},
-                {name: 'Renard', firstname: 'Laurent', age: 66},
-                {name: 'Renard', firstname: 'Olivier', age: 33}
-            ]);
-        });
-
         it('should support getter function predicate', function () {
             ctrl.sortBy(function (row) {
                 return row.firstname.length;
@@ -85,6 +70,35 @@ describe('st table Controller', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ]);
         });
+
+        it('should not filter out null value when input is empty string', inject(function ($controller, $parse, $filter) {
+            scope.data = [
+                {name: null, firstname: 'Laurent', age: 66},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ];
+
+            //use another dataset for this particular spec
+            ctrl = $controller('stTableController', {$scope: scope, $parse: $parse, $filter: $filter, $attrs: {
+                stTable: 'data'
+            }});
+
+
+            ctrl.search('re', 'name');
+            expect(scope.data).toEqual([
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
+
+            ctrl.search('','name');
+
+            expect(scope.data).toEqual([
+                {name: null, firstname: 'Laurent', age: 66},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
+
+        }));
 
         it('should search globally', function () {
             ctrl.search('re');

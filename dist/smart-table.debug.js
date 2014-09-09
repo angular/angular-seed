@@ -57,8 +57,8 @@
 
             /**
              * sort the rows
-             * @param predicate function or string which will be used as predicate for the sorting
-             * @param [optional] reverse if you want to reverse the order
+             * @param {Function | String} predicate - function or string which will be used as predicate for the sorting
+             * @param [reverse] - if you want to reverse the order
              */
             this.sortBy = function sortBy(predicate, reverse) {
                 tableState.sort.predicate = predicate;
@@ -69,13 +69,17 @@
 
             /**
              * search matching rows
-             * @param input the input string
-             * @param predicate [optional] the property name against you want to check the match, otherwise it will search on all properties
+             * @param {String} input - the input string
+             * @param {String} [predicate] - the property name against you want to check the match, otherwise it will search on all properties
              */
             this.search = function search(input, predicate) {
                 var predicateObject = tableState.search.predicateObject || {};
                 var prop = predicate ? predicate : '$';
                 predicateObject[prop] = input;
+                // to avoid to filter out null value
+                if (!input) {
+                    delete predicateObject[prop];
+                }
                 tableState.search.predicateObject = predicateObject;
                 tableState.pagination.start = 0;
                 this.pipe();
@@ -96,8 +100,8 @@
 
             /**
              * select a dataRow (it will add the attribute isSelected to the row object)
-             * @param row the row to select
-             * @param mode "single" or "multiple"
+             * @param {Object} row - the row to select
+             * @param {String} [mode] - "single" or "multiple" (multiple by default)
              */
             this.select = function select(row, mode) {
                 var rows = displayGetter($scope);
@@ -116,8 +120,8 @@
             /**
              * take a slice of the current sorted/filtered collection (pagination)
              *
-             * @param start index of the slice
-             * @param number the number of item in the slice
+             * @param {Number} start - start index of the slice
+             * @param {Number} number - the number of item in the slice
              */
             this.slice = function splice(start, number) {
                 tableState.pagination.start = start;

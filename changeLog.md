@@ -23,3 +23,7 @@ Note that if you want to search against a property name you have now to put in u
 
 * fix back to natural sort order
 * use same strategy view -> table state, table state -> view for all the plugins
+
+## version 1.2.4
+
+* fix #161 
