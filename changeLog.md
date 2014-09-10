@@ -27,3 +27,7 @@ Note that if you want to search against a property name you have now to put in u
 ## version 1.2.4
 
 * fix #161 
+
+## version 1.2.5
+
+* fix #162
