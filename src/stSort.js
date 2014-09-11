@@ -10,7 +10,9 @@
                     var predicate = attr.stSort;
                     var getter = $parse(predicate);
                     var index = 0;
-                    var states = ['natural', 'ascent', 'descent'];
+                    var classAscent = attr.stClassAscent || 'st-sort-ascent';
+                    var classDescent = attr.stClassDescent || 'st-sort-descent';
+                    var stateClasses = ['st-sort-natural', classAscent, classDescent];
 
                     //view --> table state
                     function sort() {
@@ -48,13 +50,13 @@
                         if (newValue.predicate !== predicate) {
                             index = 0;
                             element
-                                .removeClass('st-sort-ascent')
-                                .removeClass('st-sort-descent');
+                                .removeClass(classAscent)
+                                .removeClass(classDescent);
                         } else {
                             index = newValue.reverse === true ? 2 : 1;
                             element
-                                .removeClass('st-sort-' + states[(index + 1) % 2])
-                                .addClass('st-sort-' + states[index]);
+                                .removeClass(stateClasses[(index + 1) % 2])
+                                .addClass(stateClasses[index]);
                         }
                     }, true);
                 }
