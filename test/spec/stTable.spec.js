@@ -90,7 +90,7 @@ describe('st table Controller', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ]);
 
-            ctrl.search('','name');
+            ctrl.search('', 'name');
 
             expect(scope.data).toEqual([
                 {name: null, firstname: 'Laurent', age: 66},
@@ -206,47 +206,63 @@ describe('st table Controller', function () {
     });
 
     describe('select', function () {
-        it('should select only a single row at the tiem', function () {
-            ctrl.select(scope.data[3], 'single');
-            var selected = scope.data.filter(function (value) {
-                return value.isSelected === true;
+
+        function getSelected(array) {
+            return array.filter(function (val) {
+                return val.isSelected === true;
             });
+        }
+
+
+        it('should select only a single row at the time', function () {
+            ctrl.select(scope.data[3], 'single');
+            var selected = getSelected(scope.data);
             expect(selected.length).toBe(1);
             expect(selected[0]).toEqual(scope.data[3]);
 
             ctrl.select(scope.data[2], 'single');
 
-            selected = scope.data.filter(function (value) {
-                return value.isSelected === true;
-            });
+            selected = getSelected(scope.data);
 
             expect(selected.length).toBe(1);
             expect(selected[0]).toEqual(scope.data[2]);
         });
 
+        it('should select a row multiple times in single mode (#165)', function () {
+            ctrl.select(scope.data[3], 'single');
+            var selected = getSelected(scope.data);
+            expect(selected.length).toBe(1);
+            expect(selected[0]).toEqual(scope.data[3]);
+
+            ctrl.select(scope.data[3], 'single');
+            selected = getSelected(scope.data);
+
+            expect(selected.length).toBe(0);
+
+            ctrl.select(scope.data[3], 'single');
+            selected = getSelected(scope.data);
+
+            expect(selected.length).toBe(1);
+            expect(selected[0]).toEqual(scope.data[3]);
+        });
+
         it('should select multiple row', function () {
             ctrl.select(scope.data[3]);
             ctrl.select(scope.data[4]);
-            var selected = scope.data.filter(function (val) {
-                return val.isSelected === true;
-            });
+            var selected = getSelected(scope.data);
             expect(selected.length).toBe(2);
             expect(selected).toEqual([scope.data[3], scope.data[4]]);
         });
 
         it('should unselect an item on mode single', function () {
             ctrl.select(scope.data[3], 'single');
-            var selected = scope.data.filter(function (value) {
-                return value.isSelected === true;
-            });
+            var selected = getSelected(scope.data);
             expect(selected.length).toBe(1);
             expect(selected[0]).toEqual(scope.data[3]);
 
             ctrl.select(scope.data[3], 'single');
 
-            selected = scope.data.filter(function (value) {
-                return value.isSelected === true;
-            });
+            selected = getSelected(scope.data);
 
             expect(selected.length).toBe(0);
         });
@@ -254,16 +270,12 @@ describe('st table Controller', function () {
         it('should unselect an item on mode multiple', function () {
             ctrl.select(scope.data[3]);
             ctrl.select(scope.data[4]);
-            var selected = scope.data.filter(function (val) {
-                return val.isSelected === true;
-            });
+            var selected = getSelected(scope.data);
             expect(selected.length).toBe(2);
             expect(selected).toEqual([scope.data[3], scope.data[4]]);
 
             ctrl.select(scope.data[3]);
-            selected = scope.data.filter(function (val) {
-                return val.isSelected === true;
-            });
+            selected = getSelected(scope.data);
             expect(selected.length).toBe(1);
             expect(selected).toEqual([scope.data[4]]);
         });

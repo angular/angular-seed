@@ -109,11 +109,11 @@
                 var index = rows.indexOf(row);
                 if (index !== -1) {
                     if (mode === 'single') {
-                        row.isSelected = true;
+                        row.isSelected = row.isSelected !== true;
                         if (lastSelected) {
                             lastSelected.isSelected = false;
                         }
-                        lastSelected = row;
+                        lastSelected = row.isSelected === true ? row : undefined;
                     } else {
                         rows[index].isSelected = !rows[index].isSelected;
                     }
