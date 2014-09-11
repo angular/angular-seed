@@ -10,7 +10,6 @@
                     var predicate = attr.stSort;
                     var getter = $parse(predicate);
                     var index = 0;
-                    var states = ['natural', 'ascent', 'descent'];
                     var classAscent = attr.stClassAscent || 'st-sort-ascent';
                     var classDescent = attr.stClassDescent || 'st-sort-descent';
                     var stateClasses = ['st-sort-natural', classAscent, classDescent];
