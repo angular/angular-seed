@@ -51,8 +51,25 @@ angular.module('myApp.services', []).
         var registrationService = {};
 
         registrationService.registration = function (user) {
+            var fd = new FormData();
+            fd.append('name',user.name);
+            fd.append('email',user.email);
+            fd.append('login',user.login);
+            fd.append('password',user.password);
+            fd.append('certfile',user.certfile);
+            if (typeof user.certfile != 'undefined')
+            fd.append('certfilename',user.certfile.name)
+            fd.append('keyfile',user.keyfile);
+            if (typeof user.keyfile != 'undefined')
+            fd.append('keyfilename',user.keyfile.name)
+            fd.append('certpassword',user.certpassword);
+
+
             return $http
-                .post('/api/users/registration', user)
+                .post('/api/users/registration', fd,{
+                transformRequest: angular.identity,
+                    headers: {'Content-Type': undefined}
+            })
                 .then(function (res) {
                     console.log(res);
                     return res.data;

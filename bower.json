@@ -15,6 +15,7 @@
     "angular-cookies": "latest",
     "bootstrapValidator": "latest",
     "jquery": "1.10.2",
-    "angular-md5": "~0.1.7"
+    "angular-md5": "~0.1.7",
+    "jquery-validation": "latest"
   }
 }

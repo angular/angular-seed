@@ -131,6 +131,7 @@ angular.module('myApp.controllers', [])
 
         $scope.registration = function (credential) {
             credential.password=md5.createHash(credential.password);
+
             console.log(credential);
             RegistrationService.registration(credential).then(function (user) {
                 $scope.setCurrentUser(user);
