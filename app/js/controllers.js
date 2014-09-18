@@ -43,6 +43,8 @@ angular.module('myApp.controllers', [])
             userUid:''
         };
         $scope.create = function(task) {
+            document.getElementById('b-open').disabled = false;
+            document.getElementById('b-save').disabled = false;
             document.getElementById('b-add-node').disabled = false;
             document.getElementById('b-add-link').disabled = false;
             document.getElementById('b-del').disabled = false;
