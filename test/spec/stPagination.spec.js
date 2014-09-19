@@ -67,12 +67,13 @@ describe('stPagination directive', function () {
         });
     });
 
-
     describe('draw pages', function () {
 
         it('it should draw the pages based on table state using 5 as default value for displayed pages number and center it on the active page', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 35,
                 numberOfPages: 12,
@@ -80,7 +81,6 @@ describe('stPagination directive', function () {
             };
 
             rootScope.$apply();
-
 
             var pages = getPages();
 
@@ -104,6 +104,9 @@ describe('stPagination directive', function () {
         it('it should draw the pages based on table state using provided value for displayed pages', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-displayed-pages="7" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 35,
                 numberOfPages: 12,
@@ -111,7 +114,6 @@ describe('stPagination directive', function () {
             };
 
             rootScope.$apply();
-
 
             var pages = getPages();
 
@@ -136,6 +138,9 @@ describe('stPagination directive', function () {
         it('it should not center when reaching higher edge', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 105,
                 numberOfPages: 12,
@@ -164,10 +169,12 @@ describe('stPagination directive', function () {
 
         });
 
-
         it('it should not center when reaching lower edge', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 5,
                 numberOfPages: 12,
@@ -199,6 +206,9 @@ describe('stPagination directive', function () {
         it('it should limit the number of page to available pages', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 12,
                 numberOfPages: 3,
@@ -227,6 +237,9 @@ describe('stPagination directive', function () {
         it('it should remove pagination when there is less than two page', function () {
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 5,
                 numberOfPages: 1,
@@ -251,6 +264,9 @@ describe('stPagination directive', function () {
 
             var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
             element = compile(template)(rootScope);
+
+            rootScope.$apply();
+
             tableState.pagination = {
                 start: 35,
                 numberOfPages: 12,

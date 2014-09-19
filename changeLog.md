@@ -40,3 +40,7 @@ Note that if you want to search against a property name you have now to put in u
 ## version 1.2.7
 
 * fix #167
+
+## version 1.3.0
+
+* new feature, items by page and displayed page can be bound
