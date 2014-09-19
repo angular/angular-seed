@@ -22,8 +22,9 @@ smart-table is based around a main directive which generate a top level controll
 ## Older versions
 
 Smart-Table used to be configuration based and if you rely on this version, you can still access the code on the [0.2.x](https://github.com/lorenzofox3/Smart-Table/tree/vx.2.x) branch. You will be able to find the documentation related to this version
-[here](https://github.com/lorenzofox3/smart-table-website) (simply open index.html in a browser)
+[here](https://github.com/lorenzofox3/smart-table-website) (simply open index.html in a browser).
 
+Note, I have closed all the issues related to these versions as people get confused when reading these issues and commented on them like it was related to the newer version. Feel free to reopen any of them (or open a new one), but don't forget to mention it is related to the older versions.
 
 ## License
 
