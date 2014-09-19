@@ -85,11 +85,13 @@
              * this will chain the operations of sorting and filtering based on the current table state (sort options, filtering, ect)
              */
             this.pipe = function pipe() {
+                var pagination = tableState.pagination;
                 var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
                 filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
-                if (tableState.pagination.number !== undefined) {
-                    tableState.pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / tableState.pagination.number) : 1;
-                    filtered = filtered.slice(tableState.pagination.start, tableState.pagination.start + tableState.pagination.number);
+                if (pagination.number !== undefined) {
+                    pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
+                    pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
+                    filtered = filtered.slice(pagination.start, pagination.start + pagination.number);
                 }
                 displaySetter($scope, filtered);
             };

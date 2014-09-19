@@ -135,6 +135,14 @@ describe('st table Controller', function () {
                 {name: 'Renard', firstname: 'Olivier', age: 33}
             ]);
         });
+
+        it('limit to the last page if not enough data', function () {
+            ctrl.slice(7, 2);
+            expect(scope.data.length).toBe(1);
+            expect(scope.data).toEqual([
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
+        });
     });
 
     describe('pipe', function () {
