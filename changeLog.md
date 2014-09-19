@@ -36,3 +36,7 @@ Note that if you want to search against a property name you have now to put in u
 
 * fix #165
 * ability to overwrite class names for (st-sort-ascent and st-sort-descent) thanks to [replacement87](https://github.com/replacement87)
+
+## version 1.2.7
+
+* fix #167
