@@ -32,7 +32,7 @@ angular.module('myApp.controllers', [])
 })
         .controller('HomeCtrl', ['$scope', function($scope) {
 
-    }]).controller('EditorCtrl',function($scope,$cookieStore,EditService) {
+    }]).controller('EditorCtrl',function($scope,$cookieStore,$window,EditService) {
         var iFrame = document.getElementsByTagName('iframe');
         $scope.task = {
             name:'',
@@ -71,6 +71,33 @@ angular.module('myApp.controllers', [])
             taskPanel.style.top=height_of_doc/2-height_of_table/2+'px';
             taskPanel.style.left=width_of_doc/2-width_of_table/2+'px';
         }
+        function setIncrement(val) {
+            var w = parseInt(document.getElementById('progresbar').style.width);
+            document.getElementById('progresbar').style.width= (w + val) +'%';
+        }
+
+        $scope.showSubmitPanel = function() {
+            var taskPanel = document.getElementById("sending-task-panel");
+            taskPanel.style.display = 'block';
+            document.getElementById('div-progresbar').style.display= 'block';
+            var doc = document.getElementsByTagName('body');
+            var height_of_doc = doc[0].clientHeight;
+            var width_of_doc = doc[0].clientWidth;
+            var height_of_table = taskPanel.clientHeight;
+            var width_of_table = taskPanel.clientHeight;
+            taskPanel.style.top = height_of_doc / 2 - height_of_table / 2 + 'px';
+            taskPanel.style.left = width_of_doc / 2 - width_of_table / 2 + 'px';
+            $(document).ready(function(){
+                var progress = setInterval(function() {
+                    var $bar = $('.bar');
+                    if ($bar.width()==400) {
+                        $bar.width(0);
+                    } else {
+                        $bar.width($bar.width()+200);
+                    }
+                }, 800);
+            });
+        }
         $scope.open = function() {
             alert("open");
 
@@ -78,7 +105,7 @@ angular.module('myApp.controllers', [])
         $scope.addNode = function() {
       //      iFrame[0].contentWindow.document.getElementById('uid').value=$scope.currentUser.uid;
          // console.log(iFrame[0].contentWindow.document.getElementById('uid').value);
-             iFrame[0].contentWindow.addNode();
+          iFrame[0].contentWindow.addNode();
         }
         $scope.addLink = function() {
             iFrame[0].contentWindow.addLink();
@@ -90,18 +117,29 @@ angular.module('myApp.controllers', [])
             iFrame[0].contentWindow.clearSpace();
         }
         $scope.save = function() {
-            iFrame[0].contentWindow.save();
+           var node = iFrame[0].contentWindow.save();
+            console.log(node);
         }
-
+        function setMess(val) {
+           document.getElementById('div-progresbar').style.display= 'none';
+            document.getElementById('res').style.display= 'block';
+            document.getElementById('lable').innerHTML=val;
+        }
         $scope.send = function() {
             console.log("send");
+            $scope.showSubmitPanel();
             $scope.task.uid= $cookieStore.get('taskUid');
 
             EditService.send($scope.task).then(function (task) {
-                alert("Task send successfully.");
+                //alert("Task send successfully.");
+                setMess('Task send successfully.');
+                iFrame[0].contentWindow.clearSpace();
                 $cookieStore.remove('taskUid');
+                $window.location.reload();
             }, function () {
-                alert("Something wrong.");
+               // alert("Something wrong.");
+               setMess('Something wrong.')
+
             });
 
         }

@@ -419,7 +419,6 @@ function mousedown() {
     node.x = point[0];
     node.y = point[1];
     nodes.push(node);
-
     restart();
 }
 
@@ -467,12 +466,13 @@ function save() {
         node = {source: links[i].source.id, target: links[i].target.id, lcapacity: links[i].lcapacity, lspeed: links[i].lspeed, left: links[i].left, right: links[i].right, synchronize: links[i].synchronize};
         savelinks.push(node);
     }
+    var res={links:savelinks,nodes:nodes};
 
-    var savestr = "{\"nodes\":" + JSON.stringify(nodes) + "," + "\"links\":" + JSON.stringify(savelinks) + "}";
-
-    var blob = new Blob([savestr], {type: "text/json;charset=utf-8"});
-    saveAs(blob, "graph.json");
-    clearFl();
+//    var savestr = "{\"nodes\":" + JSON.stringify(nodes) + "," + "\"links\":" + JSON.stringify(savelinks) + "}";
+    return res;
+  //  var blob = new Blob([savestr], {type: "text/json;charset=utf-8"});
+  //  saveAs(blob, "graph.json");
+  //  clearFl();
 }
 
 function restore() {
@@ -587,7 +587,6 @@ function addNode() {
     clearFl();
     flAdd_node = true;
     document.getElementsByTagName("svg")[0].style.cursor = 'crosshair';
-
 }
 function addLink() {
     clearFl();
