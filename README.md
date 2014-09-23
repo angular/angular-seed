@@ -109,7 +109,7 @@ The angular-seed app comes preconfigured with unit tests. These are written in
 configuration file to run them.
 
 * the configuration is found at `karma.conf.js`
-* the unit tests are found in next to the code they are testing and are named as `..._test.js`.
+* the unit tests are found next to the code they are testing and are named as `..._test.js`.
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
