@@ -6,7 +6,7 @@
 // Demonstrate how to register services
 // In this case it is a simple value service.
 angular.module('myApp.services', []).
-  value('version', '0.1')
+    value('version', '0.1')
     .service('Session', function () {
         this.create = function (sessionId, userId, userRole) {
             this.id = sessionId;
@@ -52,24 +52,24 @@ angular.module('myApp.services', []).
 
         registrationService.registration = function (user) {
             var fd = new FormData();
-            fd.append('name',user.name);
-            fd.append('email',user.email);
-            fd.append('login',user.login);
-            fd.append('password',user.password);
-            fd.append('certfile',user.certfile);
+            fd.append('name', user.name);
+            fd.append('email', user.email);
+            fd.append('login', user.login);
+            fd.append('password', user.password);
+            fd.append('certfile', user.certfile);
             if (typeof user.certfile != 'undefined')
-            fd.append('certfilename',user.certfile.name)
-            fd.append('keyfile',user.keyfile);
+                fd.append('certfilename', user.certfile.name)
+            fd.append('keyfile', user.keyfile);
             if (typeof user.keyfile != 'undefined')
-            fd.append('keyfilename',user.keyfile.name)
-            fd.append('certpassword',user.certpassword);
+                fd.append('keyfilename', user.keyfile.name)
+            fd.append('certpassword', user.certpassword);
 
 
             return $http
-                .post('/api/users/registration', fd,{
-                transformRequest: angular.identity,
+                .post('/api/users/registration', fd, {
+                    transformRequest: angular.identity,
                     headers: {'Content-Type': undefined}
-            })
+                })
                 .then(function (res) {
                     console.log(res);
                     return res.data;
@@ -83,7 +83,8 @@ angular.module('myApp.services', []).
                 });
         };
         return registrationService;
-    }).factory('EditService', function ($http) {
+    })
+    .factory('EditService', function ($http) {
         var editService = {};
 
         editService.createTask = function (task) {
@@ -103,4 +104,17 @@ angular.module('myApp.services', []).
                 });
         };
         return editService;
+    })
+    .factory('TaskService', function ($http) {
+        var taskService = {};
+
+        taskService.loadTasksSer = function (userUid) {
+            return $http.get('/api/tasks' + '?uid=' + userUid)
+                .then(function (res) {
+                    console.log(res.data);
+                    return res.data;
+                });
+        };
+
+        return taskService;
     });

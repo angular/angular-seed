@@ -32,7 +32,8 @@ angular.module('myApp.controllers', [])
 })
         .controller('HomeCtrl', ['$scope', function($scope) {
 
-    }]).controller('EditorCtrl',function($scope,$cookieStore,$window,EditService) {
+    }]).
+    controller('EditorCtrl',function($scope,$cookieStore,$window,EditService) {
         var iFrame = document.getElementsByTagName('iframe');
         $scope.task = {
             name:'',
@@ -155,9 +156,24 @@ angular.module('myApp.controllers', [])
             return active;
         };
     }])
-    .controller('TasksCtrl', ['$scope', '$location', function($scope, $location) {
+    .controller('TasksCtrl', function($scope, $location,TaskService) {
+        $scope.sections = [
+            {"name" : "children","totalChildren" : 0},
+            {"name" : "work","work1" : "","work2" : ""}
+        ]
+        $scope.tasks;
+        $scope.loadTasks = function () {
+        console.log("run load task")
+            TaskService.loadTasksSer($scope.getId()).then(function (tasks) {
+              $scope.tasks=angular.fromJson(tasks);
+              //  $scope.setCurrentUser(user);
+             //   $location.path( "#/home" );
+            }, function () {
+                alert("did not get tasks.");
+            });
+        };
 
-    }])
+    })
     .controller('MonitorCtrl', ['$scope', '$location', function($scope, $location) {
 
     }])

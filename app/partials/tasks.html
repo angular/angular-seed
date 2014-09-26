@@ -1,60 +1,43 @@
-<div class="container" ng-if="currentUser">
+<div class="container" ng-if="currentUser" ng-init="loadTasks()">
     <div class="row">
         <div class="col-xs-1">
-            <div class="btn-group-vertical pull-right" style="padding-top: 35px">
-                <button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-play"></span></button>
-                <button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-pause"></span></button>
-                <button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-remove-circle"></span></button>
-                <button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-repeat"></span></button>
-            </div>
+            <!--<div class="btn-group-vertical pull-right" style="padding-top: 35px">-->
+                <!--<button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-play"></span></button>-->
+                <!--<button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-pause"></span></button>-->
+                <!--<button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-remove-circle"></span></button>-->
+                <!--<button type="button" class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-repeat"></span></button>-->
+            <!--</div>-->
 </div>
         <div class="col-xs-11">
+            <input class="form-control" type="search" ng-model="q" placeholder="Find" />
             <table class="table table-hover">
                     <thead>
                     <tr>
                         <th>#</th>
                         <th>Name</th>
                         <th>T start</th>
+                        <th>T finish</th>
+                        <th>Server</th>
                         <th>Status</th>
+                        <th>Result</th>
 
                     </tr>
                     </thead>
                     <tbody>
 
-                    <tr class="success">
-                        <td>1</td>
-                        <td>task 2</td>
-                        <td>Пнд Май 11 18:41:41 EEST 2014</td>
-                        <td>finish</td>
+                    <tr  ng-if="tasks" ng-repeat="task in tasks | filter: q">
+                        <td>{{$index+1}}</td>
+                        <td> {{task.name}}</td>
+                        <td>{{task.startTime}}</td>
+                        <td>{{task.finishTime}}</td>
+                        <td>{{task.server}}</td>
+                        <td>{{task.status}}</td>
+                        <td><a href="/upload/{{task.userUid}}/{{task.uid}}/{{task.arcId}}.zip">Download</a></td>
                     </tr>
-                    <tr class="active">
-                        <td>2</td>
-                        <td>task 1</td>
-                        <td>Пнд Май 12 18:41:41 EEST 2014</td>
-                        <td>processing</td>
-                    </tr>
-                    <tr class="success">
-                        <td>3</td>
-                        <td>task 3</td>
-                        <td>Пнд Май 10 18:41:41 EEST 2014</td>
-                        <td>finish</td>
-                    </tr>
-                    <tr class="warning">
-                        <td>4</td>
-                        <td>task 4</td>
-                        <td>Пнд Май 10 18:41:41 EEST 2014</td>
-                        <td>waiting</td>
-                    </tr>
-                    <tr class="danger">
-                        <td>5</td>
-                        <td>task 5</td>
-                        <td>Пнд Май 12 18:41:41 EEST 2014</td>
-                        <td>error</td>
-                    </tr>
+
                     </tbody>
                 </table>
 </div>
         </div>
-
 </div> <!-- /container -->
 <div class="alert alert-danger container" role="alert" ng-if="!currentUser">You do not have access to this page. Please sign in or registration.</div>
