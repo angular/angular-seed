@@ -32,7 +32,7 @@
                         <td>{{task.finishTime}}</td>
                         <td>{{task.server}}</td>
                         <td>{{task.status}}</td>
-                        <td><a href="/upload/{{task.userUid}}/{{task.uid}}/{{task.arcId}}.zip">Download</a></td>
+                        <td ng-if="task.status=='Finished'"><a href="/upload/{{task.userUid}}/{{task.uid}}/{{task.arcId}}.zip">Download</a></td>
                     </tr>
 
                     </tbody>
