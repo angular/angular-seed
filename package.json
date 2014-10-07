@@ -2,7 +2,7 @@
     "name": "smart-table",
     "version": "1.3.0",
     "description": "",
-    "main": "index.js",
+    "main": "dist/smart-table.debug.js",
     "scripts": {
         "test": "node ./node_modules/.bin/gulp karma-CI"
     },
