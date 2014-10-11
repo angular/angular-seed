@@ -108,7 +108,7 @@ e2e-tests/            --> end-to-end tests
 
 ## Testing
 
-There are two kinds of tests in the angular-seed application: Unit tests and End to End tests.
+There are two kinds of tests in the angular-seed application: Unit tests and end-to-end tests.
 
 ### Running Unit Tests
 
