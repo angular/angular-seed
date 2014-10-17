@@ -1,8 +1,8 @@
 {
-  "name": "angular-seed",
-  "description": "A starter project for AngularJS",
+  "name": "herman-leus-angular-seed",
+  "description": "Herman Leus public website repository",
   "version": "0.0.0",
-  "homepage": "https://github.com/angular/angular-seed",
+  "homepage": "",
   "license": "MIT",
   "private": true,
   "dependencies": {
