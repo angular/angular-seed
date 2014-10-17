@@ -2,7 +2,7 @@
 
 describe('mainModule.view1 module', function() {
 
-  beforeEach(module('mainModule.view1'));
+  beforeEach(module('mainModule.home'));
 
   describe('view1 controller', function(){
 
