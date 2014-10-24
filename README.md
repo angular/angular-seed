@@ -8,6 +8,8 @@ for draws.
 
 You can play it [here](http://njacobs5074.github.io/tic-tac-toe/)!
 
+By the way, the computer's strategy is an implement of Newell and Simon's [1972 tic tic toe algorithm](http://en.wikipedia.org/wiki/Tic-tac-toe#Strategy).
+
 ## Getting Started
 
 NB: This repository is based on the AngularJS seed project ([angular-seed](https://github.com/angular/angular-seed)).
