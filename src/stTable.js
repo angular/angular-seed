@@ -87,7 +87,9 @@
             this.pipe = function pipe() {
                 var pagination = tableState.pagination;
                 var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
-                filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                if (tableState.sort.predicate) {
+                    filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                }
                 if (pagination.number !== undefined) {
                     pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
                     pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;

@@ -49,7 +49,7 @@
 
                 }, function (newValue, oldValue) {
                     if (newValue !== oldValue) {
-                        updateSafeCopy()
+                        updateSafeCopy();
                     }
                 });
                 $scope.$watch(function () {
@@ -97,7 +97,9 @@
             this.pipe = function pipe() {
                 var pagination = tableState.pagination;
                 var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
-                filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                if (tableState.sort.predicate) {
+                    filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                }
                 if (pagination.number !== undefined) {
                     pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
                     pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
@@ -186,7 +188,6 @@
     ng.module('smart-table')
         .directive('stSearch', ['$timeout', function ($timeout) {
             return {
-                replace: true,
                 require: '^stTable',
                 scope: {
                     predicate: '=?stSearch'
@@ -205,7 +206,7 @@
 
                     //table state -> view
                     scope.$watch(function () {
-                        return ctrl.tableState().search
+                        return ctrl.tableState().search;
                     }, function (newValue, oldValue) {
                         var predicateExpression = scope.predicate || '$';
                         if (newValue.predicateObject && newValue.predicateObject[predicateExpression] !== element[0].value) {
@@ -225,8 +226,8 @@
                         }, throttle);
                     });
                 }
-            }
-        }])
+            };
+        }]);
 })(angular);
 
 (function (ng) {
@@ -255,7 +256,7 @@
                         }
                     });
                 }
-            }
+            };
         });
 })(angular);
 
@@ -322,7 +323,7 @@
                     }, true);
                 }
             };
-        }])
+        }]);
 })(angular);
 
 (function (ng) {
@@ -337,7 +338,6 @@
           stDisplayedPages: '=?'
         },
         templateUrl: 'template/smart-table/pagination.html',
-        replace: true,
         link: function (scope, element, attrs, ctrl) {
 
           scope.stItemsByPage = scope.stItemsByPage ? +(scope.stItemsByPage) : 10;

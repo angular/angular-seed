@@ -10,7 +10,6 @@
           stDisplayedPages: '=?'
         },
         templateUrl: 'template/smart-table/pagination.html',
-        replace: true,
         link: function (scope, element, attrs, ctrl) {
 
           scope.stItemsByPage = scope.stItemsByPage ? +(scope.stItemsByPage) : 10;

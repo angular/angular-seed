@@ -3,7 +3,6 @@
     ng.module('smart-table')
         .directive('stSearch', ['$timeout', function ($timeout) {
             return {
-                replace: true,
                 require: '^stTable',
                 scope: {
                     predicate: '=?stSearch'

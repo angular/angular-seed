@@ -1,102 +1,157 @@
 describe('stSearch Directive', function () {
 
-    var controllerMock = {
-        search: angular.noop,
-        tableState: function () {
-            return tableState;
-        }
-    };
-
     var rootScope;
     var scope;
     var element;
-    var tableState = {
-        search: {},
-        sort: {},
-        pagination: {sort: 0}
-    };
 
-
-    beforeEach(module('smart-table', function ($controllerProvider) {
-        $controllerProvider.register('stTableController', function () {
-            return controllerMock;
+    function trToModel(trs) {
+        return Array.prototype.map.call(trs, function (ele) {
+            return {
+                name: ele.cells[0].innerHTML,
+                firstname: ele.cells[1].innerHTML,
+                age: +(ele.cells[2].innerHTML)
+            };
         });
-    }));
+    }
 
-    beforeEach(inject(function ($compile, $rootScope) {
-
-        rootScope = $rootScope;
-        scope = $rootScope.$new();
-        scope.rowCollection = [];
-
-        var template = '<table st-table="rowCollection">' +
-            '<thead>' +
-            '<tr><th><input type="text" st-search="\'name\'" /></th>' +
-            '<th><input type="text" st-search="" /></th>' +
-            '<th>age</th>' +
-            '</tr>' +
-            '</table>';
-
-        element = $compile(template)(scope);
-    }));
+    beforeEach(module('smart-table'));
 
     describe('string predicate', function () {
-        it('should call the controller with the predicate', inject(function ($timeout) {
-            spyOn(controllerMock, 'search').andCallThrough();
-            var ths = element.find('th');
 
-            var input = angular.element(ths[0].children[0]);
-            input[0].value = 'blah';
-            input.triggerHandler('input');
-            expect(controllerMock.search).not.toHaveBeenCalled();
-            $timeout.flush();
-            expect(controllerMock.search).toHaveBeenCalledWith('blah', 'name');
+        beforeEach(inject(function ($compile, $rootScope) {
+
+            rootScope = $rootScope;
+            scope = $rootScope.$new();
+            scope.rowCollection = [
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Francoise', firstname: 'Frere', age: 99},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Leponge', firstname: 'Bob', age: 22},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ];
+
+            var template = '<table st-table="rowCollection">' +
+                '<thead>' +
+                '<tr>' +
+                '<th><input st-search="\'name\'" /></th>' +
+                '<th><input st-search="" /></th>' +
+                '<th>age</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr class="test-filtered" ng-repeat="row in rowCollection">' +
+                '<td>{{row.name}}</td>' +
+                '<td>{{row.firstname}}</td>' +
+                '<td>{{row.age}}</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>';
+
+            element = $compile(template)(scope);
+            scope.$apply();
         }));
 
-        it('should call the controller with falsy value', inject(function ($timeout) {
-            spyOn(controllerMock, 'search').andCallThrough();
+        it('should keep only items which matches', inject(function ($timeout) {
+            var ths = element.find('th');
+            var trs;
+
+            var input = angular.element(ths[0].children[0]);
+            input[0].value = 're';
+            input.triggerHandler('input');
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(5);
+            $timeout.flush();
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(3);
+            expect(trToModel(trs)).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
+        }));
+
+        it('should search globally', inject(function ($timeout) {
             var ths = element.find('th');
 
             var input = angular.element(ths[1].children[0]);
-            input[0].value = 'blah';
+            input[0].value = 're';
             input.triggerHandler('input');
-            expect(controllerMock.search).not.toHaveBeenCalled();
             $timeout.flush();
-            expect(controllerMock.search.calls[0].args[0]).toEqual('blah');
-            expect(!controllerMock.search.calls[0].args[1]).toBe(true);
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(4);
+            expect(trToModel(trs)).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Francoise', firstname: 'Frere', age: 99},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
         }));
     });
 
-    it('should support binding on search predicate', inject(function ($compile, $timeout) {
-        scope.searchPredicate = 'name';
-        var template = '<table st-table="rowCollection">' +
-            '<thead>' +
-            '<tr><th><input type="text" st-search="searchPredicate" /></th>' +
-            '<th><input type="text" st-search="" /></th>' +
-            '<th>age</th>' +
-            '</tr>' +
-            '</table>';
+    describe('binding predicate', function () {
 
-        element = $compile(template)(scope);
-        spyOn(controllerMock, 'search').andCallThrough();
-        var ths = element.find('th');
+        beforeEach(inject(function ($compile, $rootScope) {
 
-        var input = angular.element(ths[0].children[0]);
-        input[0].value = 'blah';
-        input.triggerHandler('input');
-        expect(controllerMock.search).not.toHaveBeenCalled();
-        $timeout.flush();
-        expect(controllerMock.search).toHaveBeenCalledWith('blah', 'name');
+            rootScope = $rootScope;
+            scope = $rootScope.$new();
+            scope.rowCollection = [
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Francoise', firstname: 'Frere', age: 99},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Leponge', firstname: 'Bob', age: 22},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ];
+
+            var template = '<table st-table="rowCollection">' +
+                '<thead>' +
+                '<tr>' +
+                '<th><input st-search="searchPredicate" /></th>' +
+                '<th><input st-search="" /></th>' +
+                '<th>age</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr class="test-filtered" ng-repeat="row in rowCollection">' +
+                '<td>{{row.name}}</td>' +
+                '<td>{{row.firstname}}</td>' +
+                '<td>{{row.age}}</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>';
+
+            element = $compile(template)(scope);
+            scope.$apply();
+        }));
 
 
-        scope.searchPredicate = 'lastname';
-        scope.$apply();
-        expect(controllerMock.search).toHaveBeenCalledWith('blah', 'lastname');
+        it('should support binding on search predicate', inject(function ($compile, $timeout) {
+            scope.searchPredicate = 'name';
+            var ths = element.find('th');
+            var trs;
 
-        input[0].value = 'another blah';
-        input.triggerHandler('input');
-        $timeout.flush();
-        expect(controllerMock.search).toHaveBeenCalledWith('another blah', 'lastname');
+            var input = angular.element(ths[0].children[0]);
+            input[0].value = 're';
+            input.triggerHandler('input');
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(5);
+            $timeout.flush();
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(3);
+            expect(trToModel(trs)).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Renard', firstname: 'Olivier', age: 33},
+                {name: 'Faivre', firstname: 'Blandine', age: 44}
+            ]);
 
-    }));
+            scope.searchPredicate = 'firstname';
+            scope.$apply();
+            trs = element.find('tr.test-filtered');
+            expect(trs.length).toBe(2);
+            expect(trToModel(trs)).toEqual([
+                {name: 'Renard', firstname: 'Laurent', age: 66},
+                {name: 'Francoise', firstname: 'Frere', age: 99}
+            ]);
+
+        }));
+    });
 });

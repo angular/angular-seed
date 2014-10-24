@@ -23,6 +23,7 @@
         "angular": "latest"
     },
     "devDependencies": {
-        "angular-mocks": "latest"
+        "angular-mocks": "latest",
+        "jquery": "latest"
     }
 }

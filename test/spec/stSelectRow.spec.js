@@ -1,9 +1,5 @@
 describe('stSelectRow Directive', function () {
 
-    var controllerMock = {
-        select: angular.noop
-    };
-
     var rootScope;
     var scope;
     var element;
@@ -12,11 +8,7 @@ describe('stSelectRow Directive', function () {
         return Array.prototype.indexOf.call(element.classList, classname) !== -1
     }
 
-    beforeEach(module('smart-table', function ($controllerProvider) {
-        $controllerProvider.register('stTableController', function () {
-            return controllerMock;
-        });
-    }));
+    beforeEach(module('smart-table'));
 
     describe('single mode', function () {
         beforeEach(inject(function ($compile, $rootScope) {
@@ -43,11 +35,20 @@ describe('stSelectRow Directive', function () {
         }));
 
         it('should select one row', function () {
-            spyOn(controllerMock, 'select').andCallThrough();
             var trs = element.find('tr');
             expect(trs.length).toBe(5);
             angular.element(trs[3]).triggerHandler('click');
-            expect(controllerMock.select).toHaveBeenCalledWith(scope.rowCollection[3], 'single');
+            expect(scope.rowCollection[3].isSelected).toBe(true);
+        });
+
+        it('should select one row only', function () {
+            var trs = element.find('tr');
+            expect(trs.length).toBe(5);
+            angular.element(trs[3]).triggerHandler('click');
+            expect(scope.rowCollection[3].isSelected).toBe(true);
+            angular.element(trs[1]).triggerHandler('click');
+            expect(scope.rowCollection[1].isSelected).toBe(true);
+            expect(scope.rowCollection[3].isSelected).toBe(false);
         });
 
         it('should update the class name when isSelected property change', function () {
@@ -89,11 +90,13 @@ describe('stSelectRow Directive', function () {
         }));
 
         it('should select multiple row', function () {
-            spyOn(controllerMock, 'select').andCallThrough();
             var trs = element.find('tr');
             expect(trs.length).toBe(5);
             angular.element(trs[3]).triggerHandler('click');
-            expect(controllerMock.select).toHaveBeenCalledWith(scope.rowCollection[3], 'multiple');
+            expect(scope.rowCollection[3].isSelected).toBe(true);
+            angular.element(trs[1]).triggerHandler('click');
+            expect(scope.rowCollection[3].isSelected).toBe(true);
+            expect(scope.rowCollection[1].isSelected).toBe(true);
         });
     });
 
