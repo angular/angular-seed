@@ -44,3 +44,8 @@ Note that if you want to search against a property name you have now to put in u
 ## version 1.3.0
 
 * new feature, items by page and displayed page can be bound
+
+## version 1.4.0
+
+* support external template for pagination
+* support angular v1.3.x
