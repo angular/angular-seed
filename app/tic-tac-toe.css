@@ -1,0 +1,197 @@
+/* tic-tac-toe css stylesheet */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #faf8ef;
+    color: #776e65;
+    font-family: Helvetica Neue ", Arial, sans-serif; font-size : 18 px; font-size : 18 px;
+}
+
+div {
+    display: block;
+}
+
+a {
+    color: #776e65;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    line-height: 1.65;
+}
+
+h1.title {
+    font-size: 70px;
+    font-weight: bold;
+    margin: 0;
+    display: block;
+    float: left;
+}
+
+h1 {
+    display: block;
+    font-size: 2em;
+    -webkit-margin-before: 0.67em;
+    -webkit-margin-after: 0.67em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    font-weight: bold;
+}
+
+.container {
+    width: 650px;
+    margin: 0 auto;
+}
+
+.heading:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.player-letters-container {
+    float: right;
+    text-align: right;
+}
+
+.human-letter-container, .computer-letter-container {
+    position: relative;
+    display: inline-block;
+    background: #bbada0;
+    padding: 15px 35px;
+    font-size: 25px;
+    height: 25px;
+    line-height: 47px;
+    font-weight: bold;
+    border-radius: 3px;
+    color: white;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.human-letter-container:after {
+    content: "Human";
+}
+
+.computer-letter-container:after {
+    content: "Computer";
+}
+
+.human-letter-container:after, .computer-letter-container:after {
+    position: absolute;
+    width: 100%;
+    top: 10px;
+    left: 0;
+    text-transform: uppercase;
+    font-size: 13px;
+    line-height: 13px;
+    text-align: center;
+    color: #eee4da;
+}
+
+.above-game:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.game-intro {
+    float: left;
+    line-height: 42px;
+    margin-bottom: 0;
+}
+
+.restart-button {
+    display: inline-block;
+    background: #8f7a66;
+    border-radius: 3px;
+    padding: 0 20px;
+    text-decoration: none;
+    color: #f9f6f2;
+    height: 40px;
+    line-height: 42px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    float: right;
+}
+
+.restart-button-desensitized .restart-button {
+    background: #f9f6f2;
+    color: #8f7a66;
+}
+
+.game-container {
+    margin-top: 40px;
+    position: relative;
+    padding: 15px;
+    cursor: default;
+    -webkit-touch-callout: none;
+    -ms-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -ms-touch-action: none;
+    touch-action: none;
+    background: #bbada0;
+    border-radius: 6px;
+    width: 500px;
+    height: 500px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.game-message {
+    /*
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(238, 228, 218, 0.73);
+    z-index: 100;
+    padding-top: 40px;
+    text-align: center;
+    -webkit-animation: fade-in 800ms ease 1200ms;
+    -moz-animation: fade-in 800ms ease 1200ms;
+    animation: fade-in 800ms ease 1200ms;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-fill-mode: both;
+    animation-fill-mode: both;
+    */
+}
+
+.grid-container {
+    position: absolute;
+    z-index: 1;
+}
+
+.grid-row {
+    margin-bottom: 15px;
+}
+
+.grid-row:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.grid-cell {
+    font-size: 100px;
+    text-align: center;
+    width: 146px;
+    height: 146px;
+    margin-right: 15px;
+    float: left;
+    border-radius: 3px;
+    background: rgba(238, 228, 218, 0.35);
+}
+
+
