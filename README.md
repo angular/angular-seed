@@ -6,6 +6,7 @@ some sort of early developmental milestone to realize that played properly, it i
 impossible to lose.  Thus, I think most of us lose interest in it as it's a game notorious
 for draws.
 
+You can play it [here](http://njacobs5074.github.io/tic-tac-toe/)!
 
 ## Getting Started
 
