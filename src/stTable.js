@@ -39,7 +39,7 @@
 
                 }, function (newValue, oldValue) {
                     if (newValue !== oldValue) {
-                        updateSafeCopy()
+                        updateSafeCopy();
                     }
                 });
                 $scope.$watch(function () {
