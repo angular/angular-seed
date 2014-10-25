@@ -31,7 +31,7 @@ ComputerPlayer.prototype.initStrategies = function () {
     this.strategies[8] = new EmptySideStrategy(this.board, this.me.letter);
 };
 
-ComputerPlayer.prototype.addListeners = function() {
+ComputerPlayer.prototype.addListeners = function () {
     this.game.addListener(ComputerPlayer.gameListener, this);
     this.board.addListener(ComputerPlayer.boardListener, this);
 };
@@ -85,7 +85,7 @@ ComputerPlayer.findTwoInARow = function (board, letter) {
             return new TwoInARow(i, 1, TwoInARow.HORIZONTAL, i, 0);
         }
         else if (board.getTile(i, 0).player == letter && board.getTile(i, 2).player == letter && board.getTile(i, 1).unset()) {
-            return new TwoInARow(i, 0, TwoInARow.HORIZONTAL, i,1);
+            return new TwoInARow(i, 0, TwoInARow.HORIZONTAL, i, 1);
         }
     }
 
@@ -202,6 +202,11 @@ function TwoInARow(row, col, orientation, unsetRow, unsetCol) {
     this.unsetCol = unsetCol;
 }
 
+TwoInARow.prototype.toString = function () {
+    return "{row=" + this.row + ", col=" + this.col + ", orientation=" + this.orientation +
+           ", unsetRow=" + this.unsetRow + ", unsetCol=" + this.unsetCol + "}";
+};
+
 TwoInARow.HORIZONTAL = 0;
 TwoInARow.VERTICAL = 1;
 TwoInARow.DIAGONAL = 2;
@@ -221,7 +226,7 @@ function TurnOneStrategy(game, letter) {
     this.letter = letter;
 }
 
-TurnOneStrategy.prototype.play = function() {
+TurnOneStrategy.prototype.play = function () {
     console.log("TurnOneStrategy: Turn = " + this.game.turn);
 
     if (this.game.turn == 1 && this.letter == 'O' && this.game.board.getTile(1, 1).unset()) {
@@ -307,7 +312,7 @@ function BlockForkStrategy(board, opponentLetter, myLetter) {
 BlockForkStrategy.prototype.play = function () {
     console.log("BlockForkStrategy: Looking for opponent fork: " + this.opponentLetter);
 
-    var copyOfBoard = null, i, j, opponentForkStrategy;
+    var copyOfBoard = null, i, j, opponentForkStrategy, forkedTile;
 
     // Look for a place to put our letter such that it does not open up an opponent fork.
     for (i = 0; i < 3; i++) {
@@ -318,9 +323,13 @@ BlockForkStrategy.prototype.play = function () {
                 copyOfBoard.setTileXorO(i, j, this.myLetter);
 
                 // Look to see if this creates an opportunity for the opponent to fork.
+                forkedTile = null;
+                copyOfBoard.addListener(function (event) {
+                    forkedTile = event;
+                });
                 opponentForkStrategy = new ForkStrategy(copyOfBoard, this.opponentLetter);
-                if (!opponentForkStrategy.play()) {
-                    this.board.setTileXorO(i, j, this.myLetter);
+                if (opponentForkStrategy.play()) {
+                    this.board.setTileXorO(forkedTile.row, forkedTile.col, this.myLetter);
                     return true;
                 }
             }
@@ -337,11 +346,10 @@ BlockForkStrategy.prototype.play = function () {
             // We add a listener to the copied game board.  If the event is fired, it means
             // that the ForkStrategy object below was able to make a play.  Our listener
             // will capture the location where the play was made.
-            var forkedTile = null;
+            forkedTile = null;
             copyOfBoard.addListener(function (event) {
                 forkedTile = event;
             });
-
             opponentForkStrategy = new ForkStrategy(copyOfBoard, this.opponentLetter);
             if (opponentForkStrategy.play()) {
                 // Instead - we play our piece where the human would've played their piece.
@@ -362,8 +370,11 @@ function CenterStrategy(board, letter) {
 
 CenterStrategy.prototype.play = function () {
     console.log("CenterStrategy: Playing center if empty");
-    if (this.board.getTile(1, 1).unset())
+    if (this.board.getTile(1, 1).unset()) {
         this.board.setTileXorO(1, 1, this.letter);
+        return true;
+    }
+    return false;
 };
 
 // Play a corner if the opponent is in the corner and the opposite one is empty.
@@ -385,7 +396,7 @@ OppositeCornerStrategy.prototype.play = function () {
         ];
         for (i = 0; i < corners.length; i++) {
             if (this.checkIfUnsetAndSet(corners[i]))
-                break;
+                return true;
         }
     }
     else if (this.board.getTile(0, 2).player == this.opponentLetter) {
@@ -396,7 +407,7 @@ OppositeCornerStrategy.prototype.play = function () {
         ];
         for (i = 0; i < corners.length; i++) {
             if (this.checkIfUnsetAndSet(corners[i]))
-                break;
+                return true;
         }
     }
     else if (this.board.getTile(2, 0).player == this.opponentLetter) {
@@ -407,7 +418,7 @@ OppositeCornerStrategy.prototype.play = function () {
         ];
         for (i = 0; i < corners.length; i++) {
             if (this.checkIfUnsetAndSet(corners[i]))
-                break;
+                return true;
         }
     }
     else if (this.board.getTile(2, 2).player == this.opponentLetter) {
@@ -418,7 +429,7 @@ OppositeCornerStrategy.prototype.play = function () {
         ];
         for (i = 0; i < corners.length; i++) {
             if (this.checkIfUnsetAndSet(corners[i]))
-                break;
+                return true;
         }
     }
     return false;
@@ -448,7 +459,7 @@ CornerStrategy.prototype.play = function () {
         {row: 2, col: 2}
     ];
     for (var i = 0; i < corners.length; i++) {
-        if (!this.board.getTile(corners[i].row, corners[i].col).unset()) {
+        if (this.board.getTile(corners[i].row, corners[i].col).unset()) {
             this.board.setTileXorO(corners[i].row, corners[i].col, this.letter);
             return true;
         }
@@ -472,7 +483,7 @@ EmptySideStrategy.prototype.play = function () {
         {row: 2, col: 1}
     ];
     for (var i = 0; i < sides.length; i++) {
-        if (!this.board.getTile(sides[i].row, sides[i].col).unset()) {
+        if (this.board.getTile(sides[i].row, sides[i].col).unset()) {
             this.board.setTileXorO(sides[i].row, sides[i].col, this.letter);
             return true;
         }
