@@ -49,3 +49,7 @@ Note that if you want to search against a property name you have now to put in u
 
 * support external template for pagination
 * support angular v1.3.x
+
+## version 1.4.1
+
+* ability to skip natural ordering state (ie fix #192)
