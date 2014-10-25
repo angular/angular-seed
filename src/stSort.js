@@ -1,5 +1,3 @@
-(function (ng, undefined) {
-    'use strict';
     ng.module('smart-table')
         .directive('stSort', ['$parse', function ($parse) {
             return {
@@ -62,4 +60,3 @@
                 }
             };
         }]);
-})(angular);

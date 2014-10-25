@@ -11,6 +11,9 @@ var src = (['smart-table.module', 'stTable']).concat(pluginList).map(function (v
     return 'src/' + val + '.js';
 });
 
+src.push('src/bottom.txt');
+src.unshift('src/top.txt');
+
 //modules
 gulp.task('plugins', function () {
     gulp.src(src)
