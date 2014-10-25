@@ -228,4 +228,43 @@ describe('stSort Directive', function () {
         ]);
     }));
 
+    it('should skip natural order', inject(function ($compile) {
+        var template = '<table dummy="" st-table="rowCollection">' +
+            '<thead>' +
+            '<tr><th>name</th>' +
+            '<th st-skip-natural="true" st-sort="firstname">firstname</th>' +
+            '<th>age</th>' +
+            '</tr>' +
+            '</thead>' +
+            '<tbody>' +
+            '<tr class="test-row" ng-repeat="row in rowCollection">' +
+            '<td>{{row.name}}</td>' +
+            '<td>{{row.firstname}}</td>' +
+            '<td>{{row.age}}</td>' +
+            '</tr>' +
+            '</tbody>' +
+            '</table>';
+
+        element = $compile(template)(scope);
+
+        scope.$apply();
+
+        var ths = element.find('th');
+        var th1 = angular.element(ths[1]);
+        th1.triggerHandler('click');
+        th1.triggerHandler('click');
+        th1.triggerHandler('click');
+        scope.$apply();
+        var actual = trToModel(element.find('tr.test-row'));
+        expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
+        expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
+        expect(actual).toEqual([
+            {name: 'Faivre', firstname: 'Blandine', age: 44},
+            {name: 'Leponge', firstname: 'Bob', age: 22},
+            {name: 'Francoise', firstname: 'Frere', age: 99},
+            {name: 'Renard', firstname: 'Laurent', age: 66},
+            {name: 'Renard', firstname: 'Olivier', age: 33}
+        ]);
+    }));
+
 });

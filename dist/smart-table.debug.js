@@ -274,12 +274,12 @@
                     var index = 0;
                     var classAscent = attr.stClassAscent || 'st-sort-ascent';
                     var classDescent = attr.stClassDescent || 'st-sort-descent';
-                    var stateClasses = ['st-sort-natural', classAscent, classDescent];
+                    var stateClasses = [classAscent, classDescent];
 
                     //view --> table state
                     function sort() {
                         index++;
-                        if (index % 3 === 0) {
+                        if (index % 3 === 0 && attr.stSkipNatural === undefined) {
                             //manual reset
                             index = 0;
                             ctrl.tableState().sort = {};
@@ -308,7 +308,7 @@
                     //table state --> view
                     scope.$watch(function () {
                         return ctrl.tableState().sort;
-                    }, function (newValue, oldValue) {
+                    }, function (newValue) {
                         if (newValue.predicate !== predicate) {
                             index = 0;
                             element
@@ -317,8 +317,8 @@
                         } else {
                             index = newValue.reverse === true ? 2 : 1;
                             element
-                                .removeClass(stateClasses[(index + 1) % 2])
-                                .addClass(stateClasses[index]);
+                                .removeClass(stateClasses[index % 2])
+                                .addClass(stateClasses[index - 1]);
                         }
                     }, true);
                 }
