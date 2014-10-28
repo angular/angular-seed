@@ -53,3 +53,12 @@ Note that if you want to search against a property name you have now to put in u
 ## version 1.4.1
 
 * ability to skip natural ordering state (ie fix #192)
+
+## versiokn 1.4.2
+
+* fix #200, `this` in a custom pipe function does not refer to the table controller anymore, and the signature of a custom pipe function is
+```javascript
+function(tableState, tableController){
+
+}
+```

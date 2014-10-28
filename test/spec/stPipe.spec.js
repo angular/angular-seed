@@ -1,13 +1,21 @@
 describe('stPipe directive', function () {
     var scope;
 
+    var firstArg;
+    var secondArg;
+
     beforeEach(module('smart-table'));
 
     beforeEach(inject(function ($rootScope) {
+
+        firstArg = undefined;
+        secondArg = undefined;
+
         scope = $rootScope;
         scope.rowCollection = [];
-        scope.customPipe = function customPipe() {
-
+        scope.customPipe = function customPipe(tableState, ctrl) {
+            firstArg = tableState;
+            secondArg = ctrl;
         }
     }));
 
@@ -27,8 +35,12 @@ describe('stPipe directive', function () {
         var ths = element.find('th');
         angular.element(ths[0]).triggerHandler('click');
 
-        expect(scope.customPipe).toHaveBeenCalledWith({
-            sort: { predicate: 'name', reverse: false }, search: {  }, pagination: { start: 0 }
+        expect(firstArg).toEqual({
+            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0}
+        });
+
+        expect(secondArg.tableState()).toEqual({
+            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0}
         });
     }));
 });
