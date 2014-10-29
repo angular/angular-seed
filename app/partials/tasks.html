@@ -30,9 +30,9 @@
                         <td> {{task.name}}</td>
                         <td>{{task.startTime}}</td>
                         <td>{{task.finishTime}}</td>
-                        <td>{{task.server}}</td>
+                        <td>{{task.servers}}</td>
                         <td>{{task.status}}</td>
-                        <td ng-if="task.status=='Finished'"><a href="/upload/{{task.userUid}}/{{task.uid}}/{{task.arcId}}.zip">Download</a></td>
+                        <td ng-if="task.status=='Finished'|| task.status=='Finished (FINISHED)'"><a href="/upload/{{task.userUid}}/{{task.uid}}/{{task.arcId}}.zip">Download</a></td>
                     </tr>
 
                     </tbody>

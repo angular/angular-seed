@@ -37,7 +37,6 @@ angular.module('myApp.controllers', [])
         var iFrame = document.getElementsByTagName('iframe');
         $scope.task = {
             name:'',
-            server:'',
             description:'',
             uid:'',
             status:'',

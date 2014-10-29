@@ -59,7 +59,7 @@ text.id {
 }
 .info-table-big {
     width:380px;
-    height:370px;
+    height:400px;
     position: absolute;
     padding: 10px;
     z-index: 999;
