@@ -16,6 +16,20 @@
 <label for="expression">Entity:</label>
 <input type="text" id="expression" name="expression" class="bp_form_complete-1404-name"/><input type="submit"/>
 </form>
+
+<h2>Taxa exhibiting presence of a structure</h2>
+<form action="/kb/entity/presence" method="get" onsubmit="document.getElementById('entity_exhibit_pres_bioportal_full_id').setAttribute('name', 'entity');">
+<label for="entity_exhibit_pres">Entity:</label>
+<input type="text" id="entity_exhibit_pres" name="entity_exhibit_pres" class="bp_form_complete-UBERON-name"/>
+<input type="submit"/>
+</form>
+<h2>Taxa exhibiting absence of a structure</h2>
+<form action="/kb/entity/absence" method="get" onsubmit="document.getElementById('entity_exhibit_absence_bioportal_full_id').setAttribute('name', 'entity');">
+<label for="entity_exhibit_absence">Entity:</label>
+<input type="text" id="entity_exhibit_absence" name="entity_exhibit_absence" class="bp_form_complete-UBERON-name"/>
+<input type="submit"/>
+</form>
+
 <h2>Evidence for presence of a structure</h2>
 <form action="/kb/entity/presence/evidence" method="get" onsubmit="document.getElementById('entity_pres_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('taxon_pres_bioportal_full_id').setAttribute('name', 'taxon');">
 <label for="taxon_pres">Taxon:</label>
