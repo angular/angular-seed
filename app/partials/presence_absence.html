@@ -3,17 +3,37 @@
   <input type="text" class="input-large" placeholder="Structure" ng-model="entity" />
   <button class="btn" ng-click="queryPresence();">Query</button>
 </div>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Character State</th>
-	  <th>Source</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr ng-repeat="state in presenceStates">
-      <td>{{state.state_label.value}}</td>
-      <td>{{state.matrix_label.value}}</td>
-    </tr>
-  </tbody>
-</table>
+<div class="row-fluid">
+	<div class="span6">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Character State</th>
+					<th>Source</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="state in presenceStates">
+					<td>{{state.state_label.value}}</td>
+					<td>{{state.matrix_label.value}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="span6">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Character State</th>
+					<th>Source</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="state in absenceStates">
+					<td>{{state.state_label.value}}</td>
+					<td>{{state.matrix_label.value}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
