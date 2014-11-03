@@ -6,6 +6,22 @@ Smart table is a table module for angular js. It allows you to quickly compose y
 It is lightweight (around 3kb minified) and has no other dependencies than Angular itself.
 Check the [documentation](http://lorenzofox3.github.io/smart-table-website/) website for more details
 
+## submitting an issue
+
+Please be responsible, the open source community is not there to guess your problem or to do your job. When submitting an issue try as much as possible to:
+
+1. search in the already existing issues or on [stackoverflow](http://stackoverflow.com/questions/tagged/smart-table?sort=newest&pageSize=30) if your issue has not been raised before.
+
+2. give a precise description mentionning angular version, smart-table version.
+
+3. give a way to reproduce your issue, the best would be with a <strong>running example</strong>, you can use [plunkr](http://plnkr.co/) (smart-table is the list of available packages). Note if you want to mimic ajax loading behaviour you can use [$timeout](https://docs.angularjs.org/api/ng/service/$timeout) angular service or [$httpBackend](https://docs.angularjs.org/api/ng/service/$httpBackend).
+
+4. isolate your code sample on the probable issue to avoid pollution and noise.
+
+5. Close your issue when a solution has been found (and share it with the community)
+
+Note that 80% of the open issues are actually not issues but "problem" due to developpers laziness or lack of investigation. These "issues" are a waste of time for us and especially if we have to setup a sample to reproduce the issue which those developpers could have done. Any open issue which does not fulfill this contract will be closed without investigation.
+
 ## Install
 
 the easiest way is to run `bower install angular-smart-table`, then you just have to add the script and register the module `smart-table` to you application
