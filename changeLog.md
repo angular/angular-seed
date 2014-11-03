@@ -62,3 +62,8 @@ function(tableState, tableController){
 
 }
 ```
+
+## version 1.4.3
+
+* ability to set filter function <code>st-set-filter</code>
+* ability to set sort function <code>st-set-sort</code>

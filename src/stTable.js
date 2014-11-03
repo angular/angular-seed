@@ -166,6 +166,14 @@ ng.module('smart-table')
             restrict: 'A',
             controller: 'stTableController',
             link: function (scope, element, attr, ctrl) {
+
+                if (attr.stSetFilter) {
+                    ctrl.setFilterFunction(attr.stSetFilter);
+                }
+
+                if (attr.stSetSort) {
+                    ctrl.setSortFunction(attr.stSetSort);
+                }
             }
         };
     });
