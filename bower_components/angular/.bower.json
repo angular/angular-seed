@@ -1,0 +1,17 @@
+{
+  "name": "angular",
+  "version": "1.3.1",
+  "main": "./angular.js",
+  "ignore": [],
+  "dependencies": {},
+  "homepage": "https://github.com/angular/bower-angular",
+  "_release": "1.3.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.3.1",
+    "commit": "e7de98173a34859451076bf528d435265fe36504"
+  },
+  "_source": "git://github.com/angular/bower-angular.git",
+  "_target": "~1.3.1",
+  "_originalSource": "angular"
+}
