@@ -1,10 +1,14 @@
-<div class="form-horizontal">
-  <input type="text" class="input-large" placeholder="Taxon" ng-model="taxon" />
-  <input type="text" class="input-large" placeholder="Structure" ng-model="entity" />
-  <button class="btn" ng-click="queryPresence();">Query</button>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <h3>Search for taxa with known presence or absence of a structure</h3>
+            <input type="text" class="input-large" placeholder="Structure" ng-model="entity" />
+            <button class="btn" ng-click="queryPresence();">Query</button>
+        </div>
+    </div>
 </div>
-<div class="row-fluid">
-	<div class="span6">
+<div class="row">
+	<div class="col-md-6">
 		<table class="table">
 			<thead>
 				<tr>
@@ -20,7 +24,7 @@
 			</tbody>
 		</table>
 	</div>
-	<div class="span6">
+	<div class="col-md-6">
 		<table class="table">
 			<thead>
 				<tr>

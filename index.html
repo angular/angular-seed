@@ -6,28 +6,27 @@
 	<link rel="stylesheet" href="css/app.css"/>
 	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="bower_components/angular-busy/dist/angular-busy.min.css">
 </head>
 <body>
 	<div class="container-fluid" ng-controller="AppController">
-	<h1>Phenoscape Knowledgebase</h1>
-	<ul class="nav nav-pills">
-		<li ng-class="homeActive"><a href="#/home">Home</a></li>
-		<li ng-class="presenceAbsenceActive"><a href="#/presence_absence">Presence/Absence</a></li>
-		<li ng-class="contentsActive"><a href="#/contents">Contents</a></li>
-	</ul>
+    	<h1><a href="#/home">Phenoscape Knowledgebase</a></h1>
 
-	<div ng-view></div>
+    	<div ng-view></div>
 
 		<script src="bower_components/angular/angular.js"></script>
 		<script src="bower_components/angular-route/angular-route.js"></script>
 		<script src="bower_components/angular-resource/angular-resource.js"></script>
 		<script src="bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.min.js"></script>
+        <script src="bower_components/angular-busy/dist/angular-busy.min.js"></script>
+        <script src="bower_components/underscore/underscore-min.js"></script>
 		<script src="lib/form_complete.js"></script>
 		<script src="js/app.js"></script>
 		<script src="js/services.js"></script>
 		<script src="js/controllers.js"></script>
 		<script src="js/filters.js"></script>
 		<script src="js/directives.js"></script>
+        
 	</div>
 	</body>
 	</html>
