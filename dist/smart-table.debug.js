@@ -47,7 +47,7 @@ ng.module('smart-table')
                 return safeSrc ? safeSrc.length : 0;
 
             }, function (newValue, oldValue) {
-                if (newValue !== oldValue) {
+                if (newValue !== safeCopy.length) {
                     updateSafeCopy();
                 }
             });

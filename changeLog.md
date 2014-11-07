@@ -67,3 +67,7 @@ function(tableState, tableController){
 
 * ability to set filter function <code>st-set-filter</code>
 * ability to set sort function <code>st-set-sort</code>
+
+## version 1.4.4
+
+* patch for sync problem
