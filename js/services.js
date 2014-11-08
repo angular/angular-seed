@@ -8,11 +8,14 @@ angular.module('pkb.services', ['ngResource'])
 		return $resource('http://pkb-new.nescent.org/kb/entity/presence', {}, {
 			query: {
 				method: 'GET',
-				isArray: true,
-				headers: {'Accept': 'application/sparql-results+json'},
-				transformResponse:  function (data, headerGet) {
-					return angular.fromJson(data).results.bindings;
-				}
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('EntityAbsence', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/entity/absence', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('AnatomicalTermSearch', function ($resource) {

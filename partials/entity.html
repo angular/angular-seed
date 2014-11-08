@@ -1,34 +1,67 @@
 <h2>{{termLabel.label}} <small>{{termID | prefixedURI}}</small></h2>
 
-<div>
-    <a href="http://pkb-new.nescent.org/kb/genes_affecting_phenotype?entity={{termID | encodeURI}}&amp;quality={{'http://purl.obolibrary.org/obo/PATO_0000001' | encodeURI}}">Genes affecting phenotypes</a>
-</div>
+<tabset>
+    <tab heading="Taxa">
+        <tabset type="pills" style="margin-top: 1em;">
+           <tab heading="Presence">
+               <div class="panel panel-default" style="margin-top: 1em;">
+                 <div class="panel-heading">Taxa exhibiting presence of {{termLabel.label}}</div>
+                 <div class="panel-body">
+                   <p>This query uses inference to determine if any character states entail the presence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
+                 </div>
+                 <table class="table table-condensed table-striped">
+                     <thead>
+         				<tr>
+         					<th>Taxon</th>
+                            <th></th>
+         				</tr>
+                     </thead>
+                     <tbody>
+         				<tr ng-repeat="taxon in presentInTaxa.results">
+         					<td>{{taxon.label}}</td>
+                            <td><a href="http://pkb-new.nescent.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+         				</tr>
+                     </tbody>
+                 </table>
+               </div>
+               <div>
+                   <a href="http://pkb-new.nescent.org/kb/entity/presence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting presence of {{termLabel.label}}</a>
+               </div>
+           </tab>
+           <tab heading="Absence" select="queryAbsentInTaxa();">
+               <div class="panel panel-default" style="margin-top: 1em;">
+                 <div class="panel-heading">Taxa exhibiting absence of {{termLabel.label}}</div>
+                 <div class="panel-body">
+                   <p>This query uses inference to determine if any character states entail the absence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
+                 </div>
+                 <table class="table table-condensed table-striped">
+                     <thead>
+         				<tr>
+         					<th>Taxon</th>
+                            <th></th>
+         				</tr>
+                     </thead>
+                     <tbody>
+         				<tr ng-repeat="taxon in absentInTaxa.results">
+         					<td>{{taxon.label}}</td>
+                            <td><a href="http://pkb-new.nescent.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+         				</tr>
+                     </tbody>
+                 </table>
+               </div>
+               <div>
+                   <a href="http://pkb-new.nescent.org/kb/entity/absence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting absence of {{termLabel.label}}</a>
+               </div>
+           </tab>
+         </tabset>
+    </tab>
+    <tab heading="Genes">
+        <div>
+            <a href="http://pkb-new.nescent.org/kb/genes_affecting_phenotype?entity={{termID | encodeURI}}&amp;quality={{'http://purl.obolibrary.org/obo/PATO_0000001' | encodeURI}}">Genes affecting phenotypes</a>
+        </div>
 
-<div>
-    <a href="http://pkb-new.nescent.org/kb/genes_expressed_in_structure?entity={{termID | encodeURI}}">Genes expressed within</a>
-</div>
-
-<div>
-    <a href="http://pkb-new.nescent.org/kb/entity/presence?entity={{termID | encodeURI}}">Taxa exhibiting presence</a>
-</div>
-
-<div>
-    <a href="http://pkb-new.nescent.org/kb/entity/absence?entity={{termID | encodeURI}}">Taxa exhibiting absence</a>
-</div>
-
-<h2>Evidence for presence of a structure</h2>
-<form action="http://pkb-new.nescent.org/kb/entity/presence/evidence" method="get" onsubmit="document.getElementById('entity_pres_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('taxon_pres_bioportal_full_id').setAttribute('name', 'taxon');">
-<label for="taxon_pres">Taxon:</label>
-<input type="text" id="taxon_pres" name="taxon_pres" class="bp_form_complete-VTO-name"/>
-<label for="entity_pres">Entity:</label>
-<input type="text" id="entity_pres" name="entity_pres" class="bp_form_complete-UBERON-name"/>
-<input type="submit"/>
-</form>
-<h2>Evidence for absence of a structure</h2>
-<form action="http://pkb-new.nescent.org/kb/entity/absence/evidence" method="get" onsubmit="document.getElementById('entity_abs_bioportal_full_id').setAttribute('name', 'entity'); document.getElementById('taxon_abs_bioportal_full_id').setAttribute('name', 'taxon');">
-<label for="taxon_abs">Taxon:</label>
-<input type="text" id="taxon_abs" name="taxon_abs" class="bp_form_complete-VTO-name"/>
-<label for="entity_abs">Entity:</label>
-<input type="text" id="entity_abs" name="entity_abs" class="bp_form_complete-UBERON-name"/>
-<input type="submit"/>
-</form>
+        <div>
+            <a href="http://pkb-new.nescent.org/kb/genes_expressed_in_structure?entity={{termID | encodeURI}}">Genes expressed within</a>
+        </div>
+    </tab>
+</tabset>

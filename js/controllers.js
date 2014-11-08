@@ -16,9 +16,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }
     };
 })
-.controller('EntityController', function ($scope, $routeParams, Label) {
+.controller('EntityController', function ($scope, $routeParams, Label, EntityPresence, EntityAbsence) {
     $scope.termID = $routeParams.term;
     $scope.termLabel = Label.query({'iri': $scope.termID});
+    $scope.queryPresentInTaxa = function () {
+        $scope.presentInTaxa = EntityPresence.query({'entity': $scope.termID, 'limit': 20});
+    };
+    $scope.queryAbsentInTaxa = function() {
+        $scope.absentInTaxa = EntityAbsence.query({'entity': $scope.termID, 'limit': 20});
+    };
+    
+    $scope.queryPresentInTaxa();
 })
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;
