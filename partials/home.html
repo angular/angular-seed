@@ -12,12 +12,12 @@
 <div class="row" style="margin-top: 1em;">
     <div class= "col-xs-12">
     <accordion close-others="true">
-        <accordion-group heading="Anatomical structures" is-open="true">
-            <ul class="list-inline" cg-busy="anatomyResults">
+        <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise">
+            <ul class="list-inline">
                 <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
             </ul>
         </accordion-group>
-        <accordion-group heading="Evolutionary characters">
+        <accordion-group heading="Evolutionary characters" is-disabled="!statesResults.results.length > 0" cg-busy="statesResults.$promise">
                 <blockquote ng-repeat="state in statesResults.results" class="character"><a href="#/characterstate/{{state['@id'] | encodeURI }}">{{state.description}}</a><footer>{{state.matrix.label}}</footer></blockquote>
         </accordion-group>
         <accordion-group heading="Taxa">

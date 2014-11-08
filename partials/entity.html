@@ -1,4 +1,4 @@
-<h2>{{termLabel.label}} <small>{{termID | prefixedURI}}</small></h2>
+<h2 cg-busy="termLabel.$promise">{{termLabel.label}} <small>{{termID | prefixedURI}}</small></h2>
 
 <tabset>
     <tab heading="Taxa">
@@ -9,7 +9,7 @@
                  <div class="panel-body">
                    <p>This query uses inference to determine if any character states entail the presence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
                  </div>
-                 <table class="table table-condensed table-striped">
+                 <table class="table table-condensed table-striped" cg-busy="presentInTaxa.$promise">
                      <thead>
          				<tr>
          					<th>Taxon</th>
@@ -34,7 +34,7 @@
                  <div class="panel-body">
                    <p>This query uses inference to determine if any character states entail the absence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
                  </div>
-                 <table class="table table-condensed table-striped">
+                 <table class="table table-condensed table-striped" cg-busy="absentInTaxa.$promise">
                      <thead>
          				<tr>
          					<th>Taxon</th>
