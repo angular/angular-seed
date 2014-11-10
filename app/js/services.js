@@ -61,8 +61,11 @@ angular.module('myApp.services', []).
                 fd.append('certfilename', user.certfile.name)
             fd.append('keyfile', user.keyfile);
             if (typeof user.keyfile != 'undefined')
-                fd.append('keyfilename', user.keyfile.name)
-            fd.append('certpassword', user.certpassword);
+                fd.append('keyfilename', user.keyfile.name);
+            if (typeof user.certpassword != 'undefined')
+                fd.append('certpassword', user.certpassword);
+            else
+                fd.append('certpassword', '');
 
 
             return $http
@@ -71,7 +74,7 @@ angular.module('myApp.services', []).
                     headers: {'Content-Type': undefined}
                 })
                 .then(function (res) {
-                    console.log(res);
+                  //  console.log(res);
                     return res.data;
                 });
         };

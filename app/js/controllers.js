@@ -15,6 +15,9 @@ angular.module('myApp.controllers', [])
       if(user!=null) {
           $cookieStore.put('user', user);
           $cookieStore.put('uid', user.uid);
+      }else{
+          $cookieStore.remove('user');
+          $cookieStore.remove('uid');
       }
   };
   $scope.getId = function () {
@@ -189,23 +192,31 @@ angular.module('myApp.controllers', [])
 
             console.log(credential);
             RegistrationService.registration(credential).then(function (user) {
-                $scope.setCurrentUser(user);
-                $location.path( "#/home" );
+               // console.log(user);
+                if(user.description!=null && user.description.indexOf("ERROR")!=-1){
+                    alert(user.description);
+                }else {
+                    $scope.setCurrentUser(user);
+                    $location.path("#/home");
+                }
             }, function () {
                 alert("Something wrong.");
             });
         };
         $scope.checkLogin = function (credential) {
-            if(typeof credential != 'undefined')
-            RegistrationService.checkLogin(credential).then(function (user) {
-                if (user==""){
-                    document.getElementById('login-used').style.display="none";
-                    document.getElementById('submit').disabled = false;
-                }else{
-                    document.getElementById('login-used').style.display="inline";
-                    document.getElementById('submit').disabled = true;
-                }
-            });
+            if(typeof credential != 'undefined') {
+                delete credential.certfile;
+                delete credential.keyfile;
+                RegistrationService.checkLogin(credential).then(function (user) {
+                    if (user == "") {
+                        document.getElementById('login-used').style.display = "none";
+                        document.getElementById('submit').disabled = false;
+                    } else {
+                        document.getElementById('login-used').style.display = "inline";
+                        document.getElementById('submit').disabled = true;
+                    }
+                });
+            }
         };
     })
     .controller('LoginController', function ($scope, $rootScope,md5,  AuthService) {
