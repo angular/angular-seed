@@ -7,7 +7,12 @@ ng.module('smart-table')
                 stItemsByPage: '=?',
                 stDisplayedPages: '=?'
             },
-            templateUrl: 'template/smart-table/pagination.html',
+            templateUrl: function(element, attrs) {
+              if (attrs.stTemplate) {
+                return attrs.stTemplate;
+              }
+              return 'template/smart-table/pagination.html';
+            },
             link: function (scope, element, attrs, ctrl) {
 
                 scope.stItemsByPage = scope.stItemsByPage ? +(scope.stItemsByPage) : 10;
