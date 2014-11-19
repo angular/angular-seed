@@ -84,7 +84,7 @@ this.When(/^the user navigates to \/view(\d+)$/, function (arg1, callback) {
 
 Similarly, Cucumber combined the "Then we see text..." steps.
 
-## Step Definition Files
+## Step Definition Stubs
 
 Step definitions are maintained in the subdirectory features/step_definitions.  You
 can put them in any Javascript file (*.js).  The stubs shown above can be
@@ -98,4 +98,16 @@ var wrapper = function() {
 };
 
 module.exports = wrapper;
+```
+
+Once the stubs are pasted into this stub, Cucumber will report "pending" steps
+(which are not yet implemented), and subsequent "skipped" steps that could not be
+executed because they follow a "pending" step.
+
+```
+$ ./node_modules/cucumber/bin/cucumber.js
+P---P---
+
+2 scenarios (2 pending)
+8 steps (2 pending, 6 skipped)
 ```
