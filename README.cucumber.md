@@ -111,3 +111,38 @@ P---P---
 2 scenarios (2 pending)
 8 steps (2 pending, 6 skipped)
 ```
+
+### Protractor World
+
+In order to use Cucumber with Protractor, we use the
+[protractor-cucumber](https://github.com/andrewkeig/protractor-cucumber) package.
+
+```
+npm install protractor-cucumber --save-dev
+```
+
+This module (features/step_definitions/browser-world.js) creates a World class that
+connects to an external Selenium server.
+
+```js
+// features/step_definitions/browser-world.js
+// Creates a Cucumber World object that is connected to Selenium.
+
+var pc = require('protractor-cucumber');
+
+var steps = function() {
+  var seleniumAddress = 'http://localhost:4444/wd/hub';
+  var options = { browser : 'chrome', timeout : 100000 };
+  this.World = pc.world(seleniumAddress, options);
+
+  this.After(function(callback) {
+    this.quit(callback);
+  });
+};
+
+module.exports = steps;
+```
+
+With this in place, we can now start to implement the steps in view-steps.js.  In
+particular, we can refer to `this.browser` to refer to the Selenium WebDriver
+object.  A new browser is instantiated for each scenario.
