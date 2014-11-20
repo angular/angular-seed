@@ -4,6 +4,8 @@
 'use strict';
 
 var assert = require('assert');
+var http = require('http');
+var nodeStatic = require('node-static');
 
 var wrapper = function() {
   var baseUrl = 'http://localhost:8000/app/#';
@@ -14,8 +16,32 @@ var wrapper = function() {
   });
 
   this.Given(/^the node server is running$/, function (callback) {
-    // For now, we assume that the server is launched externally via "npm start".
+    // We will launch the server in the "Around" function defined below, so we have nothing to do at this step.
     callback();
+  });
+
+  this.Around(function (runScenario) {
+    // Create a node-static server instance to serve the project root directory.
+    var staticServer = new nodeStatic.Server('./');
+    // Create an HTTP server.
+    console.log('Launching HTTP server.');
+    var httpServer = http.createServer(function (request, response) {
+      request.addListener('end', function() {
+        staticServer.serve(request, response);
+      }).resume();
+    }).listen(8000);
+
+    // Now run the scenario, with our clean-up "after" code as a callback.
+    runScenario(function (callback) {
+      // Shut down the browser.
+      console.log('Quitting the browser.');
+      this.browser.quit()
+        .then(function () {
+          // Shut down the HTTP server.
+          console.log('Shutting down HTTP server.');
+          httpServer.close(callback);
+        });
+    });
   });
 
   this.When(/^the user navigates to (\/.*)$/, function (url, callback) {

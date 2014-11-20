@@ -13,7 +13,8 @@
     "shelljs": "^0.2.6",
     "karma-junit-reporter": "^0.2.2",
     "cucumber": "~0.4.4",
-    "protractor-cucumber": "~0.1.2"
+    "protractor-cucumber": "~0.1.2",
+    "node-static": "~0.7.6"
   },
   "scripts": {
     "cucumber": "cucumber.js",
