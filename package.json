@@ -12,7 +12,8 @@
     "bower": "^1.3.1",
     "shelljs": "^0.2.6",
     "karma-junit-reporter": "^0.2.2",
-    "cucumber": "~0.4.4"
+    "cucumber": "~0.4.4",
+    "protractor-cucumber": "~0.1.2"
   },
   "scripts": {
     "cucumber": "cucumber.js",
