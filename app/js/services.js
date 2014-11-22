@@ -23,10 +23,10 @@ angular.module('myApp.services', []).
     .factory('AuthService', function ($http, Session) {
         var authService = {};
 
-        authService.login = function (credentials) {
+        authService.login = function () {
 
             return $http
-                .post('/api/users/login', credentials)
+                .get('/api/users/login')
                 .then(function (res) {
                     Session.create(res.id, res.data.uid, res.data.role);
                     console.log(res);
@@ -51,38 +51,10 @@ angular.module('myApp.services', []).
         var registrationService = {};
 
         registrationService.registration = function (user) {
-            var fd = new FormData();
-            fd.append('name', user.name);
-            fd.append('email', user.email);
-            fd.append('login', user.login);
-            fd.append('password', user.password);
-            fd.append('certfile', user.certfile);
-            if (typeof user.certfile != 'undefined')
-                fd.append('certfilename', user.certfile.name)
-            fd.append('keyfile', user.keyfile);
-            if (typeof user.keyfile != 'undefined')
-                fd.append('keyfilename', user.keyfile.name);
-            if (typeof user.certpassword != 'undefined')
-                fd.append('certpassword', user.certpassword);
-            else
-                fd.append('certpassword', '');
-
-
             return $http
-                .post('/api/users/registration', fd, {
+                .post('/api/users/registration', user, {
                     transformRequest: angular.identity,
                     headers: {'Content-Type': undefined}
-                })
-                .then(function (res) {
-                  //  console.log(res);
-                    return res.data;
-                });
-        };
-        registrationService.checkLogin = function (user) {
-            return $http
-                .post('/api/users/checklogin', user)
-                .then(function (res) {
-                    return res.data;
                 });
         };
         return registrationService;
@@ -120,4 +92,17 @@ angular.module('myApp.services', []).
         };
 
         return taskService;
+    })
+    .factory('ResourceService', function ($http) {
+        var  resourceService = {};
+
+        resourceService.loadResource= function () {
+            return $http.get('/api/resources')
+                .then(function (res) {
+                    console.log(res.data);
+                    return res.data;
+                });
+        };
+
+        return resourceService;
     });

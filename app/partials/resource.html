@@ -1,0 +1,28 @@
+<div class="container" ng-if="currentUser.firstUse==false" ng-init="loadResources()">
+    <div class="row">
+        <div class="col-xs-1">
+        </div>
+        <div class="col-xs-11">
+            <input class="form-control" type="search" ng-model="q" placeholder="Find" />
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>url</th>
+
+
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr  ng-if="resources" ng-repeat="resource in resources | filter: q">
+                    <td>{{$index+1}}</td>
+                    <td> {{resource.url}}</td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> <!-- /container -->
+<div class="alert alert-danger container" role="alert" ng-if="currentUser.firstUse==true">You do not have access to this page. Please <a href="/#/registration">add your credentials.</a></div>

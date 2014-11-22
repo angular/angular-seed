@@ -17,6 +17,7 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/tasks', {templateUrl: 'partials/tasks.html', controller: 'TasksCtrl'});
   $routeProvider.when('/monitor', {templateUrl: 'partials/monitor.html', controller: 'MonitorCtrl'});
   $routeProvider.when('/registration', {templateUrl: '../partials/registration.html', controller: 'RegistrationCtrl'});
+  $routeProvider.when('/resource', {templateUrl: '../partials/resource.html', controller: 'ResourceCtrl'});
   $routeProvider.otherwise({redirectTo: '/home'});
 }]).constant('USER_ROLES', {
         all: '*',

@@ -1,4 +1,4 @@
-<div class="container" ng-if="currentUser">
+<div class="container" ng-if="currentUser.firstUse==false">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -78,4 +78,4 @@
 	</form>
 
 </div>
-<div class="alert alert-danger container" role="alert" ng-if="!currentUser">You do not have access to this page. Please sign in or registration.</div>
+<div class="alert alert-danger container" role="alert" ng-if="currentUser.firstUse==true">You do not have access to this page. Please <a href="/#/registration">add your credentials.</a></div>

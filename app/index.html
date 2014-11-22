@@ -54,27 +54,28 @@
         </div>
         <div class="navbar-collapse collapse">
 
-          <ul class="nav navbar-nav">
+          <ul class="nav navbar-nav" ng-if="currentUser.firstUse==false">
             <li ng-class="{ active: isActive('/home') }" ><a href="#/home" >Home</a></li>
-            <li ng-class="{ active: isActive('/editor') }" ng-if="currentUser"><a href="#/editor">Editor</a></li>
-            <li ng-class="{ active: isActive('/tasks') }" ng-if="currentUser"><a href="#/tasks">My tasks</a></li>
+            <li ng-class="{ active: isActive('/editor') }" ><a href="#/editor">Editor</a></li>
+            <li ng-class="{ active: isActive('/tasks') }"><a href="#/tasks">My tasks</a></li>
+            <li ng-class="{ active: isActive('/resource') }"><a href="#/resource">Available resources</a></li>
             <!--<li ng-class="{ active: isActive('/monitor') }" ng-if="currentUser"><a href="#/monitor">Grid Monitor</a></li>-->
           </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                <form ng-if="!currentUser" class="navbar-form navbar-right"  name="loginForm" ng-controller="LoginController"
-                      ng-submit="login(credentials)" novalidate>
-                    <div class="form-group">
-                        <input type="text" id="login" name="login"placeholder="login" class="form-control"
-                               ng-model="credentials.login">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" name="password"
-                               ng-model="credentials.password" placeholder="Password" class="form-control">
-                    </div>
-                    <button type="submit" class="btn btn-success">Sign in</button>
-                </form>
-                <li ng-if="currentUser"><p class="navbar-text">Welcome, {{ currentUser.login }}</p>></li>
+                <!--<form ng-if="!currentUser" class="navbar-form navbar-right"  name="loginForm" ng-controller="LoginController"-->
+                      <!--ng-submit="login(credentials)" novalidate>-->
+                    <!--<div class="form-group">-->
+                        <!--<input type="text" id="login" name="login"placeholder="login" class="form-control"-->
+                               <!--ng-model="credentials.login">-->
+                    <!--</div>-->
+                    <!--<div class="form-group">-->
+                        <!--<input type="password" id="password" name="password"-->
+                               <!--ng-model="credentials.password" placeholder="Password" class="form-control">-->
+                    <!--</div>-->
+                    <!--<button type="submit" class="btn btn-success">Sign in</button>-->
+                <!--</form>-->
+                <li ng-init="login()"><p class="navbar-text">Welcome, {{ currentUser.name }}</p>></li>
                 <li ng-if="currentUser" ng-click="setCurrentUser(null)"><a href="#">Log out</a></li>
             </ul>
 

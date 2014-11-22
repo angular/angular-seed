@@ -1,4 +1,4 @@
-<div class="container" ng-if="currentUser" ng-init="loadTasks()">
+<div class="container" ng-if="currentUser.firstUse==false" ng-init="loadTasks()">
     <div class="row">
         <div class="col-xs-1">
             <!--<div class="btn-group-vertical pull-right" style="padding-top: 35px">-->
@@ -40,4 +40,4 @@
 </div>
         </div>
 </div> <!-- /container -->
-<div class="alert alert-danger container" role="alert" ng-if="!currentUser">You do not have access to this page. Please sign in or registration.</div>
+<div class="alert alert-danger container" role="alert" ng-if="currentUser.firstUse==true">You do not have access to this page. Please <a href="/#/registration">add your credentials.</a></div>
