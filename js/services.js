@@ -46,5 +46,11 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-    
+	.factory('Term', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/term', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
     ;
