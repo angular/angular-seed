@@ -6,9 +6,9 @@
         <tabset type="pills" style="margin-top: 1em;">
            <tab heading="Presence">
                <div class="panel panel-default" style="margin-top: 1em;">
-                 <div class="panel-heading">Taxa exhibiting presence of {{termLabel.label}}</div>
+                 <div class="panel-heading">Taxa exhibiting presence of {{term.label}}</div>
                  <div class="panel-body">
-                   <p>This query uses inference to determine if any character states entail the presence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
+                   <p>This query uses inference to determine if any character states entail the presence of <mark>{{term.label}}</mark> in a given taxon.</p>
                  </div>
                  <table class="table table-condensed table-striped" cg-busy="presentInTaxa.$promise">
                      <thead>
@@ -26,14 +26,14 @@
                  </table>
                </div>
                <div>
-                   <a href="http://pkb-new.nescent.org/kb/entity/presence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting presence of {{termLabel.label}}</a>
+                   <a href="http://pkb-new.nescent.org/kb/entity/presence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting presence of {{term.label}}</a>
                </div>
            </tab>
            <tab heading="Absence" select="queryAbsentInTaxa();">
                <div class="panel panel-default" style="margin-top: 1em;">
-                 <div class="panel-heading">Taxa exhibiting absence of {{termLabel.label}}</div>
+                 <div class="panel-heading">Taxa exhibiting absence of {{term.label}}</div>
                  <div class="panel-body">
-                   <p>This query uses inference to determine if any character states entail the absence of <mark>{{termLabel.label}}</mark> in a given taxon.</p>
+                   <p>This query uses inference to determine if any character states entail the absence of <mark>{{term.label}}</mark> in a given taxon.</p>
                  </div>
                  <table class="table table-condensed table-striped" cg-busy="absentInTaxa.$promise">
                      <thead>
@@ -51,7 +51,7 @@
                  </table>
                </div>
                <div>
-                   <a href="http://pkb-new.nescent.org/kb/entity/absence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting absence of {{termLabel.label}}</a>
+                   <a href="http://pkb-new.nescent.org/kb/entity/absence?entity={{termID | encodeURI}}&amp;limit=40">Download all taxa exhibiting absence of {{term.label}}</a>
                </div>
            </tab>
          </tabset>
