@@ -11,7 +11,7 @@ ng.module('smart-table')
                     if (ng.isFunction(scope.stPipe)) {
                         ctrl.preventPipeOnWatch();
                         ctrl.pipe = function () {
-                            scope.stPipe(ctrl.tableState(), ctrl);
+                            return scope.stPipe(ctrl.tableState(), ctrl);
                         }
                     }
                 }
