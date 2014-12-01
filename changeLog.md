@@ -71,3 +71,8 @@ function(tableState, tableController){
 ## version 1.4.4
 
 * patch for sync problem
+
+## version 1.4.5
+
+* merge #234, #218
+* fix #233 #237
