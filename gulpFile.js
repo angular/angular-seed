@@ -3,10 +3,11 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var karma = require('karma').server;
 var jshint = require('gulp-jshint');
+var insert = require('gulp-insert');
 var stylish = require('jshint-stylish');
+var packageJson = require('./package.json');
 var pluginList = ['stSearch', 'stSelectRow', 'stSort', 'stPagination', 'stPipe'];
 var disFolder = './dist/';
-
 var src = (['smart-table.module', 'stTable']).concat(pluginList).map(function (val) {
     return 'src/' + val + '.js';
 });
@@ -47,4 +48,12 @@ gulp.task('debug', function () {
 
 gulp.task('test', ['karma-CI']);
 
-gulp.task('build', ['test', 'plugins', 'debug']);
+gulp.task('build',['test', 'plugins', 'debug'], function () {
+
+    var version = packageJson.version;
+    var string = '/** \n* @version ' + version + '\n* @license MIT\n*/\n';
+
+    gulp.src(disFolder + '*.js')
+        .pipe(insert.prepend(string))
+        .pipe(gulp.dest(disFolder));
+});
