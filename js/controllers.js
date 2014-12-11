@@ -42,6 +42,107 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 		} else {
 			$scope.presenceStates = [];
 		}
-		
-	}
-});
+	};
+})
+.controller('QueryCharacterStatesController', function ($scope, CharacterStateQuery, Vocab) {
+    $scope.charactersTotal = 4000;
+    $scope.maxSize = 5;
+    $scope.itemsPage = 1;
+    $scope.itemsLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryCharacterStates();
+    }
+    function params() {
+        return {
+            taxon: "<" + Vocab.OWLThing + ">",
+            entity: "<" + Vocab.OWLThing + ">",
+            limit: 20,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        };
+    }
+    $scope.queryCharacterStates = function () {
+        $scope.statesResults = CharacterStateQuery.query(params());
+    };
+    $scope.queryCharacterStates();
+    $scope.itemsTotal = CharacterStateQuery.query(_.extend({total: true}, params()));
+})
+.controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OntologyTermSearch) {
+    $scope.maxSize = 5;
+    $scope.itemsPage = 1;
+    $scope.itemsLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryTaxa();
+    }
+    function params() {
+        var t = Vocab.OWLThing;
+        if ($scope.queryTaxon) { t = $scope.queryTaxon["@id"]; }
+        var e = Vocab.OWLThing;
+        if ($scope.queryEntity) { e = $scope.queryEntity["@id"]; }
+        return {
+            taxon: "<" + t + ">",
+            entity: "<" + e + ">",
+            limit: 20,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        };
+    }
+    $scope.queryTaxa = function () {
+        $scope.taxaResults = TaxonQuery.query(params());
+    };
+    $scope.queryTotal = function () {
+        $scope.itemsTotal = TaxonQuery.query(_.extend({total: true}, params()));
+    }
+    $scope.searchTaxa = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.VTO
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    }
+    $scope.searchEntities = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.Uberon
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    }
+    $scope.applyQueryFilter = function() {
+        $scope.queryDirty = false;
+        $scope.queryTaxa();
+        $scope.queryTotal();
+    }
+    var initiallyClean = true;
+    $scope.$watchGroup(['queryTaxon', 'queryEntity'], function (value) {
+        if (!initiallyClean) {
+            $scope.queryDirty = true;
+        }
+        initiallyClean = false;
+    });
+    $scope.queryDirty = false;
+    $scope.queryTaxa();
+    $scope.queryTotal();
+})
+.controller('OntoTraceController', function ($scope, OntologyTermSearch, Vocab) {
+    $scope.searchTaxa = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.VTO
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    }
+    $scope.searchEntities = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.Uberon
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    }
+})
+;

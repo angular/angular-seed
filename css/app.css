@@ -1,3 +1,7 @@
 /* app css stylesheet */
 
+#site_title { background-image: url(../img/phenoscape_logo.png); background-size: auto 150%; background-repeat: no-repeat;}
+
+#phenoscape_logo { height: 60px; }
+
 blockquote.character { font-size: 14px; display: inline-block;}

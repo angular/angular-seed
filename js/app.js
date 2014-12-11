@@ -16,5 +16,8 @@ config(['$routeProvider', function($routeProvider) {
     $routeProvider.when('/characterstate/:state*', {templateUrl: 'partials/characterstate.html', controller: 'CharacterStateController'});
 	$routeProvider.when('/contents', {templateUrl: 'partials/contents.html', controller: 'ContentsController'});
 	$routeProvider.when('/presence_absence', {templateUrl: 'partials/presence_absence.html', controller: 'PresenceAbsenceController'});
+    $routeProvider.when('/query_characters', {templateUrl: 'partials/query_characters.html', controller: 'QueryCharacterStatesController'});
+    $routeProvider.when('/query_taxa', {templateUrl: 'partials/query_taxa.html', controller: 'QueryTaxaController'});
+    $routeProvider.when('/ontotrace', {templateUrl: 'partials/ontotrace.html', controller: 'OntoTraceController'});
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);

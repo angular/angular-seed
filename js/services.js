@@ -25,6 +25,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('OntologyTermSearch', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/term/search_classes', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateSearch', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/characterstate/search', {}, {
 			query: {
@@ -53,4 +60,32 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('CharacterStateQuery', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/characterstate/query', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('TaxonQuery', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/taxon/query', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('OntoTraceQuery', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/ontotrace', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+    .factory('Vocab', function () {
+        return {
+            OWLThing: "http://www.w3.org/2002/07/owl#Thing",
+            VTO: "http://purl.obolibrary.org/obo/vto.owl",
+            Uberon: "http://purl.obolibrary.org/obo/uberon.owl"
+        }
+    })
     ;

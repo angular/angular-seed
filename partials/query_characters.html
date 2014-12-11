@@ -1,0 +1,13 @@
+ <table class="table table-condensed table-striped" cg-busy="statesResults.$promise">
+     <thead>
+		<tr>
+			<th>Character State</th>
+		</tr>
+     </thead>
+     <tbody>
+		<tr ng-repeat="state in statesResults.results">
+			<td>{{state.description}}</td>
+		</tr>
+     </tbody>
+ </table>
+<pagination total-items="itemsTotal.total" ng-model="itemsPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="itemsLimit" cg-busy="itemsTotal.$promise" ng-change="pageChanged()"></pagination>

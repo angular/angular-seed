@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-sm-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Query for:</h3>
+          </div>
+          <div class="panel-body">
+              <form role="form">
+                  <div>
+                      <h4>Taxon is:</h4>
+                      <div class="form-group" ng-class="{'has-success': queryTaxon, 'has-feedback': queryTaxon}">
+                          <input type="text" ng-model="queryTaxon" placeholder="any taxonomic group" typeahead="taxon as taxon.label for taxon in searchTaxa($viewValue)" typeahead-loading="loadingTaxa" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                          <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxon"></span>
+                          <i ng-show="loadingTaxa" class="glyphicon glyphicon-refresh"></i>
+                      </div>
+                  </div>
+                  <h5><i>and</i></h5>
+                  <div>
+                      <h4>Entity is:</h4>
+                      <div class="form-group" ng-class="{'has-success': queryEntity, 'has-feedback': queryEntity}">
+                          <input type="text" ng-model="queryEntity" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in searchEntities($viewValue)" typeahead-loading="loadingEntities" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                          <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntity"></span>
+                          <i ng-show="loadingEntities" class="glyphicon glyphicon-refresh"></i>
+                      </div>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryDirty" ng-click="applyQueryFilter()">Apply Query</button>
+              </form>
+          </div>
+        </div>
+    </div>
+    <div class="col-sm-8">
+        <table class="table table-condensed table-striped" cg-busy="taxaResults.$promise">
+            <thead>
+        	    <tr>
+        		    <th>Taxon</th>
+        	    </tr>
+             </thead>
+             <tbody>
+        	     <tr ng-repeat="taxon in taxaResults.results">
+                     <td>{{taxon.label}}</td>
+        	     </tr>
+         </tbody>
+        </table>
+        <pagination total-items="itemsTotal.total" ng-model="itemsPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="itemsLimit" cg-busy="itemsTotal.$promise" ng-change="pageChanged()"></pagination>
+    </div>
+</div>

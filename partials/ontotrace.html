@@ -1,0 +1,24 @@
+<div class="panel-body">
+  <form role="form">
+      <div>
+          <h4>Taxon is:</h4>
+          <div class="form-group" ng-class="{'has-success': queryTaxon, 'has-feedback': queryTaxon}">
+              <input type="text" ng-model="queryTaxon" placeholder="any taxonomic group" typeahead="taxon as taxon.label for taxon in searchTaxa($viewValue)" typeahead-loading="loadingTaxa" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxon"></span>
+              <i ng-show="loadingTaxa" class="glyphicon glyphicon-refresh"></i>
+          </div>
+      </div>
+      <h5><i>and</i></h5>
+      <div>
+          <h4>Entity is:</h4>
+          <div class="form-group" ng-class="{'has-success': queryEntity, 'has-feedback': queryEntity}">
+              <input type="text" ng-model="queryEntity" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in searchEntities($viewValue)" typeahead-loading="loadingEntities" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntity"></span>
+              <i ng-show="loadingEntities" class="glyphicon glyphicon-refresh"></i>
+          </div>
+      </div>
+      <a class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryEntity || !queryTaxon" ng-href="http://pkb-new.nescent.org/kb/ontotrace?entity={{queryEntity['@id'] | angled|encodeURI}}&amp;taxon={{queryTaxon['@id'] | angled|encodeURI}}">Download matrix as NeXML</a>
+  </form>
+</div>
+
+

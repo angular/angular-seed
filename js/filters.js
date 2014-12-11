@@ -11,6 +11,11 @@ angular.module('pkb.filters', [])
   .filter('encodeURI', function ($window) {
       return $window.encodeURIComponent;
   })
+  .filter('angled', function () {
+      return function (uri) {
+          return "<" + uri + ">";
+      };
+  })
   .filter('prefixedURI', function () {
       return function (text) {
           var prefixes = {
