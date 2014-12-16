@@ -87,5 +87,23 @@ angular.module('pkb.services', ['ngResource'])
             VTO: "http://purl.obolibrary.org/obo/vto.owl",
             Uberon: "http://purl.obolibrary.org/obo/uberon.owl"
         }
+    }).
+    factory('OMN', function () {
+        function parens (items) {
+            return items.map(function (item) {
+                return "(" + item + ")";
+            });
+        }
+        return {
+            angled: function (uri) {
+                return "<" + uri + ">";
+            },
+            union: function (uris) {
+                return parens(uris).join(" or ");
+            },
+            intersection: function (uris) {
+                return parens(uris).join(" and ")
+            }
+        }
     })
     ;

@@ -1,0 +1,12 @@
+<div ng-repeat="termField in terms">
+    <div class="form-group" ng-class="{'has-success': termField.term, 'has-feedback': termField.term}">
+        <div class="input-group">
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="terms.splice(terms.indexOf(termField), 1)">&times;</button>
+          </span>
+          <input type="text" ng-model="termField.term" placeholder="{{placeholder}}" typeahead="theTerm as theTerm.label for theTerm in query($viewValue)" typeahead-loading="loadingTerms" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+        </div>
+        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="termField.term"></span>
+        <i ng-show="loadingTerms" class="glyphicon glyphicon-refresh"></i> 
+    </div>
+</div>

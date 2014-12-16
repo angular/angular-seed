@@ -66,30 +66,40 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.itemsTotal = CharacterStateQuery.query(_.extend({total: true}, params()));
 })
-.controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OntologyTermSearch) {
+.controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN, OntologyTermSearch) {
+    $scope.queryTaxonValues = [{}];
+    $scope.queryBlahValues = [{}];
     $scope.maxSize = 5;
     $scope.itemsPage = 1;
     $scope.itemsLimit = 20;
     $scope.pageChanged = function () {
         $scope.queryTaxa();
     }
-    function params() {
-        var t = Vocab.OWLThing;
-        if ($scope.queryTaxon) { t = $scope.queryTaxon["@id"]; }
+    $scope.params = function () {
+        var taxonIDs = $scope.queryTaxonValues.filter(function (item) {
+            return item.term;
+        }).map(function (item) {
+            return OMN.angled(item.term["@id"]);
+        });
+        var t = OMN.angled(Vocab.OWLThing);
+        if (taxonIDs.length > 0) {
+            t = OMN.union(taxonIDs);
+        }
+        //if ($scope.queryTaxon) { t = $scope.queryTaxon["@id"]; }
         var e = Vocab.OWLThing;
         if ($scope.queryEntity) { e = $scope.queryEntity["@id"]; }
         return {
-            taxon: "<" + t + ">",
+            taxon: t,
             entity: "<" + e + ">",
             limit: 20,
             offset: ($scope.itemsPage - 1) * $scope.itemsLimit
         };
     }
     $scope.queryTaxa = function () {
-        $scope.taxaResults = TaxonQuery.query(params());
+        $scope.taxaResults = TaxonQuery.query($scope.params());
     };
     $scope.queryTotal = function () {
-        $scope.itemsTotal = TaxonQuery.query(_.extend({total: true}, params()));
+        $scope.itemsTotal = TaxonQuery.query(_.extend({total: true}, $scope.params()));
     }
     $scope.searchTaxa = function (text) {
         return OntologyTermSearch.query({
@@ -115,7 +125,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.queryTotal();
     }
     var initiallyClean = true;
-    $scope.$watchGroup(['queryTaxon', 'queryEntity'], function (value) {
+    $scope.$watch('params() | json', function (value) {
         if (!initiallyClean) {
             $scope.queryDirty = true;
         }
