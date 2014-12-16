@@ -7,17 +7,19 @@
           <div class="panel-body">
               <form role="form">
                   <div>
-                      <h4>Taxon is: <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryTaxonValues.push({})">Add</button></h4>
+                      <h4>Taxon is <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryTaxonValues.push({})">Add</button></h4>
                       <term-search-list terms="queryTaxonValues" query='searchTaxa' placeholder="any taxonomic group"></term-search-list>
                   </div>                  
                   <h5><i>and</i></h5>
                   <div>
-                      <h4>Entity is:</h4>
-                      <div class="form-group" ng-class="{'has-success': queryEntity, 'has-feedback': queryEntity}">
-                          <input type="text" ng-model="queryEntity" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in searchEntities($viewValue)" typeahead-loading="loadingEntities" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
-                          <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntity"></span>
-                          <i ng-show="loadingEntities" class="glyphicon glyphicon-refresh"></i>
-                      </div>
+                      <h4>Entity is 
+                          <div class="btn-group">
+                              <label class="btn btn-default btn-xs" ng-model="entityAnyAll" btn-radio="'Any'">any</label>
+                              <label class="btn btn-default btn-xs" ng-model="entityAnyAll" btn-radio="'All'">all</label>
+                          </div>
+                          <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryEntityValues.push({})">Add</button>
+                      </h4>
+                      <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="any anatomical entity"></term-search-list>
                   </div>
                   <button type="button" class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryDirty" ng-click="applyQueryFilter()">Apply Query</button>
               </form>

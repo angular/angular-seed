@@ -68,29 +68,38 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN, OntologyTermSearch) {
     $scope.queryTaxonValues = [{}];
-    $scope.queryBlahValues = [{}];
+    $scope.queryEntityValues = [{}];
     $scope.maxSize = 5;
     $scope.itemsPage = 1;
     $scope.itemsLimit = 20;
     $scope.pageChanged = function () {
         $scope.queryTaxa();
     }
-    $scope.params = function () {
-        var taxonIDs = $scope.queryTaxonValues.filter(function (item) {
+    $scope.entityAnyAll = 'Any';
+    function collectTerms(list, grouper) {
+        var termIDs = list.filter(function (item) {
             return item.term;
         }).map(function (item) {
             return OMN.angled(item.term["@id"]);
         });
-        var t = OMN.angled(Vocab.OWLThing);
-        if (taxonIDs.length > 0) {
-            t = OMN.union(taxonIDs);
+        var terms = OMN.angled(Vocab.OWLThing);
+        if (termIDs.length > 0) {
+            terms = grouper(termIDs);
         }
-        //if ($scope.queryTaxon) { t = $scope.queryTaxon["@id"]; }
-        var e = Vocab.OWLThing;
-        if ($scope.queryEntity) { e = $scope.queryEntity["@id"]; }
+        return terms;
+    }
+    $scope.params = function () {
+        var taxonExpression = collectTerms($scope.queryTaxonValues, OMN.union);
+        var entityGrouper;
+        if ($scope.entityAnyAll == 'Any') {
+            entityGrouper = OMN.union;
+        } else {
+            entityGrouper = OMN.intersection;
+        }
+        var entityExpression = collectTerms($scope.queryEntityValues, entityGrouper);      
         return {
-            taxon: t,
-            entity: "<" + e + ">",
+            taxon: taxonExpression,
+            entity: entityExpression,
             limit: 20,
             offset: ($scope.itemsPage - 1) * $scope.itemsLimit
         };
