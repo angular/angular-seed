@@ -87,8 +87,8 @@ angular.module('pkb.services', ['ngResource'])
             VTO: "http://purl.obolibrary.org/obo/vto.owl",
             Uberon: "http://purl.obolibrary.org/obo/uberon.owl"
         }
-    }).
-    factory('OMN', function () {
+    })
+    .factory('OMN', function () {
         function parens (items) {
             return items.map(function (item) {
                 return "(" + item + ")";
@@ -106,4 +106,25 @@ angular.module('pkb.services', ['ngResource'])
             }
         }
     })
-    ;
+    .factory('Autocomplete', function (OntologyTermSearch, Vocab) {
+        return {
+            taxa: function (text) {
+                return OntologyTermSearch.query({
+                    limit: 20,
+                    text: text,
+                    definedBy: Vocab.VTO
+                }).$promise.then(function (response) {
+                    return response.results;
+                });
+            },
+            entities: function (text) {
+                return OntologyTermSearch.query({
+                    limit: 20,
+                    text: text,
+                    definedBy: Vocab.Uberon
+                }).$promise.then(function (response) {
+                    return response.results;
+                });
+            }
+        }
+    });

@@ -9,7 +9,7 @@ angular.module('pkb.directives', [])
         elm.text(version);
     };
 }])
-.directive('termSearchList', function() {
+.directive('termSearchList', function () {
     return {
         require: 'ngModel',
         restrict: 'E',
@@ -18,6 +18,18 @@ angular.module('pkb.directives', [])
             terms: '=',
             query: '=',
             placeholder: '@'
+        }
+    }
+})
+.directive('queryPanel', function () {
+    return {
+        restrict: 'E',
+        controller: 'QueryPanelController',
+        templateUrl: 'partials/query_panel.html',
+        scope: {
+            sections: '=',
+            parameters: '=',
+            applyQuery: '='
         }
     }
 });
