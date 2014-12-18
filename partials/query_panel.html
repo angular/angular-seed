@@ -1,12 +1,13 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">Query for:</h3>
+    <h3 class="panel-title form-inline">Query for: <select class="form-control input-sm" ng-model="selectedPage" ng-options="opt.label for opt in queryPages"></select></h3>
   </div>
   <div class="panel-body">
       <form role="form">
           <div>
               <h4>Taxon is <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryTaxonValues.push({})">Add</button></h4>
-              <term-search-list terms="queryTaxonValues" query='searchTaxa' placeholder="any taxonomic group"></term-search-list>
+              <p ng-show="queryTaxonValues.length &lt; 1"><i>any taxonomic group</i></p>
+              <term-search-list terms="queryTaxonValues" query='searchTaxa' placeholder="taxonomic group"></term-search-list>
           </div>                  
           <h5><i>and</i></h5>
           <div>
@@ -17,7 +18,8 @@
                   </div>
                   <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryEntityValues.push({})">Add</button>
               </h4>
-              <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="any anatomical entity"></term-search-list>
+              <p ng-show="queryEntityValues.length &lt; 1"><i>any anatomical entity</i></p>
+              <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="anatomical entity"></term-search-list>
           </div>
           <button type="button" class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryDirty" ng-click="applyQueryFilter()">Apply Query</button>
       </form>

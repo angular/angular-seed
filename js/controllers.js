@@ -98,66 +98,57 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.queryTotal();
 })
-.controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN, Autocomplete) {
-    $scope.queryTaxonValues = [{}];
-    $scope.queryEntityValues = [{}];
+.controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
+    $scope.queryParams = {
+        taxa: [],
+        entities: [],
+        matchAllEntities: false,
+    };
     $scope.maxSize = 5;
     $scope.itemsPage = 1;
     $scope.itemsLimit = 20;
     $scope.pageChanged = function () {
         $scope.queryTaxa();
     }
-    $scope.entityAnyAll = 'Any';
-    function collectTerms(list, grouper) {
-        var termIDs = list.filter(function (item) {
-            return item.term;
-        }).map(function (item) {
-            return OMN.angled(item.term["@id"]);
+    function webServiceParams(queryParams) {
+        var result = {};
+        var taxa = queryParams.taxa.map(function (item) {
+            return OMN.angled(item['@id']);
         });
-        var terms = OMN.angled(Vocab.OWLThing);
-        if (termIDs.length > 0) {
-            terms = grouper(termIDs);
+        if (taxa.length > 0) {
+            if (queryParams.matchAllTaxa) {
+                result.taxon = OMN.intersection(taxa);
+            } else {
+                result.taxon = OMN.union(taxa);
+            }
         }
-        return terms;
-    }
-    $scope.params = function () {
-        var taxonExpression = collectTerms($scope.queryTaxonValues, OMN.union);
-        var entityGrouper;
-        if ($scope.entityAnyAll == 'Any') {
-            entityGrouper = OMN.union;
-        } else {
-            entityGrouper = OMN.intersection;
-        }
-        var entityExpression = collectTerms($scope.queryEntityValues, entityGrouper);      
-        return {
-            taxon: taxonExpression,
-            entity: entityExpression,
-            limit: 20,
-            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
-        };
+        var entities = queryParams.entities.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (entities.length > 0) {
+            if (queryParams.matchAllEntities) {
+                result.entity = OMN.intersection(entities);
+            } else {
+                result.entity = OMN.union(entities);
+            }
+        }        
+        return result;
     }
     $scope.queryTaxa = function () {
-        $scope.taxaResults = TaxonQuery.query($scope.params());
+        $scope.taxaResults = TaxonQuery.query(_.extend({
+            limit: $scope.itemsLimit,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        }, 
+        webServiceParams($scope.queryParams)));
     };
     $scope.queryTotal = function () {
-        $scope.itemsTotal = TaxonQuery.query(_.extend({total: true}, $scope.params()));
-    }
-    $scope.searchTaxa = Autocomplete.taxa;
-    $scope.searchEntities = Autocomplete.entities;
+        $scope.itemsTotal = TaxonQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
+    };
     $scope.applyQueryFilter = function() {
-        $scope.queryDirty = false;
         $scope.itemsPage = 1;
         $scope.queryTaxa();
         $scope.queryTotal();
     }
-    var initiallyClean = true;
-    $scope.$watch('params() | json', function (value) {
-        if (!initiallyClean) {
-            $scope.queryDirty = true;
-        }
-        initiallyClean = false;
-    });
-    $scope.queryDirty = false;
     $scope.queryTaxa();
     $scope.queryTotal();
 })
@@ -181,40 +172,18 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('QueryPanelController', function ($scope, Autocomplete, OMN, Vocab) {
+.controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
+    $scope.queryPages = [
+        {label: "Taxa", href: "/query_taxa", key: "taxa"},
+        {label: "Character states", href: "/query_characters", key: "character_states"}
+    ];
+    $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
     $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {
         return {term: item};
     });
     $scope.queryEntityValues = $scope.parameters.entities.map(function (item) {
         return {term: item};
     });
-    // function collectTerms(list, grouper) {
- //        var termIDs = list.filter(function (item) {
- //            return item.term;
- //        }).map(function (item) {
- //            return OMN.angled(item.term["@id"]);
- //        });
- //        var terms = OMN.angled(Vocab.OWLThing);
- //        if (termIDs.length > 0) {
- //            terms = grouper(termIDs);
- //        }
- //        return terms;
- //    }
- //    function params() {
- //        var taxonExpression = collectTerms($scope.queryTaxonValues, OMN.union);
- //        var entityGrouper;
- //        if ($scope.entityAnyAll == 'Any') {
- //            entityGrouper = OMN.union;
- //        } else {
- //            entityGrouper = OMN.intersection;
- //        }
- //        var entityExpression = collectTerms($scope.queryEntityValues, entityGrouper);
- //        return {
- //            taxon: taxonExpression,
- //            entity: entityExpression,
- //            limit: 20
- //        };
- //    }
     function collectTerms(list) {
         var terms = list.filter(function (item) {
             return item.term;
@@ -247,6 +216,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }
         initiallyClean = false;
         $scope.parameters = _.extend($scope.parameters, $scope.queryParams());
+    });
+    $scope.$watch('selectedPage', function (value) {
+        $location.path(value.href);
     });
     $scope.queryDirty = false;
 });

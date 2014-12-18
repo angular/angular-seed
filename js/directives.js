@@ -27,9 +27,9 @@ angular.module('pkb.directives', [])
         controller: 'QueryPanelController',
         templateUrl: 'partials/query_panel.html',
         scope: {
-            sections: '=',
             parameters: '=',
-            applyQuery: '='
+            applyQuery: '=',
+            configuration: '@'
         }
     }
 });
