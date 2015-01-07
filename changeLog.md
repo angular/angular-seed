@@ -76,3 +76,8 @@ function(tableState, tableController){
 
 * merge #234, #218
 * fix #233 #237
+
+## version 1.4.6
+
+* evaluate sort predicate as late as possible
+* fix #262
