@@ -91,7 +91,7 @@ ng.module('smart-table')
             if (pagination.number !== undefined) {
                 pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
                 pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
-                filtered = filtered.slice(pagination.start, pagination.start + pagination.number);
+                filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
             }
             displaySetter($scope, filtered);
         };
