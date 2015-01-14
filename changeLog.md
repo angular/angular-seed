@@ -81,3 +81,7 @@ function(tableState, tableController){
 
 * evaluate sort predicate as late as possible
 * fix #262
+
+## version 1.4.7
+
+* fix #276
