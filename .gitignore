@@ -3,3 +3,5 @@ node_modules
 example-app
 bower_components
 coverage
+.DS_Store
+test/.DS_Store
