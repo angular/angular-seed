@@ -34,7 +34,7 @@ ng.module('smart-table')
         var lastSelected;
 
         function copyRefs(src) {
-            return [].concat(src);
+            return src ? [].concat(src) : [];
         }
 
         function updateSafeCopy() {
