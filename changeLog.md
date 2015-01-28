@@ -88,4 +88,8 @@ function(tableState, tableController){
 
 ## version 1.4.8
 
-* fix 281
+* fix #281
+
+## version 1.4.9
+
+* fix #285

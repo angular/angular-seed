@@ -1,6 +1,6 @@
 {
   "name": "smart-table",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "",
   "main": "dist/smart-table.debug.js",
   "scripts": {

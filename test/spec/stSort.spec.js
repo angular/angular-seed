@@ -44,7 +44,10 @@ describe('stSort Directive', function () {
       {name: 'Faivre', firstname: 'Blandine', age: 44}
     ];
     scope.getters = {
-      age: function (row) {
+      age: function ageGetter(row) {
+        return row.name.length;
+      },
+      name: function nameGetter(row) {
         return row.name.length;
       }
     };
@@ -54,6 +57,7 @@ describe('stSort Directive', function () {
       '<tr><th st-sort="name">name</th>' +
       '<th st-sort="firstname">firstname</th>' +
       '<th st-sort="getters.age">age</th>' +
+      '<th st-sort="getters.name">age</th>' +
       '</tr>' +
       '</thead>' +
       '<tbody>' +
@@ -142,6 +146,19 @@ describe('stSort Directive', function () {
       {name: 'Leponge', firstname: 'Bob', age: 22},
       {name: 'Francoise', firstname: 'Frere', age: 99}
     ]);
+
+  });
+
+  it('should switch from getter function to the other', function () {
+    var ths = element.find('th');
+    var actual;
+    angular.element(ths[2]).triggerHandler('click');
+    expect(hasClass(ths[2], 'st-sort-ascent')).toBe(true);
+    expect(hasClass(ths[3], 'st-sort-ascent')).toBe(false);
+
+    angular.element(ths[3]).triggerHandler('click');
+    expect(hasClass(ths[2], 'st-sort-ascent')).toBe(false);
+    expect(hasClass(ths[3], 'st-sort-ascent')).toBe(true);
 
   });
 
