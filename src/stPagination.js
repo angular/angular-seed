@@ -50,8 +50,10 @@ ng.module('smart-table')
         }, redraw, true);
 
         //scope --> table state  (--> view)
-        scope.$watch('stItemsByPage', function () {
-          scope.selectPage(1);
+        scope.$watch('stItemsByPage', function (newValue, oldValue) {
+          if (newValue !== oldValue) {
+            scope.selectPage(1);
+          }
         });
 
         scope.$watch('stDisplayedPages', redraw);
@@ -63,8 +65,12 @@ ng.module('smart-table')
           }
         };
 
-        //select the first page
-        ctrl.slice(0, scope.stItemsByPage);
+        if(!ctrl.tableState().pagination.number){
+          ctrl.slice(0, scope.stItemsByPage);
+        }
+
+        console.log('pagination');
+
       }
     };
   });
