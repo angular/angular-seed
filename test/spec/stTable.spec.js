@@ -160,6 +160,15 @@ describe('st table Controller', function () {
           {name: 'Renard', firstname: 'Laurent', age: 66}
         ]);
       });
+
+      it('should trim if the input is a string', function () {
+        ctrl.search(' re ', 'name');
+        expect(scope.data).toEqual([
+          {name: 'Renard', firstname: 'Laurent', age: 66},
+          {name: 'Renard', firstname: 'Olivier', age: 33},
+          {name: 'Faivre', firstname: 'Blandine', age: 44}
+        ]);
+      });
     });
 
     describe('slice', function () {
@@ -342,8 +351,8 @@ describe('st table Controller', function () {
     }));
 
     it('adds tableData to the scope', function () {
-      scope.$digest()
-      expect(scope.tableData).toBeDefined()
+      scope.$digest();
+      expect(scope.tableData).toBeDefined();
       expect(scope.tableData[0].name).toEqual('Renard');
     });
   });
