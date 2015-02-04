@@ -68,9 +68,6 @@ ng.module('smart-table')
         if(!ctrl.tableState().pagination.number){
           ctrl.slice(0, scope.stItemsByPage);
         }
-
-        console.log('pagination');
-
       }
     };
   });

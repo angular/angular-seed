@@ -1,5 +1,5 @@
 /** 
-* @version 1.4.9
+* @version 1.4.10
 * @license MIT
 */
 (function (ng, undefined){
@@ -91,6 +91,8 @@ ng.module('smart-table')
     this.search = function search(input, predicate) {
       var predicateObject = tableState.search.predicateObject || {};
       var prop = predicate ? predicate : '$';
+
+      input = ng.isString(input) ? input.trim() : input;
       predicateObject[prop] = input;
       // to avoid to filter out null value
       if (!input) {
@@ -388,8 +390,10 @@ ng.module('smart-table')
         }, redraw, true);
 
         //scope --> table state  (--> view)
-        scope.$watch('stItemsByPage', function () {
-          scope.selectPage(1);
+        scope.$watch('stItemsByPage', function (newValue, oldValue) {
+          if (newValue !== oldValue) {
+            scope.selectPage(1);
+          }
         });
 
         scope.$watch('stDisplayedPages', redraw);
@@ -401,31 +405,34 @@ ng.module('smart-table')
           }
         };
 
-        //select the first page
-        ctrl.slice(0, scope.stItemsByPage);
+        if(!ctrl.tableState().pagination.number){
+          ctrl.slice(0, scope.stItemsByPage);
+        }
       }
     };
   });
 
 ng.module('smart-table')
-    .directive('stPipe', function () {
-        return {
-            require: 'stTable',
-            scope: {
-                stPipe: '='
-            },
-            link: {
-                pre: function (scope, element, attrs, ctrl) {
+  .directive('stPipe', function () {
+    return {
+      require: 'stTable',
+      scope: {
+        stPipe: '='
+      },
+      link: {
 
-                    if (ng.isFunction(scope.stPipe)) {
-                        ctrl.preventPipeOnWatch();
-                        ctrl.pipe = function () {
-                            return scope.stPipe(ctrl.tableState(), ctrl);
-                        }
-                    }
-                }
-            }
-        };
-    });
+        pre: function (scope, element, attrs, ctrl) {
+          ctrl.preventPipeOnWatch();
+          ctrl.pipe = function () {
+            return scope.stPipe(ctrl.tableState(), ctrl);
+          }
+        },
+
+        post: function (scope, element, attrs, ctrl) {
+          ctrl.pipe();
+        }
+      }
+    };
+  });
 
 })(angular);
