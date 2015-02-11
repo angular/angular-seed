@@ -8,9 +8,11 @@ ng.module('smart-table')
       link: {
 
         pre: function (scope, element, attrs, ctrl) {
-          ctrl.preventPipeOnWatch();
-          ctrl.pipe = function () {
-            return scope.stPipe(ctrl.tableState(), ctrl);
+          if (ng.isFunction(scope.stPipe)) {
+            ctrl.preventPipeOnWatch();
+            ctrl.pipe = function () {
+              return scope.stPipe(ctrl.tableState(), ctrl);
+            }
           }
         },
 
