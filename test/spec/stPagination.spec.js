@@ -356,5 +356,73 @@ describe('stPagination directive', function () {
     });
 
   });
-})
-;
+
+  describe('call onPageChange callback', function () {
+
+    it('should call onPageChange method', function () {
+      rootScope.onPageChange = jasmine.createSpy('onPageChange');
+      spyOn(controllerMock, 'slice').andCallThrough();
+
+      tableState.pagination = {
+        start: 1,
+        numberOfPages: 4,
+        number: 10
+      };
+
+      var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination="" st-displayed-pages="5" st-page-change="onPageChange(newPage)"></td></tr></tfoot></table>';
+      element = compile(template)(rootScope);
+
+      rootScope.$apply();
+
+      var pages = getPages();
+
+      expect(pages.length).toBe(4);
+      angular.element(pages[2].children()[0]).triggerHandler('click');
+
+      rootScope.$apply();
+
+      expect(controllerMock.slice).toHaveBeenCalledWith(20, 10);
+      expect(rootScope.onPageChange).toHaveBeenCalledWith(3);
+      expect(rootScope.onPageChange.calls.length).toBe(1);
+
+    });
+
+    it('should should not call when current page is not changed', function () {
+
+      rootScope.onPageChange = jasmine.createSpy('onPageChange');
+      spyOn(controllerMock, 'slice').andCallThrough();
+
+      tableState.pagination = {
+        start: 1,
+        numberOfPages: 4,
+        number: 10
+      };
+
+      var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination="" st-displayed-pages="pages" st-page-change="onPageChange(newPage)"></td></tr></tfoot></table>';
+      element = compile(template)(rootScope);
+
+      rootScope.$apply();
+
+      var pages = getPages();
+
+      expect(pages.length).toBe(4);
+      angular.element(pages[2].children()[0]).triggerHandler('click');
+
+      rootScope.$apply();
+
+      expect(controllerMock.slice).toHaveBeenCalledWith(20, 10);
+      expect(rootScope.onPageChange).toHaveBeenCalledWith(3);
+      expect(rootScope.onPageChange.calls.length).toBe(1);
+
+      tableState.pagination.numberOfPages=5;
+
+      rootScope.$apply();
+      pages = getPages();
+
+      expect(pages.length).toBe(5);
+      expect(rootScope.onPageChange.calls.length).toBe(1);
+    });
+
+  });
+
+});
