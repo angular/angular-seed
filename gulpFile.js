@@ -4,6 +4,7 @@ var uglify = require('gulp-uglify');
 var karma = require('karma').server;
 var jshint = require('gulp-jshint');
 var insert = require('gulp-insert');
+var sourcemaps = require('gulp-sourcemaps');
 var stylish = require('jshint-stylish');
 var packageJson = require('./package.json');
 var pluginList = ['stSearch', 'stSelectRow', 'stSort', 'stPagination', 'stPipe'];
@@ -16,7 +17,7 @@ src.push('src/bottom.txt');
 src.unshift('src/top.txt');
 
 //modules
-gulp.task('plugins', function () {
+gulp.task('uglify', function () {
     gulp.src(src)
         .pipe(concat('smart-table.min.js'))
         .pipe(uglify())
@@ -40,15 +41,17 @@ gulp.task('karma-CI', function (done) {
     karma.start(conf, done);
 });
 
-gulp.task('debug', function () {
-    gulp.src(src)
-        .pipe(concat('smart-table.debug.js'))
+gulp.task('concat', function () {
+    gulp.src(src, { base: '.' })
+        .pipe(sourcemaps.init())
+        .pipe(concat('smart-table.js'))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(disFolder));
 });
 
 gulp.task('test', ['karma-CI']);
 
-gulp.task('build',['test', 'plugins', 'debug'], function () {
+gulp.task('build',['test', 'uglify', 'concat'], function () {
 
     var version = packageJson.version;
     var string = '/** \n* @version ' + version + '\n* @license MIT\n*/\n';
