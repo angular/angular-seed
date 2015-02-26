@@ -6,7 +6,7 @@
         "lorenzofox3 <laurent34azerty@gmail.com>"
     ],
     "description": "table module for angular",
-    "main": "dist/smart-table.min.js",
+    "main": "dist/smart-table.js",
     "keywords": [
         "smart-table",
         "angular",
