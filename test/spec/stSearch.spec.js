@@ -33,7 +33,7 @@ describe('stSearch Directive', function () {
             var template = '<table st-table="rowCollection">' +
                 '<thead>' +
                 '<tr>' +
-                '<th><input st-search="\'name\'" /></th>' +
+                '<th><input st-search="name" /></th>' +
                 '<th><input st-search="" /></th>' +
                 '<th>age</th>' +
                 '</tr>' +
@@ -105,7 +105,7 @@ describe('stSearch Directive', function () {
             var template = '<table st-table="rowCollection">' +
                 '<thead>' +
                 '<tr>' +
-                '<th><input st-search="searchPredicate" /></th>' +
+                '<th><input st-search="{{searchPredicate}}" /></th>' +
                 '<th><input st-search="" /></th>' +
                 '<th>age</th>' +
                 '</tr>' +
