@@ -1,12 +1,12 @@
 {
-    "name": "smart-table",
-    "version": "1.4.11",
+    "name": "angular-smart-table",
+    "version": "1.4.12",
     "homepage": "https://github.com/lorenzofox3/Smart-Table",
     "authors": [
         "lorenzofox3 <laurent34azerty@gmail.com>"
     ],
     "description": "table module for angular",
-    "main": "dist/smart-table.min.js",
+    "main": "dist/smart-table.js",
     "keywords": [
         "smart-table",
         "angular",
