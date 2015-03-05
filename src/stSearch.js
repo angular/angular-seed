@@ -1,5 +1,5 @@
 ng.module('smart-table')
-    .directive('stSearch', ['$timeout', function ($timeout) {
+    .directive('stSearch', ['stConfig', '$timeout', function (stConfig, $timeout) {
         return {
             require: '^stTable',
             scope: {
@@ -8,7 +8,7 @@ ng.module('smart-table')
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
                 var promise = null;
-                var throttle = attr.stDelay || 400;
+                var throttle = attr.stDelay || stConfig.search.delay;
 
                 scope.$watch('predicate', function (newValue, oldValue) {
                     if (newValue !== oldValue) {

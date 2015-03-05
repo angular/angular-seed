@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .directive('stSort', ['$parse', function ($parse) {
+  .directive('stSort', ['stConfig', '$parse', function (stConfig, $parse) {
     return {
       restrict: 'A',
       require: '^stTable',
@@ -8,8 +8,8 @@ ng.module('smart-table')
         var predicate = attr.stSort;
         var getter = $parse(predicate);
         var index = 0;
-        var classAscent = attr.stClassAscent || 'st-sort-ascent';
-        var classDescent = attr.stClassDescent || 'st-sort-descent';
+        var classAscent = attr.stClassAscent || stConfig.sort.ascentClass;
+        var classDescent = attr.stClassDescent || stConfig.sort.descentClass;
         var stateClasses = [classAscent, classDescent];
         var sortDefault;
 
@@ -39,7 +39,7 @@ ng.module('smart-table')
         });
 
         if (sortDefault) {
-          index = attr.stSortDefault === 'reverse' ? 1 : 0;
+          index = sortDefault === 'reverse' ? 1 : 0;
           sort();
         }
 

@@ -36,14 +36,16 @@ describe('stPagination directive', function () {
 
   var rootScope;
   var element;
+  var stConfig;
 
   beforeEach(module('smart-table', function ($controllerProvider) {
     $controllerProvider.register('stTableController', ControllerMock);
   }));
 
-  beforeEach(inject(function ($compile, $rootScope, $templateCache) {
-    rootScope = $rootScope;
+  beforeEach(inject(function ($compile, $rootScope, _stConfig_) {
     compile = $compile;
+    rootScope = $rootScope;
+    stConfig = _stConfig_;
 
     rootScope.rowCollection = [
       {name: 'Renard', firstname: 'Laurent', age: 66},
@@ -72,6 +74,20 @@ describe('stPagination directive', function () {
       element = angular.element(document.getElementById('pagination'));
       expect(controllerMock.slice).toHaveBeenCalledWith(0, 10);
     });
+
+    it('should call for the first page with `stConfig.pagination.itemsByPage = 21` as value for item by page', function () {
+      var oldItemsByPage = stConfig.pagination.itemsByPage;
+      stConfig.pagination.itemsByPage = 21;
+
+      spyOn(controllerMock, 'slice');
+      var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
+      compile(template)(rootScope);
+      rootScope.$apply();
+      element = angular.element(document.getElementById('pagination'));
+      expect(controllerMock.slice).toHaveBeenCalledWith(0, 21);
+
+      stConfig.pagination.itemsByPage = oldItemsByPage;
+    });
   });
 
   describe('template', function () {
@@ -79,6 +95,21 @@ describe('stPagination directive', function () {
     beforeEach(inject(function ($templateCache) {
       templateCache = $templateCache;
     }));
+
+    it('should load custom template from stConfig\'s "st-template"', function () {
+      var defaultTemplate = stConfig.pagination.template;
+      stConfig.pagination.template = 'custom_stConfig_template.html';
+
+      templateCache.put('custom_stConfig_template.html', '<div id="custom_stConfig_id"></div>');
+
+      var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
+      element = compile(template)(rootScope);
+      rootScope.$apply();
+
+      expect(angular.element(element.find('div#custom_stConfig_id')).length).toBe(1);
+
+      stConfig.pagination.template = defaultTemplate;
+    });
 
     it('should load custom template from attribute "st-template"', function () {
       templateCache.put('custom_template.html', '<div id="custom_id"></div>');
@@ -157,6 +188,46 @@ describe('stPagination directive', function () {
 
       expect(active.length).toBe(1);
       expect(active[0].text()).toEqual('4');
+    });
+
+    it('it should draw the pages based on stConfig default for displayed pages', function () {
+      var defaultDisplayedPages = stConfig.pagination.displayedPages;
+      stConfig.pagination.displayedPages = 8;
+
+      var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
+      element = compile(template)(rootScope);
+
+      rootScope.$apply();
+
+      tableState.pagination = {
+        start: 35,
+        numberOfPages: 12,
+        number: 10
+      };
+
+      rootScope.$apply();
+
+      var pages = getPages();
+
+      expect(pages.length).toBe(8);
+
+      expect(pages[0].text()).toEqual('1');
+      expect(pages[1].text()).toEqual('2');
+      expect(pages[2].text()).toEqual('3');
+      expect(pages[3].text()).toEqual('4');
+      expect(pages[4].text()).toEqual('5');
+      expect(pages[5].text()).toEqual('6');
+      expect(pages[6].text()).toEqual('7');
+      expect(pages[7].text()).toEqual('8');
+
+      var active = pages.filter(function (value) {
+        return hasClass(value[0], 'active');
+      });
+
+      expect(active.length).toBe(1);
+      expect(active[0].text()).toEqual('4');
+
+      stConfig.pagination.displayedPages = defaultDisplayedPages;
     });
 
     it('should support string for number and displayed page as this var can be bound', function () {
@@ -290,7 +361,7 @@ describe('stPagination directive', function () {
       expect(active[0].text()).toEqual('2');
     });
 
-    it('it should remove pagination when there is less than two page', function () {
+    it('it should remove pagination when there is less than two pages', function () {
       var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination=""></td></tr></tfoot></table>';
       element = compile(template)(rootScope);
 

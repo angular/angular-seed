@@ -155,7 +155,7 @@ ng.module('smart-table')
     };
 
     /**
-     *User a different function than the angular orderBy
+     * Use a different function than the angular orderBy
      * @param sortFunctionName the name under which the custom order function is registered
      */
     this.setSortFunction = function setSortFunction(sortFunctionName) {

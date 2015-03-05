@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .directive('stSelectRow', function () {
+  .directive('stSelectRow', ['stConfig', function (stConfig) {
     return {
       restrict: 'A',
       require: '^stTable',
@@ -7,7 +7,7 @@ ng.module('smart-table')
         row: '=stSelectRow'
       },
       link: function (scope, element, attr, ctrl) {
-        var mode = attr.stSelectMode || 'single';
+        var mode = attr.stSelectMode || stConfig.select.mode;
         element.bind('click', function () {
           scope.$apply(function () {
             ctrl.select(scope.row, mode);
@@ -16,11 +16,11 @@ ng.module('smart-table')
 
         scope.$watch('row.isSelected', function (newValue) {
           if (newValue === true) {
-            element.addClass('st-selected');
+            element.addClass(stConfig.select.selectedClass);
           } else {
-            element.removeClass('st-selected');
+            element.removeClass(stConfig.select.selectedClass);
           }
         });
       }
     };
-  });
+  }]);

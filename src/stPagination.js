@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .directive('stPagination', function () {
+  .directive('stPagination', ['stConfig', function (stConfig) {
     return {
       restrict: 'EA',
       require: '^stTable',
@@ -12,12 +12,12 @@ ng.module('smart-table')
         if (attrs.stTemplate) {
           return attrs.stTemplate;
         }
-        return 'template/smart-table/pagination.html';
+        return stConfig.pagination.template;
       },
       link: function (scope, element, attrs, ctrl) {
 
-        scope.stItemsByPage = scope.stItemsByPage ? +(scope.stItemsByPage) : 10;
-        scope.stDisplayedPages = scope.stDisplayedPages ? +(scope.stDisplayedPages) : 5;
+        scope.stItemsByPage = scope.stItemsByPage ? +(scope.stItemsByPage) : stConfig.pagination.itemsByPage;
+        scope.stDisplayedPages = scope.stDisplayedPages ? +(scope.stDisplayedPages) : stConfig.pagination.displayedPages;
 
         scope.currentPage = 1;
         scope.pages = [];
@@ -76,4 +76,4 @@ ng.module('smart-table')
         }
       }
     };
-  });
+  }]);
