@@ -119,3 +119,7 @@ function(tableState, tableController){
 * use interpolation rather than binding for st-search directive (to avoid the creation of isolated scope)
 
 **This is a breaking change as now, you will have to remove the single quote around the predicate property name, and if you were using a binding, you'll have to interpolate it with the curly brace notation**
+
+## version 2.0.1
+
+* fix #328

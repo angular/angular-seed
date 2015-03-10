@@ -7,11 +7,11 @@ ng.module('smart-table')
         var promise = null;
         var throttle = attr.stDelay || stConfig.search.delay;
 
-
         attr.$observe('stSearch', function (newValue, oldValue) {
-          if (newValue !== oldValue) {
+          var input = element[0].value;
+          if (newValue !== oldValue && input) {
             ctrl.tableState().search = {};
-            tableCtrl.search(element[0].value || '', newValue);
+            tableCtrl.search(input, newValue);
           }
         });
 
