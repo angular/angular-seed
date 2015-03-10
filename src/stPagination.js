@@ -22,7 +22,7 @@ ng.module('smart-table')
         scope.currentPage = 1;
         scope.pages = [];
 
-        function redraw() {
+        function redraw () {
           var paginationState = ctrl.tableState().pagination;
           var start = 1;
           var end;
@@ -45,7 +45,7 @@ ng.module('smart-table')
             scope.pages.push(i);
           }
 
-          if (prevPage!==scope.currentPage) {
+          if (prevPage !== scope.currentPage) {
             scope.stPageChange({newPage: scope.currentPage});
           }
         }
@@ -71,7 +71,7 @@ ng.module('smart-table')
           }
         };
 
-        if(!ctrl.tableState().pagination.number){
+        if (!ctrl.tableState().pagination.number) {
           ctrl.slice(0, scope.stItemsByPage);
         }
       }

@@ -109,3 +109,8 @@ function(tableState, tableController){
 * don't use pagination class twice
 * build improvement
 
+## version 1.4.13
+
+* use a global configuration
+* expose filtered collection result
+

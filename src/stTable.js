@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
+  .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController ($scope, $parse, $filter, $attrs) {
     var propertyName = $attrs.stTable;
     var displayGetter = $parse(propertyName);
     var displaySetter = displayGetter.assign;
@@ -14,15 +14,16 @@ ng.module('smart-table')
         start: 0
       }
     };
+    var filtered;
     var pipeAfterSafeCopy = true;
     var ctrl = this;
     var lastSelected;
 
-    function copyRefs(src) {
+    function copyRefs (src) {
       return src ? [].concat(src) : [];
     }
 
-    function updateSafeCopy() {
+    function updateSafeCopy () {
       safeCopy = copyRefs(safeGetter($scope));
       if (pipeAfterSafeCopy === true) {
         ctrl.pipe();
@@ -54,7 +55,7 @@ ng.module('smart-table')
      * @param {Function | String} predicate - function or string which will be used as predicate for the sorting
      * @param [reverse] - if you want to reverse the order
      */
-    this.sortBy = function sortBy(predicate, reverse) {
+    this.sortBy = function sortBy (predicate, reverse) {
       tableState.sort.predicate = predicate;
       tableState.sort.reverse = reverse === true;
 
@@ -73,7 +74,7 @@ ng.module('smart-table')
      * @param {String} input - the input string
      * @param {String} [predicate] - the property name against you want to check the match, otherwise it will search on all properties
      */
-    this.search = function search(input, predicate) {
+    this.search = function search (input, predicate) {
       var predicateObject = tableState.search.predicateObject || {};
       var prop = predicate ? predicate : '$';
 
@@ -91,18 +92,19 @@ ng.module('smart-table')
     /**
      * this will chain the operations of sorting and filtering based on the current table state (sort options, filtering, ect)
      */
-    this.pipe = function pipe() {
+    this.pipe = function pipe () {
       var pagination = tableState.pagination;
-      var filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
+      var output;
+      filtered = tableState.search.predicateObject ? filter(safeCopy, tableState.search.predicateObject) : safeCopy;
       if (tableState.sort.predicate) {
         filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
       }
       if (pagination.number !== undefined) {
         pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
         pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
-        filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
+        output = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
       }
-      displaySetter($scope, filtered);
+      displaySetter($scope, output || filtered);
     };
 
     /**
@@ -110,7 +112,7 @@ ng.module('smart-table')
      * @param {Object} row - the row to select
      * @param {String} [mode] - "single" or "multiple" (multiple by default)
      */
-    this.select = function select(row, mode) {
+    this.select = function select (row, mode) {
       var rows = safeCopy;
       var index = rows.indexOf(row);
       if (index !== -1) {
@@ -132,7 +134,7 @@ ng.module('smart-table')
      * @param {Number} start - start index of the slice
      * @param {Number} number - the number of item in the slice
      */
-    this.slice = function splice(start, number) {
+    this.slice = function splice (start, number) {
       tableState.pagination.start = start;
       tableState.pagination.number = number;
       return this.pipe();
@@ -142,15 +144,19 @@ ng.module('smart-table')
      * return the current state of the table
      * @returns {{sort: {}, search: {}, pagination: {start: number}}}
      */
-    this.tableState = function getTableState() {
+    this.tableState = function getTableState () {
       return tableState;
+    };
+
+    this.getFilteredCollection = function getFilteredCollection () {
+      return filtered || safeCopy;
     };
 
     /**
      * Use a different filter function than the angular FilterFilter
      * @param filterName the name under which the custom filter is registered
      */
-    this.setFilterFunction = function setFilterFunction(filterName) {
+    this.setFilterFunction = function setFilterFunction (filterName) {
       filter = $filter(filterName);
     };
 
@@ -158,7 +164,7 @@ ng.module('smart-table')
      * Use a different function than the angular orderBy
      * @param sortFunctionName the name under which the custom order function is registered
      */
-    this.setSortFunction = function setSortFunction(sortFunctionName) {
+    this.setSortFunction = function setSortFunction (sortFunctionName) {
       orderBy = $filter(sortFunctionName);
     };
 
@@ -166,7 +172,7 @@ ng.module('smart-table')
      * Usually when the safe copy is updated the pipe function is called.
      * Calling this method will prevent it, which is something required when using a custom pipe function
      */
-    this.preventPipeOnWatch = function preventPipe() {
+    this.preventPipeOnWatch = function preventPipe () {
       pipeAfterSafeCopy = false;
     };
   }])

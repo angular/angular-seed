@@ -1,6 +1,6 @@
 {
   "name": "angular-smart-table",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "description": "",
   "main": "dist/smart-table.js",
   "scripts": {

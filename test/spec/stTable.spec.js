@@ -256,6 +256,21 @@ describe('st table Controller', function () {
           {name: 'Renard', firstname: 'Laurent', age: 66}
         ]);
       });
+
+      it('should forward the search result collection', inject(function () {
+        expect(ctrl.getFilteredCollection()).toEqual(dataSet)
+        ctrl.search('re', 'name');
+        expect(scope.data).toEqual([
+          {name: 'Renard', firstname: 'Laurent', age: 66},
+          {name: 'Renard', firstname: 'Olivier', age: 33},
+          {name: 'Faivre', firstname: 'Blandine', age: 44}
+        ]);
+        expect(ctrl.getFilteredCollection()).toEqual([
+          {name: 'Renard', firstname: 'Laurent', age: 66},
+          {name: 'Renard', firstname: 'Olivier', age: 33},
+          {name: 'Faivre', firstname: 'Blandine', age: 44}
+        ])
+      }));
     });
 
     describe('select', function () {

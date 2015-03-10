@@ -14,11 +14,11 @@ ng.module('smart-table')
         var sortDefault;
 
         if (attr.stSortDefault) {
-          sortDefault = scope.$eval(attr.stSortDefault) !== undefined ?  scope.$eval(attr.stSortDefault) : attr.stSortDefault;
+          sortDefault = scope.$eval(attr.stSortDefault) !== undefined ? scope.$eval(attr.stSortDefault) : attr.stSortDefault;
         }
 
         //view --> table state
-        function sort() {
+        function sort () {
           index++;
           predicate = ng.isFunction(getter(scope)) ? getter(scope) : attr.stSort;
           if (index % 3 === 0 && attr.stSkipNatural === undefined) {
@@ -32,7 +32,7 @@ ng.module('smart-table')
           }
         }
 
-        element.bind('click', function sortClick() {
+        element.bind('click', function sortClick () {
           if (predicate) {
             scope.$apply(sort);
           }
