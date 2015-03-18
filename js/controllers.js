@@ -48,6 +48,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryParams = {
         taxa: [],
         entities: [],
+        expressionEntities: [],
         matchAllEntities: false,
     };
     $scope.maxSize = 5;
@@ -102,6 +103,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryParams = {
         taxa: [],
         entities: [],
+        expressionEntities: [],
         matchAllEntities: false,
     };
     $scope.maxSize = 5;
@@ -152,6 +154,61 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTaxa();
     $scope.queryTotal();
 })
+.controller('QueryGenesController', function ($scope, GeneQuery, Vocab, OMN) {
+    $scope.queryParams = {
+        taxa: [],
+        entities: [],
+        expressionEntities: [],
+        matchAllEntities: false,
+    };
+    $scope.maxSize = 5;
+    $scope.itemsPage = 1;
+    $scope.itemsLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryGenes();
+    }
+    function webServiceParams(queryParams) {
+        var result = {};
+        var taxa = queryParams.taxa.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (taxa.length > 0) {
+            if (queryParams.matchAllTaxa) {
+                result.taxon = OMN.intersection(taxa);
+            } else {
+                result.taxon = OMN.union(taxa);
+            }
+        }
+        var entities = queryParams.entities.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (entities.length > 0) {
+            if (queryParams.matchAllEntities) {
+                result.entity = OMN.intersection(entities);
+            } else {
+                result.entity = OMN.union(entities);
+            }
+        }        
+        return result;
+    }
+    $scope.queryGenes = function () {
+        $scope.genesResults = GeneQuery.query(_.extend({
+            limit: $scope.itemsLimit,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        }, 
+        webServiceParams($scope.queryParams)));
+    };
+    $scope.queryTotal = function () {
+        $scope.itemsTotal = GeneQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
+    };
+    $scope.applyQueryFilter = function() {
+        $scope.itemsPage = 1;
+        $scope.queryGenes();
+        $scope.queryTotal();
+    }
+    $scope.queryGenes();
+    $scope.queryTotal();
+})
 .controller('OntoTraceController', function ($scope, OntologyTermSearch, Vocab) {
     $scope.searchTaxa = function (text) {
         return OntologyTermSearch.query({
@@ -175,13 +232,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},
-        {label: "Character states", href: "/query_characters", key: "character_states"}
+        {label: "Character states", href: "/query_characters", key: "character_states"},
+        {label: "Genes", href: "/query_genes", key: "genes"}
     ];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
     $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {
         return {term: item};
     });
     $scope.queryEntityValues = $scope.parameters.entities.map(function (item) {
+        return {term: item};
+    });
+    $scope.queryExpressionEntityValues = $scope.parameters.expressionEntities.map(function (item) {
         return {term: item};
     });
     function collectTerms(list) {

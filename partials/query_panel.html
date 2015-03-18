@@ -11,7 +11,7 @@
           </div>                  
           <h5><i>and</i></h5>
           <div>
-              <h4>Entity is 
+              <h4>Phenotype entity is 
                   <div class="btn-group">
                       <label class="btn btn-default btn-xs" ng-model="parameters.matchAllEntities" btn-radio="false">any</label>
                       <label class="btn btn-default btn-xs" ng-model="parameters.matchAllEntities" btn-radio="true">all</label>
@@ -20,6 +20,18 @@
               </h4>
               <p ng-show="queryEntityValues.length &lt; 1"><i>any anatomical entity</i></p>
               <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="anatomical entity"></term-search-list>
+          </div>
+          <h5><i>and</i></h5>
+          <div ng-show="configuration === 'genes'">
+              <h4>Expression location is 
+                  <div class="btn-group">
+                      <label class="btn btn-default btn-xs" ng-model="parameters.matchAllExpressionEntities" btn-radio="false">any</label>
+                      <label class="btn btn-default btn-xs" ng-model="parameters.matchAllExpressionEntities" btn-radio="true">all</label>
+                  </div>
+                  <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryExpressionEntityValues.push({})">Add</button>
+              </h4>
+              <p ng-show="queryExpressionEntityValues.length &lt; 1"><i>any anatomical entity</i></p>
+              <term-search-list terms="queryExpressionEntityValues" query='searchEntities' placeholder="anatomical entity"></term-search-list>
           </div>
           <button type="button" class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryDirty" ng-click="applyQueryFilter()">Apply Query</button>
       </form>
