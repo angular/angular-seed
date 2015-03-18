@@ -172,6 +172,28 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
+.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, Vocab) {
+    $scope.searchGenes = function (text) {
+        return TermSearch.query({
+            limit: 20,
+            text: text,
+            type: Vocab.Gene
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
+    $scope.queryTopMatches = function () {
+        $scope.topMatches = SimilarityMatches.query({'iri': $scope.geneToQuery['@id']});
+    };
+    $scope.$watch('geneToQuery', function (value) {
+        if (value) {
+            $scope.queryTopMatches();
+        }
+    });    
+    $scope.selectMatch = function (match) {
+         alert("Query " + match.query_profile + " with " + match.match_profile);
+    };
+})
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},

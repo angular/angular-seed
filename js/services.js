@@ -25,6 +25,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('TermSearch', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/term/search', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('OntologyTermSearch', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/term/search_classes', {}, {
 			query: {
@@ -81,11 +88,19 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('SimilarityMatches', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/query', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
     .factory('Vocab', function () {
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",
             VTO: "http://purl.obolibrary.org/obo/vto.owl",
-            Uberon: "http://purl.obolibrary.org/obo/uberon.owl"
+            Uberon: "http://purl.obolibrary.org/obo/uberon.owl",
+            Gene: "http://purl.obolibrary.org/obo/SO_0000704"
         }
     })
     .factory('OMN', function () {

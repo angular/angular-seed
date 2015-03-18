@@ -1,0 +1,37 @@
+<h2>Semantic Similarity</h2>
+<p>Submit a gene, get back taxa!</p>
+<div class="panel-body">
+  <form role="form">
+      <div>
+          <h4>Gene:</h4>
+          <div class="form-group" ng-class="{'has-success': geneToQuery, 'has-feedback': geneToQuery}">
+              <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as gene.label for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="geneToQuery"></span>
+              <i ng-show="loadingGeneComplete" class="glyphicon glyphicon-refresh"></i>
+          </div>
+      </div>
+  </form>
+  <div class="row">
+      <div class="col-sm-5">
+          <table class="table table-condensed table-striped" cg-busy="topMatches.$promise">
+              <thead>
+                  <tr>
+                      <th>Taxon</th>
+                      <th>Score</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);">
+                      <td>{{match.match_profile}}</td>
+                      <td>{{match.score}}</td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+      <div class="col-sm-7">
+          Hi
+      </div>
+    </div>
+</div>
+
+
