@@ -172,7 +172,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, Vocab) {
+.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, SimilaritySubsumers, Vocab) {
     $scope.searchGenes = function (text) {
         return TermSearch.query({
             limit: 20,
@@ -186,12 +186,15 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.topMatches = SimilarityMatches.query({'iri': $scope.geneToQuery['@id']});
     };
     $scope.$watch('geneToQuery', function (value) {
+        $scope.selectedMatch = null;
+        $scope.topSubsumers = null;
         if (value) {
             $scope.queryTopMatches();
         }
     });    
     $scope.selectMatch = function (match) {
-         alert("Query " + match.query_profile + " with " + match.match_profile);
+        $scope.selectedMatch = match;
+        $scope.topSubsumers = SimilaritySubsumers.query({query_iri: match.query_profile, corpus_iri: match.match_profile});
     };
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {

@@ -29,7 +29,26 @@
           </table>
       </div>
       <div class="col-sm-7">
-          Hi
+          <div class="panel panel-default" style="margin-top: 1em;">
+            <div class="panel-heading">{{selectedMatch.match_profile}}</div>
+            <div class="panel-body">
+              <p>Info about matched taxon.</p>
+            </div>
+            <table class="table table-condensed table-striped" cg-busy="topSubsumers.$promise">
+                <thead>
+    				<tr>
+    					<th>Match</th>
+                       <th>Score</th>
+    				</tr>
+                </thead>
+                <tbody>
+    				<tr ng-repeat="subsumer in topSubsumers.results">
+    					<td>{{subsumer['@id'] | prefixedURI}}</td>
+                       <td>{{subsumer.ic}}</td>
+    				</tr>
+                </tbody>
+            </table>
+          </div>
       </div>
     </div>
 </div>
