@@ -23,7 +23,7 @@
               <tbody>
                   <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);">
                       <td>{{match.match_profile}}</td>
-                      <td>{{match.score}}</td>
+                      <td>{{match.score | number : 2}}</td>
                   </tr>
               </tbody>
           </table>
@@ -44,7 +44,7 @@
                 <tbody>
     				<tr ng-repeat="subsumer in topSubsumers.results">
     					<td>{{subsumer['@id'] | prefixedURI}}</td>
-                       <td>{{subsumer.ic}}</td>
+                       <td>{{subsumer.ic | number : 2}}</td>
     				</tr>
                 </tbody>
             </table>
