@@ -22,7 +22,7 @@
               </thead>
               <tbody>
                   <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);">
-                      <td>{{match.match_profile | prefixedURI}}</td>
+                      <td><a href="{{match.match_profile['@id']}}" target="_blank">{{match.match_profile.label}}</a></td>
                       <td>{{match.score | number : 2}}</td>
                   </tr>
               </tbody>
@@ -30,7 +30,7 @@
       </div>
       <div class="col-sm-7">
           <div class="panel panel-default" style="margin-top: 1em;">
-            <div class="panel-heading">{{selectedMatch.match_profile}}</div>
+            <div class="panel-heading">{{selectedMatch.match_profile.label}}</div>
             <div class="panel-body">
               <p>Info about matched taxon.</p>
             </div>
@@ -48,12 +48,12 @@
                         <td>{{subsumer['@id'] | prefixedURI}}</td>
                         <td>{{subsumer.ic | number : 2}}</td>
                         <td>
-                            <ul>
+                            <ul cg-busy="subsumer.query_annotations.$promise">
                                 <li ng-repeat="annotation in subsumer.query_annotations.results">{{annotation | prefixedURI}}</li>
                             </ul>
                         </td>
                         <td>
-                            <ul>
+                            <ul cg-busy="subsumer.match_annotations.$promise">
                                 <li ng-repeat="annotation in subsumer.match_annotations.results">{{annotation | prefixedURI}}</li>
                             </ul>
                         </td>

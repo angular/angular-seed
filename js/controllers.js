@@ -195,15 +195,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.selectMatch = function (match) {
         $scope.selectedMatch = match;
         SimilaritySubsumers.query({
-            query_iri: match.query_profile, 
-            corpus_iri: match.match_profile}
+            query_iri: $scope.geneToQuery['@id'], 
+            corpus_iri: match.match_profile['@id']}
         ).$promise.then(function (response) {
+            var filteredResults = response.results.filter(function (item) {
+                return item.ic > 0.0;
+            });
+            response.results = filteredResults;
             response.results.forEach(function (item) {
-                if (item.ic > $scope.selectedMatch.score) {
-                    var subsumerIRI = item['@id'];
-                    item.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': match.query_profile});
-                    item.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': match.match_profile});
-                }
+                var subsumerIRI = item['@id'];
+                item.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
+                item.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
             });
             response.results.sort(function (a, b) {
                 return b.ic - a.ic;
