@@ -22,7 +22,7 @@
               </thead>
               <tbody>
                   <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);">
-                      <td>{{match.match_profile}}</td>
+                      <td>{{match.match_profile | prefixedURI}}</td>
                       <td>{{match.score | number : 2}}</td>
                   </tr>
               </tbody>
@@ -36,16 +36,28 @@
             </div>
             <table class="table table-condensed table-striped" cg-busy="topSubsumers.$promise">
                 <thead>
-    				<tr>
-    					<th>Match</th>
-                       <th>Score</th>
-    				</tr>
+                    <tr>
+                        <th>Match</th>
+                        <th>Score</th>
+                        <th>Gene Phenotypes</th>
+                        <th>Taxon Phenotypes</th>
+                    </tr>
                 </thead>
                 <tbody>
-    				<tr ng-repeat="subsumer in topSubsumers.results">
-    					<td>{{subsumer['@id'] | prefixedURI}}</td>
-                       <td>{{subsumer.ic | number : 2}}</td>
-    				</tr>
+                    <tr ng-repeat="subsumer in topSubsumers.results">
+                        <td>{{subsumer['@id'] | prefixedURI}}</td>
+                        <td>{{subsumer.ic | number : 2}}</td>
+                        <td>
+                            <ul>
+                                <li ng-repeat="annotation in subsumer.query_annotations.results">{{annotation | prefixedURI}}</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                <li ng-repeat="annotation in subsumer.match_annotations.results">{{annotation | prefixedURI}}</li>
+                            </ul>
+                        </td>
+                   </tr>
                 </tbody>
             </table>
           </div>

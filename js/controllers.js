@@ -172,7 +172,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, SimilaritySubsumers, Vocab) {
+.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, Vocab) {
     $scope.searchGenes = function (text) {
         return TermSearch.query({
             limit: 20,
@@ -194,7 +194,22 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     });    
     $scope.selectMatch = function (match) {
         $scope.selectedMatch = match;
-        $scope.topSubsumers = SimilaritySubsumers.query({query_iri: match.query_profile, corpus_iri: match.match_profile});
+        SimilaritySubsumers.query({
+            query_iri: match.query_profile, 
+            corpus_iri: match.match_profile}
+        ).$promise.then(function (response) {
+            response.results.forEach(function (item) {
+                if (item.ic > $scope.selectedMatch.score) {
+                    var subsumerIRI = item['@id'];
+                    item.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': match.query_profile});
+                    item.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': match.match_profile});
+                }
+            });
+            response.results.sort(function (a, b) {
+                return b.ic - a.ic;
+            });
+            $scope.topSubsumers = response;
+        });
     };
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {

@@ -102,6 +102,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('SubsumedAnnotations', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/subsumed_annotations', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
     .factory('Vocab', function () {
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",
