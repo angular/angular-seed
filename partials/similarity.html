@@ -30,7 +30,7 @@
       </div>
       <div class="col-sm-8">
           <div class="panel panel-default" style="margin-top: 1em;">
-            <div class="panel-heading">{{selectedMatch.match_profile.label}}</div>
+            <div class="panel-heading"><h4>{{selectedMatch.match_profile.label}}</h4></div>
             <div class="panel-body">
               <p>Info about matched taxon.</p>
             </div>
@@ -45,7 +45,7 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="subsumer in topSubsumers.results">
-                        <td>{{subsumer['@id'] | prefixedURI}}</td>
+                        <td title="{{subsumer.term['@id']}}">{{subsumer.term.label}}</td>
                         <td>{{subsumer.ic | number : 2}}</td>
                         <td>
                             <ul cg-busy="subsumer.query_annotations.$promise">

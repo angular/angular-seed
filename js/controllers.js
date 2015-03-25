@@ -203,7 +203,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             });
             response.results = filteredResults;
             response.results.forEach(function (item) {
-                var subsumerIRI = item['@id'];
+                var subsumerIRI = item.term['@id'];
                 item.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
                 item.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
             });
