@@ -49,12 +49,12 @@
                         <td>{{subsumer.ic | number : 2}}</td>
                         <td>
                             <ul cg-busy="subsumer.query_annotations.$promise">
-                                <li ng-repeat="annotation in subsumer.query_annotations.results">{{annotation | prefixedURI}}</li>
+                                <li ng-repeat="annotation in subsumer.query_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
                             </ul>
                         </td>
                         <td>
                             <ul cg-busy="subsumer.match_annotations.$promise">
-                                <li ng-repeat="annotation in subsumer.match_annotations.results">{{annotation | prefixedURI}}</li>
+                                <li ng-repeat="annotation in subsumer.match_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
                             </ul>
                         </td>
                    </tr>
