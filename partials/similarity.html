@@ -12,6 +12,7 @@
       </div>
   </form>
   <div class="row">
+      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> (profile size: {{queryProfileSize.total}})</h4>
       <div class="col-sm-4">
           <table class="table table-condensed" cg-busy="topMatches.$promise">
               <thead>
@@ -32,7 +33,7 @@
           <div class="panel panel-default" style="margin-top: 1em;">
             <div class="panel-heading"><h4>{{selectedMatch.match_profile.label}}</h4></div>
             <div class="panel-body">
-              <p>Info about matched taxon.</p>
+              <p>Profile size: {{selectedMatchProfileSize.total}}</p>
             </div>
             <table class="table table-condensed table-striped" cg-busy="topSubsumers.$promise">
                 <thead>
