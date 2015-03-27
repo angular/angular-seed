@@ -172,12 +172,11 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, TermSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, Vocab) {
+.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, Vocab) {
     $scope.searchGenes = function (text) {
-        return TermSearch.query({
+        return GeneSearch.query({
             limit: 20,
-            text: text,
-            type: Vocab.Gene
+            text: text
         }).$promise.then(function (response) {
             return response.results;
         });

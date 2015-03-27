@@ -39,6 +39,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('GeneSearch', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/gene/search', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateSearch', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/characterstate/search', {}, {
 			query: {
