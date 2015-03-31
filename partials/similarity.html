@@ -5,14 +5,14 @@
       <div>
           <h4>Gene:</h4>
           <div class="form-group" ng-class="{'has-success': geneToQuery, 'has-feedback': geneToQuery}">
-              <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as gene.label for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+              <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as (gene.label + ' (' + gene.taxon.label + ')') for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
               <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="geneToQuery"></span>
               <i ng-show="loadingGeneComplete" class="glyphicon glyphicon-refresh"></i>
           </div>
       </div>
   </form>
   <div class="row">
-      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> (profile size: {{queryProfileSize.total}})</h4>
+      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}}), profile size: {{queryProfileSize.total}}</h4>
       <div class="col-sm-4">
           <table class="table table-condensed" cg-busy="topMatches.$promise">
               <thead>
