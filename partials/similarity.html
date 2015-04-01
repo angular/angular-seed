@@ -30,6 +30,7 @@
                   </tr>
               </tbody>
           </table>
+          <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
       </div>
       <div class="col-sm-8">
           <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2></div>
@@ -41,7 +42,7 @@
                 <h5>Taxon profile: {{selectedMatch.match_profile.label}}</h5>
                 <p>Profile size: {{selectedMatchProfileSize.total}}</p>
             </div>
-            <table class="table table-condensed table-striped" cg-busy="topSubsumers.$promise">
+            <table class="table table-condensed table-striped" cg-busy="topSubsumersQuery.$promise">
                 <thead>
                     <tr>
                         <th>Match</th>

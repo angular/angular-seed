@@ -172,7 +172,15 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, Vocab) {
+.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, SimilarityCorpusSize, Vocab) {
+    $scope.maxSize = 3;
+    $scope.matchesPage = 1;
+    $scope.matchesLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryTopMatches();
+    }
+    //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
+    $scope.matchesTotal = {total: 1000};
     $scope.searchGenes = function (text) {
         return GeneSearch.query({
             limit: 20,
@@ -182,12 +190,18 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     };
     $scope.queryTopMatches = function () {
-        $scope.topMatches = SimilarityMatches.query({'iri': $scope.geneToQuery['@id']});
+        $scope.selectedMatch = null;
+        $scope.topMatches = SimilarityMatches.query({
+            iri: $scope.geneToQuery['@id'],
+            limit: $scope.matchesLimit,
+            offset: ($scope.matchesPage - 1) * $scope.matchesLimit
+        });
     };
     $scope.$watch('geneToQuery', function (value) {
         $scope.selectedMatch = null;
         $scope.topSubsumers = null;
         $scope.queryProfileSize = null;
+        $scope.matchesPage = 1;
         $scope.selectedMatchProfileSize = null;
         if (value) {
             $scope.queryTopMatches();
@@ -196,11 +210,13 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     });    
     $scope.selectMatch = function (match) {
         $scope.selectedMatch = match;
+        $scope.topSubsumers = null;
         $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
-        SimilaritySubsumers.query({
+        $scope.topSubsumersQuery = SimilaritySubsumers.query({
             query_iri: $scope.geneToQuery['@id'], 
             corpus_iri: match.match_profile['@id']}
-        ).$promise.then(function (response) {
+        )
+        $scope.topSubsumersQuery.$promise.then(function (response) {
             var filteredResults = response.results.filter(function (item) {
                 return item.ic > 0.0;
             });

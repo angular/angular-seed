@@ -116,6 +116,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('SimilarityCorpusSize', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/corpus_size', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('ProfileSize', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/similarity/profile_size', {}, {
 			query: {
