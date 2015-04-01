@@ -205,17 +205,19 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
                 return item.ic > 0.0;
             });
             response.results = filteredResults;
-            response.results.forEach(function (item) {
-                var subsumerIRI = item.term['@id'];
-                item.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
-                item.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
-            });
             response.results.sort(function (a, b) {
                 return b.ic - a.ic;
             });
+            $scope.loadAnnotationsForSubsumer(response.results[0]);
             $scope.topSubsumers = response;
         });
     };
+    $scope.loadAnnotationsForSubsumer = function (subsumer) {
+        subsumer.shouldShowAnnotations = true;
+        var subsumerIRI = subsumer.term['@id'];
+        subsumer.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
+        subsumer.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
+    }
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
     $scope.queryPages = [

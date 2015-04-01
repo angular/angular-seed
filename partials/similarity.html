@@ -54,12 +54,15 @@
                     <tr ng-repeat="subsumer in topSubsumers.results">
                         <td title="{{subsumer.term['@id']}}">{{subsumer.term.label}}</td>
                         <td>{{subsumer.ic | number : 2}}</td>
-                        <td>
+                        <td colspan="2" ng-hide="subsumer.shouldShowAnnotations" class="text-center">
+                                <a ng-click="loadAnnotationsForSubsumer(subsumer)">View subsumed annotations</a>
+                        </td>
+                        <td ng-show="subsumer.shouldShowAnnotations">
                             <ul cg-busy="subsumer.query_annotations.$promise">
                                 <li ng-repeat="annotation in subsumer.query_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
                             </ul>
                         </td>
-                        <td>
+                        <td ng-show="subsumer.shouldShowAnnotations">
                             <ul cg-busy="subsumer.match_annotations.$promise">
                                 <li ng-repeat="annotation in subsumer.match_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
                             </ul>
