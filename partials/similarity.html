@@ -12,7 +12,7 @@
       </div>
   </form>
   <div class="row" ng-show="geneToQuery">
-      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}}), profile size: {{queryProfileSize.total}}</h4>
+      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}})</h4>
       <div class="col-sm-4">
           <table class="table table-condensed" cg-busy="topMatches.$promise">
               <thead>
@@ -34,9 +34,12 @@
       <div class="col-sm-8">
           <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2></div>
           <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
-            <div class="panel-heading"><h4>{{selectedMatch.match_profile.label}}</h4></div>
+            <div class="panel-heading"><h4>Match details</h4></div>
             <div class="panel-body">
-              <p>Profile size: {{selectedMatchProfileSize.total}}</p>
+                <h5>Gene profile: {{geneToQuery.label}} ({{geneToQuery.taxon.label}})</h5>
+                <p>Profile size: {{queryProfileSize.total}}</p>
+                <h5>Taxon profile: {{selectedMatch.match_profile.label}}</h5>
+                <p>Profile size: {{selectedMatchProfileSize.total}}</p>
             </div>
             <table class="table table-condensed table-striped" cg-busy="topSubsumers.$promise">
                 <thead>
