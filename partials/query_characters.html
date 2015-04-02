@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-sm-4">
-        <query-panel parameters="queryParams" configuration='character_states' apply-query='applyQueryFilter'></query-panel>
+        <query-panel parameters="queryParams" configuration='character_states' options="queryPanelOptions" apply-query='applyQueryFilter'></query-panel>
     </div>
     <div class="col-sm-8">
         <p cg-busy="{promise:itemsTotal.$promise, templateUrl:'partials/busy_spinner.html'}">{{itemsTotal.total}} results.</p>
