@@ -102,6 +102,60 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.queryTotal();
 })
+.controller('QueryVariationProfileController', function ($scope, VariationProfileQuery, Vocab, OMN) {
+    $scope.queryParams = {
+        taxa: [],
+        entities: [],
+        matchAllEntities: false,
+    };
+    $scope.maxSize = 5;
+    $scope.itemsPage = 1;
+    $scope.itemsLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryCharacterStates();
+    }
+    function webServiceParams(queryParams) {
+        var result = {};
+        var taxa = queryParams.taxa.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (taxa.length > 0) {
+            if (queryParams.matchAllTaxa) {
+                result.taxon = OMN.intersection(taxa);
+            } else {
+                result.taxon = OMN.union(taxa);
+            }
+        }
+        var entities = queryParams.entities.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (entities.length > 0) {
+            if (queryParams.matchAllEntities) {
+                result.entity = OMN.intersection(entities);
+            } else {
+                result.entity = OMN.union(entities);
+            }
+        }        
+        return result;
+    }
+    $scope.queryVariationProfile = function () {
+        $scope.profileResults = VariationProfileQuery.query(_.extend({
+            limit: $scope.itemsLimit,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        }, 
+        webServiceParams($scope.queryParams)));
+    };
+    $scope.queryTotal = function () {
+        $scope.itemsTotal = CharacterStateQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
+    };
+    $scope.applyQueryFilter = function() {
+        $scope.itemsPage = 1;
+        $scope.queryVariationProfile();
+        $scope.queryTotal();
+    }
+    $scope.queryVariationProfile();
+    $scope.queryTotal();
+})
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
     $scope.queryParams = {
         taxa: [],
@@ -242,7 +296,8 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},
-        {label: "Character states", href: "/query_characters", key: "character_states"}
+        {label: "Character states", href: "/query_characters", key: "character_states"},
+        {label: "Variation profile", href: "/query_variation_profile", key: "variation_profile"}
     ];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
     $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {

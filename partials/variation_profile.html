@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-sm-4">
+        <query-panel parameters="queryParams" configuration='variation_profile' apply-query='applyQueryFilter'></query-panel>
+    </div>
+    <div class="col-sm-8">
+        <p cg-busy="{promise:itemsTotal.$promise, templateUrl:'partials/busy_spinner.html'}">{{itemsTotal.total}} results.</p>
+        <table class="table table-condensed table-striped" cg-busy="profileResults.$promise">
+            <thead>
+                <tr>
+                    <th>Character State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="state in profileResults.results">
+                    <td>{{state.description}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <pagination total-items="itemsTotal.total" ng-model="itemsPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="itemsLimit" cg-busy="itemsTotal.$promise" ng-change="pageChanged()"></pagination>
+    </div>
+</div>
