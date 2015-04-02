@@ -29,7 +29,8 @@ angular.module('pkb.directives', [])
         scope: {
             parameters: '=',
             applyQuery: '=',
-            configuration: '@'
+            configuration: '@',
+            options: '='
         }
     }
 });

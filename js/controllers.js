@@ -49,6 +49,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 	};
 })
 .controller('QueryCharacterStatesController', function ($scope, CharacterStateQuery, Vocab, OMN) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: true
+    };
     $scope.queryParams = {
         taxa: [],
         entities: [],
@@ -103,6 +107,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTotal();
 })
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: true
+    };
     $scope.queryParams = {
         taxa: [],
         entities: [],
