@@ -28,6 +28,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     
     $scope.queryPresentInTaxa();
 })
+.controller('TaxonController', function ($scope, $routeParams, Taxon) {
+    $scope.taxonID = $routeParams.taxon;
+    $scope.taxon = Taxon.query({'iri': $scope.taxonID});
+})
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;
     $scope.termLabel = Label.query({'iri': $scope.stateID});

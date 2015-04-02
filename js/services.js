@@ -74,6 +74,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('Taxon', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/taxon', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateQuery', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/characterstate/query', {}, {
 			query: {
