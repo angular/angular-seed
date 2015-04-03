@@ -374,7 +374,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},
         {label: "Character states", href: "/query_characters", key: "character_states"},
-        {label: "Genes", href: "/query_genes", key: "genes"}
+        {label: "Genes", href: "/query_genes", key: "genes"},
         {label: "Variation profile", href: "/query_variation_profile", key: "variation_profile"}
     ];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
