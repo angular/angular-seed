@@ -106,8 +106,12 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.queryTotal();
 })
-.controller('QueryVariationProfileController', function ($scope, VariationProfileQuery, Vocab, OMN) {
-    $scope.queryParams = {
+.controller('QueryVariationProfileController', function ($scope, $routeParams, $q, VariationProfileQuery, Vocab, OMN, Label) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: false
+    };    
+    var theQueryParams = {
         taxa: [],
         entities: [],
         matchAllEntities: false,
@@ -116,19 +120,15 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.itemsPage = 1;
     $scope.itemsLimit = 20;
     $scope.pageChanged = function () {
-        $scope.queryCharacterStates();
+        $scope.queryVariationProfile();
     }
     function webServiceParams(queryParams) {
         var result = {};
         var taxa = queryParams.taxa.map(function (item) {
-            return OMN.angled(item['@id']);
+            return item['@id'];
         });
         if (taxa.length > 0) {
-            if (queryParams.matchAllTaxa) {
-                result.taxon = OMN.intersection(taxa);
-            } else {
-                result.taxon = OMN.union(taxa);
-            }
+            result.taxon = angular.toJson(taxa);
         }
         var entities = queryParams.entities.map(function (item) {
             return OMN.angled(item['@id']);
@@ -150,15 +150,27 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         webServiceParams($scope.queryParams)));
     };
     $scope.queryTotal = function () {
-        $scope.itemsTotal = CharacterStateQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
+        $scope.itemsTotal = VariationProfileQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
     };
     $scope.applyQueryFilter = function() {
         $scope.itemsPage = 1;
         $scope.queryVariationProfile();
         $scope.queryTotal();
     }
-    $scope.queryVariationProfile();
-    $scope.queryTotal();
+    
+    var taxa = angular.fromJson($routeParams.taxa);
+    if (angular.isDefined(taxa)) {
+        theQueryParams.taxa = taxa.map(function (item) {
+            return Label.query({iri: item});
+        });
+    }
+    $scope.queryParams = theQueryParams;
+    $q.all($scope.queryParams.taxa.map(function (item) {
+        return item.$promise;
+    })).then(function (data) {
+        $scope.queryVariationProfile();
+        $scope.queryTotal();
+    });
 })
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
     $scope.queryPanelOptions = {

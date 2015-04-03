@@ -137,6 +137,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('VariationProfileQuery', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/taxon/variation_profile', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
     .factory('Vocab', function () {
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",

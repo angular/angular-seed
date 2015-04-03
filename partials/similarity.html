@@ -40,7 +40,7 @@
                 <h5>Gene profile: {{geneToQuery.label}} ({{geneToQuery.taxon.label}})</h5>
                 <p>Profile size: {{queryProfileSize.total}}</p>
                 <h5>Taxon profile: {{selectedMatch.match_profile.label}}</h5>
-                <p>Profile size: {{selectedMatchProfileSize.total}}</p>
+                <p>Profile size: <a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}}</a></p>
             </div>
             <table class="table table-condensed table-striped" cg-busy="topSubsumersQuery.$promise">
                 <thead>
