@@ -22,7 +22,7 @@
               <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="anatomical entity"></term-search-list>
           </div>
           <h5><i>and</i></h5>
-          <div ng-show="configuration === 'genes'">
+          <div ng-show="options.includeExpressionEntity">
               <h4>Expression location is 
                   <div class="btn-group">
                       <label class="btn btn-default btn-xs" ng-model="parameters.matchAllExpressionEntities" btn-radio="false">any</label>

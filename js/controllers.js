@@ -111,10 +111,11 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryPanelOptions = {
         includeTaxonGroup: true, 
         includeEntity: false
-    };    
-    var theQueryParams = {
+    };
+    $scope.queryParams = {
         taxa: [],
         entities: [],
+        expressionEntities: [],
         matchAllEntities: false,
     };
     $scope.maxSize = 5;
@@ -159,16 +160,22 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.queryTotal();
     }
     
+    var urlQueryParams = {
+        taxa: [],
+        entities: [],
+        matchAllEntities: false,
+    };
     var taxa = angular.fromJson($routeParams.taxa);
     if (angular.isDefined(taxa)) {
-        theQueryParams.taxa = taxa.map(function (item) {
+        urlQueryParams.taxa = taxa.map(function (item) {
             return Label.query({iri: item});
         });
     }
-    $scope.queryParams = theQueryParams;
-    $q.all($scope.queryParams.taxa.map(function (item) {
+    $q.all(urlQueryParams.taxa.map(function (item) {
         return item.$promise;
     })).then(function (data) {
+        alert(angular.toJson(data));
+        $scope.queryParams = urlQueryParams;
         $scope.queryVariationProfile();
         $scope.queryTotal();
     });
@@ -176,7 +183,8 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
     $scope.queryPanelOptions = {
         includeTaxonGroup: true, 
-        includeEntity: true
+        includeEntity: true,
+        includeExpressionEntity: false
     };
     $scope.queryParams = {
         taxa: [],
@@ -233,6 +241,11 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTotal();
 })
 .controller('QueryGenesController', function ($scope, GeneQuery, Vocab, OMN) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: false, 
+        includeEntity: true,
+        includeExpressionEntity: false //not yet working on service side
+    };
     $scope.queryParams = {
         taxa: [],
         entities: [],
@@ -266,7 +279,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             } else {
                 result.entity = OMN.union(entities);
             }
-        }        
+        }
+        var expressionEntities = queryParams.expressionEntities.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (expressionEntities.length > 0) {
+            if (queryParams.matchAllExpressionEntities) {
+                result.expression_entity = OMN.intersection(expressionEntities);
+            } else {
+                result.expression_entity = OMN.union(expressionEntities);
+            }
+        }
         return result;
     }
     $scope.queryGenes = function () {
@@ -378,15 +401,18 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         {label: "Variation profile", href: "/query_variation_profile", key: "variation_profile"}
     ];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
-    $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {
-        return {term: item};
-    });
-    $scope.queryEntityValues = $scope.parameters.entities.map(function (item) {
-        return {term: item};
-    });
-    $scope.queryExpressionEntityValues = $scope.parameters.expressionEntities.map(function (item) {
-        return {term: item};
-    });
+    function mapParameters() {
+        _.defaults($scope.parameters, {taxa: [], entities: [], expressionEntities: []});
+        $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {
+            return {term: item};
+        });
+        $scope.queryEntityValues = $scope.parameters.entities.map(function (item) {
+            return {term: item};
+        });
+        $scope.queryExpressionEntityValues = $scope.parameters.expressionEntities.map(function (item) {
+            return {term: item};
+        });
+    }
     function collectTerms(list) {
         var terms = list.filter(function (item) {
             return item.term;
@@ -423,5 +449,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.$watch('selectedPage', function (value) {
         $location.path(value.href);
     });
+    $scope.$watch('parameters', function (value) {
+        mapParameters();
+    });
     $scope.queryDirty = false;
+    mapParameters();
 });
