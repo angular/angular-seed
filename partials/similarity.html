@@ -1,0 +1,79 @@
+<h2>Semantic Similarity</h2>
+<p>Submit a gene, get back taxa!</p>
+<div class="panel-body">
+  <form role="form">
+      <div>
+          <h4>Gene:</h4>
+          <div class="form-group" ng-class="{'has-success': geneToQuery, 'has-feedback': geneToQuery}">
+              <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as (gene.label + ' (' + gene.taxon.label + ')') for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="geneToQuery"></span>
+              <i ng-show="loadingGeneComplete" class="glyphicon glyphicon-refresh"></i>
+          </div>
+      </div>
+  </form>
+  <div class="row" ng-show="geneToQuery">
+      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}})</h4>
+      <div class="col-sm-4">
+          <table class="table table-condensed" cg-busy="topMatches.$promise">
+              <thead>
+                  <tr>
+                      <th>Taxon</th>
+                      <th>Score</th>
+                      <th></th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+                      <td><a href="{{match.match_profile['@id']}}" target="_blank">{{match.match_profile.label}}</a></td>
+                      <td>{{match.score | number : 2}}</td>
+                      <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
+                  </tr>
+              </tbody>
+          </table>
+          <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
+      </div>
+      <div class="col-sm-8">
+          <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2></div>
+          <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
+            <div class="panel-heading"><h4>Match details</h4></div>
+            <div class="panel-body">
+                <h5>Gene profile: {{geneToQuery.label}} ({{geneToQuery.taxon.label}})</h5>
+                <p>Profile size: {{queryProfileSize.total}}</p>
+                <h5>Taxon profile: {{selectedMatch.match_profile.label}}</h5>
+                <p>Profile size: <a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}}</a></p>
+            </div>
+            <table class="table table-condensed table-striped" cg-busy="topSubsumersQuery.$promise">
+                <thead>
+                    <tr>
+                        <th>Match</th>
+                        <th>Score</th>
+                        <th>Gene Phenotypes</th>
+                        <th>Taxon Phenotypes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="subsumer in topSubsumers.results">
+                        <td title="{{subsumer.term['@id']}}">{{subsumer.term.label}}</td>
+                        <td>{{subsumer.ic | number : 2}}</td>
+                        <td colspan="2" ng-hide="subsumer.shouldShowAnnotations" class="text-center">
+                                <a ng-click="loadAnnotationsForSubsumer(subsumer)">View subsumed annotations</a>
+                        </td>
+                        <td ng-show="subsumer.shouldShowAnnotations">
+                            <ul cg-busy="subsumer.query_annotations.$promise">
+                                <li ng-repeat="annotation in subsumer.query_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
+                            </ul>
+                        </td>
+                        <td ng-show="subsumer.shouldShowAnnotations">
+                            <ul cg-busy="subsumer.match_annotations.$promise">
+                                <li ng-repeat="annotation in subsumer.match_annotations.results" title="{{annotation['@id']}}">{{annotation.label}}</li>
+                            </ul>
+                        </td>
+                   </tr>
+                </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+</div>
+
+

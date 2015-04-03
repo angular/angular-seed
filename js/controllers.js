@@ -28,6 +28,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     
     $scope.queryPresentInTaxa();
 })
+.controller('TaxonController', function ($scope, $routeParams, Taxon) {
+    $scope.taxonID = $routeParams.taxon;
+    $scope.taxon = Taxon.query({'iri': $scope.taxonID});
+})
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;
     $scope.termLabel = Label.query({'iri': $scope.stateID});
@@ -45,6 +49,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 	};
 })
 .controller('QueryCharacterStatesController', function ($scope, CharacterStateQuery, Vocab, OMN) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: true
+    };
     $scope.queryParams = {
         taxa: [],
         entities: [],
@@ -99,7 +107,77 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.queryTotal();
 })
+.controller('QueryVariationProfileController', function ($scope, $routeParams, $q, VariationProfileQuery, Vocab, OMN, Label) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: false
+    };    
+    var theQueryParams = {
+        taxa: [],
+        entities: [],
+        matchAllEntities: false,
+    };
+    $scope.maxSize = 5;
+    $scope.itemsPage = 1;
+    $scope.itemsLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryVariationProfile();
+    }
+    function webServiceParams(queryParams) {
+        var result = {};
+        var taxa = queryParams.taxa.map(function (item) {
+            return item['@id'];
+        });
+        if (taxa.length > 0) {
+            result.taxon = angular.toJson(taxa);
+        }
+        var entities = queryParams.entities.map(function (item) {
+            return OMN.angled(item['@id']);
+        });
+        if (entities.length > 0) {
+            if (queryParams.matchAllEntities) {
+                result.entity = OMN.intersection(entities);
+            } else {
+                result.entity = OMN.union(entities);
+            }
+        }        
+        return result;
+    }
+    $scope.queryVariationProfile = function () {
+        $scope.profileResults = VariationProfileQuery.query(_.extend({
+            limit: $scope.itemsLimit,
+            offset: ($scope.itemsPage - 1) * $scope.itemsLimit
+        }, 
+        webServiceParams($scope.queryParams)));
+    };
+    $scope.queryTotal = function () {
+        $scope.itemsTotal = VariationProfileQuery.query(_.extend({total: true}, webServiceParams($scope.queryParams)));
+    };
+    $scope.applyQueryFilter = function() {
+        $scope.itemsPage = 1;
+        $scope.queryVariationProfile();
+        $scope.queryTotal();
+    }
+    
+    var taxa = angular.fromJson($routeParams.taxa);
+    if (angular.isDefined(taxa)) {
+        theQueryParams.taxa = taxa.map(function (item) {
+            return Label.query({iri: item});
+        });
+    }
+    $scope.queryParams = theQueryParams;
+    $q.all($scope.queryParams.taxa.map(function (item) {
+        return item.$promise;
+    })).then(function (data) {
+        $scope.queryVariationProfile();
+        $scope.queryTotal();
+    });
+})
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
+    $scope.queryPanelOptions = {
+        includeTaxonGroup: true, 
+        includeEntity: true
+    };
     $scope.queryParams = {
         taxa: [],
         entities: [],
@@ -229,11 +307,75 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
+.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, SimilarityCorpusSize, Vocab) {
+    $scope.maxSize = 3;
+    $scope.matchesPage = 1;
+    $scope.matchesLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryTopMatches();
+    }
+    //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
+    $scope.matchesTotal = {total: 1000};
+    $scope.searchGenes = function (text) {
+        return GeneSearch.query({
+            limit: 20,
+            text: text
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
+    $scope.queryTopMatches = function () {
+        $scope.selectedMatch = null;
+        $scope.topMatches = SimilarityMatches.query({
+            iri: $scope.geneToQuery['@id'],
+            limit: $scope.matchesLimit,
+            offset: ($scope.matchesPage - 1) * $scope.matchesLimit
+        });
+    };
+    $scope.$watch('geneToQuery', function (value) {
+        $scope.selectedMatch = null;
+        $scope.topSubsumers = null;
+        $scope.queryProfileSize = null;
+        $scope.matchesPage = 1;
+        $scope.selectedMatchProfileSize = null;
+        if (value) {
+            $scope.queryTopMatches();
+            $scope.queryProfileSize = ProfileSize.query({iri: $scope.geneToQuery['@id']});
+        }
+    });    
+    $scope.selectMatch = function (match) {
+        $scope.selectedMatch = match;
+        $scope.topSubsumers = null;
+        $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
+        $scope.topSubsumersQuery = SimilaritySubsumers.query({
+            query_iri: $scope.geneToQuery['@id'], 
+            corpus_iri: match.match_profile['@id']}
+        )
+        $scope.topSubsumersQuery.$promise.then(function (response) {
+            var filteredResults = response.results.filter(function (item) {
+                return item.ic > 0.0;
+            });
+            response.results = filteredResults;
+            response.results.sort(function (a, b) {
+                return b.ic - a.ic;
+            });
+            $scope.loadAnnotationsForSubsumer(response.results[0]);
+            $scope.topSubsumers = response;
+        });
+    };
+    $scope.loadAnnotationsForSubsumer = function (subsumer) {
+        subsumer.shouldShowAnnotations = true;
+        var subsumerIRI = subsumer.term['@id'];
+        subsumer.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
+        subsumer.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
+    }
+})
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},
         {label: "Character states", href: "/query_characters", key: "character_states"},
         {label: "Genes", href: "/query_genes", key: "genes"}
+        {label: "Variation profile", href: "/query_variation_profile", key: "variation_profile"}
     ];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
     $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {

@@ -4,13 +4,13 @@
   </div>
   <div class="panel-body">
       <form role="form">
-          <div>
+          <div ng-show="options.includeTaxonGroup">
               <h4>Taxon is <button type="button" class="btn btn-default btn-xs pull-right" ng-click="queryTaxonValues.push({})">Add</button></h4>
               <p ng-show="queryTaxonValues.length &lt; 1"><i>any taxonomic group</i></p>
               <term-search-list terms="queryTaxonValues" query='searchTaxa' placeholder="taxonomic group"></term-search-list>
           </div>                  
           <h5><i>and</i></h5>
-          <div>
+          <div ng-show="options.includeEntity">
               <h4>Phenotype entity is 
                   <div class="btn-group">
                       <label class="btn btn-default btn-xs" ng-model="parameters.matchAllEntities" btn-radio="false">any</label>

@@ -25,8 +25,22 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('TermSearch', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/term/search', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('OntologyTermSearch', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/term/search_classes', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('GeneSearch', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/gene/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
@@ -60,6 +74,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('Taxon', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/taxon', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateQuery', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/characterstate/query', {}, {
 			query: {
@@ -88,11 +109,54 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('SimilarityMatches', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/query', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('SimilaritySubsumers', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/best_subsumers', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('SubsumedAnnotations', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/subsumed_annotations', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('SimilarityCorpusSize', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/corpus_size', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('ProfileSize', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/profile_size', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('VariationProfileQuery', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/taxon/variation_profile', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
     .factory('Vocab', function () {
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",
             VTO: "http://purl.obolibrary.org/obo/vto.owl",
-            Uberon: "http://purl.obolibrary.org/obo/uberon.owl"
+            Uberon: "http://purl.obolibrary.org/obo/uberon.owl",
+            Gene: "http://purl.obolibrary.org/obo/SO_0000704"
         }
     })
     .factory('OMN', function () {

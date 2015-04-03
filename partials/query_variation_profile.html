@@ -1,17 +1,17 @@
 <div class="row">
     <div class="col-sm-4">
-        <query-panel parameters="queryParams" configuration='character_states' options="queryPanelOptions" apply-query='applyQueryFilter'></query-panel>
+        <query-panel parameters="queryParams" configuration='variation_profile' options="queryPanelOptions" apply-query='applyQueryFilter'></query-panel>
     </div>
     <div class="col-sm-8">
         <p cg-busy="{promise:itemsTotal.$promise, templateUrl:'partials/busy_spinner.html'}">{{itemsTotal.total}} results.</p>
-        <table class="table table-condensed table-striped" cg-busy="statesResults.$promise">
+        <table class="table table-condensed table-striped" cg-busy="profileResults.$promise">
             <thead>
                 <tr>
                     <th>Character State</th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="state in statesResults.results">
+                <tr ng-repeat="state in profileResults.results">
                     <td>{{state.description}}</td>
                 </tr>
             </tbody>
