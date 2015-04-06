@@ -171,7 +171,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         entities: [],
         matchAllEntities: false,
     };
-    var taxa = angular.fromJson($routeParams.taxa);
+    var taxa = [];
+    if ($routeParams.taxa) {
+        var taxa = angular.fromJson($routeParams.taxa);
+    }
     urlQueryParams.taxa = taxa.map(function (item) {
         return {'@id': item};
     });
