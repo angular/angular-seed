@@ -1,51 +1,58 @@
 <div class="row">
-    <div class= "col-xs-12">
-    <form role="form">
-        <h3>Search the KB.</h3>
-        <div class="form-group">
-            <input type="text" class="form-control" placeholder="Taxa, characters, anatomical structures, genes..." ng-model="searchText">
+    <div class= "col-sm-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form role="form">
+                    <h3>Search the KB.</h3>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Taxa, characters, anatomical structures, genes..." ng-model="searchText">
+                    </div>
+                    <button class="btn btn-default" ng-click="performSearches();">Search</button>
+                </form>
+                <div style="margin-top: 1em;">
+                    <accordion close-others="true">
+                        <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise">
+                            <ul class="list-inline">
+                                <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
+                            </ul>
+                        </accordion-group>
+                        <accordion-group heading="Evolutionary characters" is-disabled="!statesResults.results.length > 0" cg-busy="statesResults.$promise">
+                                <blockquote ng-repeat="state in statesResults.results" class="character"><a href="#/characterstate/{{state['@id'] | encodeURI }}">{{state.description}}</a><footer>{{state.matrix.label}}</footer></blockquote>
+                        </accordion-group>
+                        <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise">
+                          <ul class="list-inline">
+                              <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
+                          </ul>
+                        </accordion-group>
+                        <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise">
+                            <ul class="list-inline">
+                                <li ng-repeat="gene in geneResults.results"><a title="{{gene['@id']}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
+                            </ul>
+                        </accordion-group>
+                    </accordion>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-default" ng-click="performSearches();">Search</button>
-    </form>
     </div>
-</div>
-<div class="row" style="margin-top: 1em;">
-    <div class= "col-xs-12">
-    <accordion close-others="true">
-        <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise">
-            <ul class="list-inline">
-                <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
-            </ul>
-        </accordion-group>
-        <accordion-group heading="Evolutionary characters" is-disabled="!statesResults.results.length > 0" cg-busy="statesResults.$promise">
-                <blockquote ng-repeat="state in statesResults.results" class="character"><a href="#/characterstate/{{state['@id'] | encodeURI }}">{{state.description}}</a><footer>{{state.matrix.label}}</footer></blockquote>
-        </accordion-group>
-        <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise">
-          <ul class="list-inline">
-              <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
-          </ul>
-        </accordion-group>
-        <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise">
-            <ul class="list-inline">
-                <li ng-repeat="gene in geneResults.results"><a title="{{gene['@id']}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
-            </ul>
-        </accordion-group>
-    </accordion>
-    </div>
-</div>
-<div class="row">
-    <div class= "col-xs-12">
-        <h3>Query by annotations.</h3>
-        <ul>
-            <li>
-                <a href="#/query_taxa">Taxa</a>
-            </li>
-            <li>
-                <a href="#/query_characters">Character states</a>
-            </li>
-            <li>
-                <a href="#/query_genes">Genes</a>
-            </li>
-        </ul>
+    <div class= "col-sm-6">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h3>Query by annotations.</h3>
+                <ul>
+                    <li>
+                        <a href="#/query_taxa">Taxa</a>
+                    </li>
+                    <li>
+                        <a href="#/query_variation_profile">Taxon variation profiles</a>
+                    </li>
+                    <li>
+                        <a href="#/query_characters">Character states</a>
+                    </li>
+                    <li>
+                        <a href="#/query_genes">Genes</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
