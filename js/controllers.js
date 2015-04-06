@@ -6,13 +6,15 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('AppController', function ($scope) {
 	
 })
-.controller('HomeController', function ($scope, AnatomicalTermSearch, CharacterStateSearch) {
+.controller('HomeController', function ($scope, AnatomicalTermSearch, CharacterStateSearch, OntologyTermSearch, GeneSearch, Vocab) {
     $scope.performSearches = function () {
         $scope.anatomyResults = {};
         $scope.statesResults = {};
         if ($scope.searchText) {
-            $scope.anatomyResults = AnatomicalTermSearch.query({'text': $scope.searchText, 'limit': 20});
-            $scope.statesResults = CharacterStateSearch.query({'text': $scope.searchText, 'limit': 20});
+            $scope.anatomyResults = AnatomicalTermSearch.query({text: $scope.searchText, limit: 20});
+            $scope.statesResults = CharacterStateSearch.query({text: $scope.searchText, limit: 20});
+            $scope.taxaResults = OntologyTermSearch.query({text: $scope.searchText, limit: 20, definedBy: Vocab.VTO});
+            $scope.geneResults = GeneSearch.query({text: $scope.searchText, limit: 20});
         }
     };
 })

@@ -20,11 +20,15 @@
         <accordion-group heading="Evolutionary characters" is-disabled="!statesResults.results.length > 0" cg-busy="statesResults.$promise">
                 <blockquote ng-repeat="state in statesResults.results" class="character"><a href="#/characterstate/{{state['@id'] | encodeURI }}">{{state.description}}</a><footer>{{state.matrix.label}}</footer></blockquote>
         </accordion-group>
-        <accordion-group heading="Taxa">
-          <p><i>Coming soon</i></p>
+        <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise">
+          <ul class="list-inline">
+              <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
+          </ul>
         </accordion-group>
-        <accordion-group heading="Genes">
-            <p><i>Coming soon</i></p>
+        <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise">
+            <ul class="list-inline">
+                <li ng-repeat="gene in geneResults.results"><a title="{{gene['@id']}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
+            </ul>
         </accordion-group>
     </accordion>
     </div>
