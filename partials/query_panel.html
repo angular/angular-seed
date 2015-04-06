@@ -9,7 +9,7 @@
               <p ng-show="queryTaxonValues.length &lt; 1"><i>any taxonomic group</i></p>
               <term-search-list terms="queryTaxonValues" query='searchTaxa' placeholder="taxonomic group"></term-search-list>
           </div>                  
-          <h5><i>and</i></h5>
+          <h5 ng-show="options.includeEntity"><i>and</i></h5>
           <div ng-show="options.includeEntity">
               <h4>Phenotype entity is 
                   <div class="btn-group">
@@ -21,7 +21,7 @@
               <p ng-show="queryEntityValues.length &lt; 1"><i>any anatomical entity</i></p>
               <term-search-list terms="queryEntityValues" query='searchEntities' placeholder="anatomical entity"></term-search-list>
           </div>
-          <h5><i>and</i></h5>
+          <h5 ng-show="options.includeExpressionEntity"><i>and</i></h5>
           <div ng-show="options.includeExpressionEntity">
               <h4>Expression location is 
                   <div class="btn-group">

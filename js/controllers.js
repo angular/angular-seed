@@ -107,17 +107,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryCharacterStates();
     $scope.queryTotal();
 })
-.controller('QueryVariationProfileController', function ($scope, $routeParams, $q, VariationProfileQuery, Vocab, OMN, Label) {
+.controller('QueryVariationProfileController', function ($scope, $routeParams, VariationProfileQuery, Vocab, OMN, Label) {
     $scope.queryPanelOptions = {
         includeTaxonGroup: true, 
         includeEntity: false
     };
-    $scope.queryParams = {
-        taxa: [],
-        entities: [],
-        expressionEntities: [],
-        matchAllEntities: false,
-    };
+    // $scope.queryParams = {
+//         taxa: [],
+//         entities: [],
+//         expressionEntities: [],
+//         matchAllEntities: false,
+//     };
     $scope.maxSize = 5;
     $scope.itemsPage = 1;
     $scope.itemsLimit = 20;
@@ -166,19 +166,26 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         matchAllEntities: false,
     };
     var taxa = angular.fromJson($routeParams.taxa);
-    if (angular.isDefined(taxa)) {
-        urlQueryParams.taxa = taxa.map(function (item) {
-            return Label.query({iri: item});
-        });
-    }
-    $q.all(urlQueryParams.taxa.map(function (item) {
-        return item.$promise;
-    })).then(function (data) {
-        alert(angular.toJson(data));
-        $scope.queryParams = urlQueryParams;
-        $scope.queryVariationProfile();
-        $scope.queryTotal();
+    urlQueryParams.taxa = taxa.map(function (item) {
+        return {'@id': item};
     });
+    $scope.queryParams = urlQueryParams;
+    $scope.queryVariationProfile();
+    $scope.queryTotal();
+    
+    
+    // if (angular.isDefined(taxa)) {
+//         urlQueryParams.taxa = taxa.map(function (item) {
+//             return Label.query({iri: item});
+//         });
+//     }
+//     $q.all(urlQueryParams.taxa.map(function (item) {
+//         return item.$promise;
+//     })).then(function (data) {
+//         $scope.queryParams = urlQueryParams;
+//         $scope.queryVariationProfile();
+//         $scope.queryTotal();
+//     });
 })
 .controller('QueryTaxaController', function ($scope, TaxonQuery, Vocab, OMN) {
     $scope.queryPanelOptions = {
@@ -393,24 +400,49 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         subsumer.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
     }
 })
-.controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab) {
+.controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab, Label, $q) {
     $scope.queryPages = [
         {label: "Taxa", href: "/query_taxa", key: "taxa"},
         {label: "Character states", href: "/query_characters", key: "character_states"},
         {label: "Genes", href: "/query_genes", key: "genes"},
         {label: "Variation profile", href: "/query_variation_profile", key: "variation_profile"}
     ];
+    $scope.queryTaxonValues = [];
+    $scope.queryEntityValues = [];
+    $scope.queryExpressionEntityValues = [];
     $scope.selectedPage = _.findWhere($scope.queryPages, {key: $scope.configuration});
+    function maybeGetLabel(term) {
+        if (!term.label && !term.$promise) {
+            return Label.query({iri: term['@id']}).$promise;
+        } else {
+            return $q.when(term);
+        }
+    }
     function mapParameters() {
         _.defaults($scope.parameters, {taxa: [], entities: [], expressionEntities: []});
-        $scope.queryTaxonValues = $scope.parameters.taxa.map(function (item) {
-            return {term: item};
+        $q.all($scope.parameters.taxa.map(function (item) {
+            return maybeGetLabel(item);
+        })).then(function (items) {
+            $scope.queryTaxonValues.splice(0, $scope.queryTaxonValues.length);
+            items.forEach(function (item) {
+                $scope.queryTaxonValues.push({term: item});
+            });
         });
-        $scope.queryEntityValues = $scope.parameters.entities.map(function (item) {
-            return {term: item};
+        $q.all($scope.parameters.entities.map(function (item) {
+            return maybeGetLabel(item);
+        })).then(function (items) {
+            $scope.queryEntityValues.splice(0, $scope.queryTaxonValues.length);
+            items.forEach(function (item) {
+                $scope.queryEntityValues.push({term: item});
+            });
         });
-        $scope.queryExpressionEntityValues = $scope.parameters.expressionEntities.map(function (item) {
-            return {term: item};
+        $q.all($scope.parameters.expressionEntities.map(function (item) {
+            return maybeGetLabel(item);
+        })).then(function (items) {
+            $scope.queryExpressionEntityValues.splice(0, $scope.queryTaxonValues.length);
+            items.forEach(function (item) {
+                $scope.queryExpressionEntityValues.push({term: item});
+            });
         });
     }
     function collectTerms(list) {
