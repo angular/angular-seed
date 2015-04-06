@@ -7,9 +7,13 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 	
 })
 .controller('HomeController', function ($scope, AnatomicalTermSearch, CharacterStateSearch, OntologyTermSearch, GeneSearch, Vocab) {
+    $scope.clearResults = function () {
+        $scope.anatomyResults = null;
+        $scope.statesResults = null;
+        $scope.taxaResults = null;
+        $scope.geneResults = null;
+    };
     $scope.performSearches = function () {
-        $scope.anatomyResults = {};
-        $scope.statesResults = {};
         if ($scope.searchText) {
             $scope.anatomyResults = AnatomicalTermSearch.query({text: $scope.searchText, limit: 20});
             $scope.statesResults = CharacterStateSearch.query({text: $scope.searchText, limit: 20});

@@ -5,11 +5,11 @@
                 <form role="form">
                     <h3>Search the KB</h3>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Taxa, characters, anatomical structures, genes..." ng-model="searchText">
+                        <input type="text" class="form-control" placeholder="Taxa, characters, anatomical structures, genes..." ng-model="searchText" ng-change="clearResults();">
                     </div>
                     <button class="btn btn-default" ng-click="performSearches();">Search</button>
                 </form>
-                <div style="margin-top: 1em;">
+                <div style="margin-top: 1em;" ng-show="searchText &amp;&amp; (anatomyResults)">
                     <accordion close-others="true">
                         <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise">
                             <ul class="list-inline">
@@ -37,7 +37,7 @@
     <div class= "col-sm-6">
         <div class="panel panel-default">
             <div class="panel-body">
-                <h3>Query by annotated data</h3>
+                <h3>Query annotated data</h3>
                 <ul>
                     <li>
                         <a href="#/query_taxa">Taxa</a>
