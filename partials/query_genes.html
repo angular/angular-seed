@@ -12,7 +12,7 @@
              </thead>
              <tbody>
         	     <tr ng-repeat="gene in genesResults.results">
-                     <td>{{gene.label}}</td>
+                     <td>{{gene.label}} <small>({{gene.taxon.label}})</small></td>
         	     </tr>
          </tbody>
         </table>

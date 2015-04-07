@@ -19,9 +19,8 @@ angular.module('pkb.filters', [])
   .filter('prefixedURI', function () {
       return function (text) {
           var prefixes = {
-              "http://purl.org/phenoscape/vocab.owl#implies_presence_of_some_http://purl.obolibrary.org/obo/": "presence_of:",
-              "http://purl.org/phenoscape/vocab.owl#has_part_inhering_in_some_http://purl.obolibrary.org/obo/": "hpi:",
               "http://purl.obolibrary.org/obo/UBERON_": "UBERON:",
+              "http://purl.obolibrary.org/obo/VTO_": "VTO:",
               "http://purl.obolibrary.org/obo/": "obo:",
               "http://purl.org/phenoscape/uuid/": "uuid:"
           }
