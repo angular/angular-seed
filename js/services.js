@@ -123,6 +123,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('SimilarityAnnotationMatches', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/best_matches', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('SubsumedAnnotations', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/similarity/subsumed_annotations', {}, {
 			query: {

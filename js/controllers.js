@@ -346,7 +346,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilaritySubsumers, SubsumedAnnotations, ProfileSize, SimilarityCorpusSize, Vocab) {
+.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize, Vocab) {
     $scope.maxSize = 3;
     $scope.matchesPage = 1;
     $scope.matchesLimit = 20;
@@ -373,7 +373,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     };
     $scope.$watch('geneToQuery', function (value) {
         $scope.selectedMatch = null;
-        $scope.topSubsumers = null;
+        $scope.annotationMatches = null;
         $scope.queryProfileSize = null;
         $scope.matchesPage = 1;
         $scope.selectedMatchProfileSize = null;
@@ -384,30 +384,13 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     });    
     $scope.selectMatch = function (match) {
         $scope.selectedMatch = match;
-        $scope.topSubsumers = null;
+        $scope.annotationMatches = null;
         $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
-        $scope.topSubsumersQuery = SimilaritySubsumers.query({
+        $scope.annotationMatches = SimilarityAnnotationMatches.query({
             query_iri: $scope.geneToQuery['@id'], 
             corpus_iri: match.match_profile['@id']}
-        )
-        $scope.topSubsumersQuery.$promise.then(function (response) {
-            var filteredResults = response.results.filter(function (item) {
-                return item.ic > 0.0;
-            });
-            response.results = filteredResults;
-            response.results.sort(function (a, b) {
-                return b.ic - a.ic;
-            });
-            $scope.loadAnnotationsForSubsumer(response.results[0]);
-            $scope.topSubsumers = response;
-        });
+        );
     };
-    $scope.loadAnnotationsForSubsumer = function (subsumer) {
-        subsumer.shouldShowAnnotations = true;
-        var subsumerIRI = subsumer.term['@id'];
-        subsumer.query_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.geneToQuery['@id']});
-        subsumer.match_annotations = SubsumedAnnotations.query({'subsumer': subsumerIRI, 'instance': $scope.selectedMatch.match_profile['@id']});
-    }
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab, Label, $q) {
     $scope.queryPages = [
