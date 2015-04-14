@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .directive('stPipe', function () {
+  .directive('stPipe', ['stConfig', '$timeout', function (config, $timeout) {
     return {
       require: 'stTable',
       scope: {
@@ -8,10 +8,22 @@ ng.module('smart-table')
       link: {
 
         pre: function (scope, element, attrs, ctrl) {
+
+          var pipePromise = null;
+
           if (ng.isFunction(scope.stPipe)) {
             ctrl.preventPipeOnWatch();
             ctrl.pipe = function () {
-              return scope.stPipe(ctrl.tableState(), ctrl);
+
+              if (pipePromise !== null) {
+                $timeout.cancel(pipePromise)
+              }
+
+              pipePromise = $timeout(function () {
+                scope.stPipe(ctrl.tableState(), ctrl);
+              }, config.pipe.delay);
+
+              return pipePromise;
             }
           }
         },
@@ -21,4 +33,4 @@ ng.module('smart-table')
         }
       }
     };
-  });
+  }]);

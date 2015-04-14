@@ -19,7 +19,7 @@ describe('stPipe directive', function () {
         }
     }));
 
-    it('should use the custom pipe function with the current table state as argument', inject(function ($compile) {
+    it('should use the custom pipe function with the current table state as argument', inject(function ($timeout,$compile) {
         var element;
         var template = '<table st-pipe="customPipe" st-table="rowCollection">' +
             '<thead>' +
@@ -34,6 +34,11 @@ describe('stPipe directive', function () {
 
         var ths = element.find('th');
         angular.element(ths[0]).triggerHandler('click');
+
+        expect(firstArg).toBe(undefined);
+        expect(secondArg).toBe(undefined);
+
+        $timeout.flush();
 
         expect(firstArg).toEqual({
             sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0}
