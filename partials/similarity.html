@@ -56,7 +56,7 @@
                         <td>
                             <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
                         </td>
-                        <td class="text-center" title="{{match.best_subsumer.term.label}}">{{match.best_subsumer.ic | number : 2}}</td>
+                        <td class="text-center" title="{{match.best_subsumer.term.label}}">{{match.best_subsumer.ic | number : 2}} <button ng-show="match.best_subsumer.disparity > 0.15" type="button" class="btn btn-warning btn-xs">IC warning</button></td>
                    </tr>
                 </tbody>
             </table>

@@ -151,6 +151,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('ICDisparity', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/similarity/ic_disparity', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('VariationProfileQuery', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/taxon/variation_profile', {}, {
 			query: {
