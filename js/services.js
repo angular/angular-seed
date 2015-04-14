@@ -81,6 +81,20 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('Gene', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/gene', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('GenePhenotypes', function ($resource) {
+		return $resource('http://pkb-new.nescent.org/kb/gene/phenotypic_profile', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateQuery', function ($resource) {
 		return $resource('http://pkb-new.nescent.org/kb/characterstate/query', {}, {
 			query: {

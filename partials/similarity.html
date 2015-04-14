@@ -37,7 +37,7 @@
           <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
             <div class="panel-heading"><h4 class="panel-title">Match details</h4></div>
             <div class="panel-body">
-                <h5>Query gene: {{geneToQuery.label}} ({{geneToQuery.taxon.label}}) <small>{{queryProfileSize.total}} phenotypes</small></h5>
+                <h5>Query gene: {{geneToQuery.label}} ({{geneToQuery.taxon.label}}) <small><a href="#/gene/{{geneToQuery['@id'] | encodeURI}}">{{queryProfileSize.total}} phenotypes</a></small></h5>
                 <h5>Matched taxon: {{selectedMatch.match_profile.label}} <small><a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></h5>
             </div>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">

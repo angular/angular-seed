@@ -38,6 +38,14 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
 })
+.controller('GeneController', function ($scope, $routeParams, Gene, GenePhenotypes) {
+    $scope.geneID = $routeParams.gene;
+    $scope.gene = Gene.query({'iri': $scope.geneID});
+    $scope.queryPhenotypes = function () {
+        $scope.phenotypes = GenePhenotypes.query({'iri': $scope.geneID});
+    }
+    $scope.queryPhenotypes();
+})
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;
     $scope.termLabel = Label.query({'iri': $scope.stateID});

@@ -1,0 +1,32 @@
+<h2 cg-busy="gene.$promise">{{gene.label}} <small>({{gene.taxon.label}})</small> <small>{{geneID}}</small></h2>
+<p>{{term.definition}}</p>
+<div class="row">
+    <div class= "col-sm-12">
+        <tabset>
+            <tab heading="Phenotypes">
+                <div class="panel panel-default" style="margin-top: 1em;">
+                    <div class="panel-heading">
+                        <h4>Phenotypes associated with {{gene.label}}</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p>These phenotypes have been directly annotated to <mark>{{gene.label}}</mark>.</p>
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="phenotypes.$promise">
+                        <thead>
+                            <tr>
+                                <th>Phenotype</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="phenotype in phenotypes.results">
+                                <td>{{phenotype.label}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </tab>
+            <tab heading="Expression">
+            </tab>
+        </tabset>
+    </div>
+</div>

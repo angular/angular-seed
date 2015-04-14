@@ -26,7 +26,7 @@
                         </accordion-group>
                         <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise">
                             <ul class="list-inline">
-                                <li ng-repeat="gene in geneResults.results"><a title="{{gene['@id']}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
+                                <li ng-repeat="gene in geneResults.results"><a href="#/gene/{{gene['@id'] | encodeURI}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
                             </ul>
                         </accordion-group>
                     </accordion>
