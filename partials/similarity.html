@@ -1,39 +1,44 @@
 <h2>Semantic Similarity</h2>
-<p>Submit a gene, get back taxa!</p>
+<p>Search for taxa with variation profiles similar to the phenotypic profile of the input gene.</p>
 <div class="panel-body">
-  <form role="form">
-      <div>
-          <h4>Gene:</h4>
-          <div class="form-group" ng-class="{'has-success': geneToQuery, 'has-feedback': geneToQuery}">
-              <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as (gene.label + ' (' + gene.taxon.label + ')') for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
-              <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="geneToQuery"></span>
-              <i ng-show="loadingGeneComplete" class="glyphicon glyphicon-refresh"></i>
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <form role="form">
+                <div>
+                    <h4>Gene:</h4>
+                    <div class="form-group" ng-class="{'has-success': geneToQuery, 'has-feedback': geneToQuery}">
+                        <input type="text" ng-model="geneToQuery" placeholder="any gene symbol" typeahead="gene as (gene.label + ' (' + gene.taxon.label + ')') for gene in searchGenes($viewValue)" typeahead-loading="loadingGeneComplete" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="geneToQuery"></span>
+                        <i ng-show="loadingGeneComplete" class="glyphicon glyphicon-refresh"></i>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" ng-show="geneToQuery">
+        <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}})</h4>
+        <div class="col-sm-4">
+            <table class="table table-condensed" cg-busy="topMatches.$promise">
+                <thead>
+                    <tr>
+                        <th>Taxon</th>
+                        <th>Score</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+                        <td><a href="{{match.match_profile['@id']}}" target="_blank">{{match.match_profile.label}}</a></td>
+                        <td>{{match.score | number : 2}}</td>
+                        <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
+        </div>
+        <div class="col-sm-8">
+          <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2>
           </div>
-      </div>
-  </form>
-  <div class="row" ng-show="geneToQuery">
-      <h4>Evolutionary profiles matching gene <b>{{geneToQuery.label}}</b> ({{geneToQuery.taxon.label}})</h4>
-      <div class="col-sm-4">
-          <table class="table table-condensed" cg-busy="topMatches.$promise">
-              <thead>
-                  <tr>
-                      <th>Taxon</th>
-                      <th>Score</th>
-                      <th></th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
-                      <td><a href="{{match.match_profile['@id']}}" target="_blank">{{match.match_profile.label}}</a></td>
-                      <td>{{match.score | number : 2}}</td>
-                      <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
-                  </tr>
-              </tbody>
-          </table>
-          <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
-      </div>
-      <div class="col-sm-8">
-          <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2></div>
           <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
             <div class="panel-heading"><h4 class="panel-title">Match details</h4></div>
             <div class="panel-body">
