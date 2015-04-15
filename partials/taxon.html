@@ -1,1 +1,17 @@
 <h2 cg-busy="taxon.$promise">{{taxon.label}} <small>{{taxonID | prefixedURI}}</small></h2>
+<div class="row">
+    <div class= "col-sm-12">
+        <tabset>
+            <tab heading="Overview">
+                <h4>Classification</h4>
+            </tab>
+            <tab heading="Misc">
+                <div class="panel panel-default" style="margin-top: 1em;">
+                    <div class="panel-body">
+                        <a href="http://pkb-new.nescent.org/kb/taxon/newick?iri={{taxonID | encodeURI}}">Get Newick tree for this taxon (based on the VTO classification)</a>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+</div>
