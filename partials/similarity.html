@@ -44,6 +44,8 @@
             <div class="panel-body">
                 <h5>Query gene: {{geneToQuery.label}} ({{geneToQuery.taxon.label}}) <small><a href="#/gene/{{geneToQuery['@id'] | encodeURI}}">{{queryProfileSize.total}} phenotypes</a></small></h5>
                 <h5>Matched taxon: {{selectedMatch.match_profile.label}} <small><a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></h5>
+                <h5>Median IC: {{selectedMatch.median_score | number : 2}}</h5>
+                <h5>Expect score: {{selectedMatch.expect_score | number : 2}}</h5>
             </div>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
