@@ -4,4 +4,10 @@
 
 #phenoscape_logo { height: 60px; }
 
-blockquote.character { font-size: 14px; display: inline-block;}
+blockquote.character { font-size: 14px; display: inline-block; }
+
+.kb-form-condensed .form-group {
+    margin-top: 0;
+    margin-bottom: 0;
+    
+}

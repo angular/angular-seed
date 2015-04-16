@@ -43,10 +43,32 @@
           <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
             <div class="panel-heading"><h4 class="panel-title">Match details</h4></div>
             <div class="panel-body">
-                <h5>Query gene: {{geneToQuery.label}} ({{geneToQuery.taxon.label}}) <small><a href="#/gene/{{geneToQuery['@id'] | encodeURI}}">{{queryProfileSize.total}} phenotypes</a></small></h5>
-                <h5>Matched taxon: {{selectedMatch.match_profile.label}} <small><a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></h5>
-                <h5>Median IC: {{selectedMatch.median_score | number : 2}}</h5>
-                <h5>Expect score: {{selectedMatch.expect_score | number : 2}}</h5>
+                <form class="form-horizontal kb-form-condensed">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Searched gene:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{geneToQuery.label}} ({{geneToQuery.taxon.label}}) <small><a href="#/gene/{{geneToQuery['@id'] | encodeURI}}">{{queryProfileSize.total}} phenotypes</a></small></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Matched taxon:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.match_profile.label}} <small><a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Overall similarity:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.median_score | number : 2}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Expect score:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.expect_score | number : 2}}</p>
+                        </div>
+                    </div>
+                </form>
             </div>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
