@@ -75,6 +75,7 @@
                     <tr>
                         <th>Gene Phenotype</th>
                         <th>Taxon Phenotype</th>
+                        <th>Most Informative Common Subsumer</th>
                         <th>Match Information Content</th>
                     </tr>
                 </thead>
@@ -86,7 +87,12 @@
                         <td>
                             <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
                         </td>
-                        <td class="text-center" title="{{match.best_subsumer.term.label}}">{{match.best_subsumer.ic | number : 2}} <button ng-show="match.best_subsumer.disparity > 0.15" type="button" class="btn btn-warning btn-xs">IC warning</button></td>
+                        <td>
+                            <a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a>
+                        </td>
+                        <td class="text-center">
+                            <span>{{match.best_subsumer.ic | number : 2}}</span> <button ng-show="match.best_subsumer.disparity > 0.25" type="button" class="btn btn-warning btn-xs">IC warning</button>
+                        </td>
                    </tr>
                 </tbody>
             </table>
