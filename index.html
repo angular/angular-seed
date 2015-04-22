@@ -5,15 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Phenoscape Knowledgebase</title>
 	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+	<!-- <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"> -->
     <link rel="stylesheet" href="bower_components/angular-busy/dist/angular-busy.min.css">
     <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
 	<div class="container-fluid" ng-controller="AppController">
-        <div class="row">
-            <div class= "col-xs-12">
+        <div class="row bottom-buffer">
+            <div class="col-xs-12">
                 <h1><img id="phenoscape_logo" src="img/phenoscape_logo.png"><a href="#/home">Phenoscape Knowledgebase</a></h1>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">About <span class="caret"></span></button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#/about/phenoscape">Phenoscape</a></li>
+                        <li><a href="#/about/phenoscape/kb">Phenoscape Knowledgebase</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
         
@@ -32,7 +39,9 @@
 		<script src="bower_components/angular/angular.js"></script>
 		<script src="bower_components/angular-route/angular-route.js"></script>
 		<script src="bower_components/angular-resource/angular-resource.js"></script>
-		<script src="bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.min.js"></script>
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.min.js"></script>
         <script src="bower_components/angular-busy/dist/angular-busy.min.js"></script>
         <script src="bower_components/underscore/underscore-min.js"></script>
 		<script src="lib/form_complete.js"></script>

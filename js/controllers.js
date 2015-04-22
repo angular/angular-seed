@@ -22,6 +22,12 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }
     };
 })
+.controller('AboutPhenoscapeKBController', function ($scope) {
+    
+})
+.controller('AboutPhenoscapeController', function ($scope) {
+    
+})
 .controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
