@@ -35,7 +35,7 @@
                 </tbody>
             </table>
             <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
-            <label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://pkb-new.nescent.org/kb/similarity/query?limit=0&amp;iri={{geneToQuery['@id'] | encodeURI}}" role="button">Text</a>
+            <label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{geneToQuery['@id'] | encodeURI}}" role="button">Text</a>
         </div>
         <div class="col-sm-8">
           <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2>

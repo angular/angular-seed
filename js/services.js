@@ -5,175 +5,175 @@
 angular.module('pkb.services', ['ngResource'])
 	.value('version', '0.1')
 	.factory('EntityPresence', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/entity/presence', {}, {
+		return $resource('http://kb.phenoscape.org/kb/entity/presence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('EntityAbsence', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/entity/absence', {}, {
+		return $resource('http://kb.phenoscape.org/kb/entity/absence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('AnatomicalTermSearch', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/entity/search', {}, {
+		return $resource('http://kb.phenoscape.org/kb/entity/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('TermSearch', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/term/search', {}, {
+		return $resource('http://kb.phenoscape.org/kb/term/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('OntologyTermSearch', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/term/search_classes', {}, {
+		return $resource('http://kb.phenoscape.org/kb/term/search_classes', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('GeneSearch', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/gene/search', {}, {
+		return $resource('http://kb.phenoscape.org/kb/gene/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('CharacterStateSearch', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/characterstate/search', {}, {
+		return $resource('http://kb.phenoscape.org/kb/characterstate/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('Label', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/term/label', {}, {
+		return $resource('http://kb.phenoscape.org/kb/term/label', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('Labels', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/term/labels', {}, {
+		return $resource('http://kb.phenoscape.org/kb/term/labels', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('Term', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/term', {}, {
+		return $resource('http://kb.phenoscape.org/kb/term', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('Taxon', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/taxon', {}, {
+		return $resource('http://kb.phenoscape.org/kb/taxon', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('Gene', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/gene', {}, {
+		return $resource('http://kb.phenoscape.org/kb/gene', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('GenePhenotypes', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/gene/phenotypic_profile', {}, {
+		return $resource('http://kb.phenoscape.org/kb/gene/phenotypic_profile', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('CharacterStateQuery', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/characterstate/query', {}, {
+		return $resource('http://kb.phenoscape.org/kb/characterstate/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('TaxonQuery', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/taxon/query', {}, {
+		return $resource('http://kb.phenoscape.org/kb/taxon/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('GeneQuery', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/gene/query', {}, {
+		return $resource('http://kb.phenoscape.org/kb/gene/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('OntoTraceQuery', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/ontotrace', {}, {
+		return $resource('http://kb.phenoscape.org/kb/ontotrace', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('SimilarityMatches', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/query', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('SimilaritySubsumers', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/best_subsumers', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/best_subsumers', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('SimilarityAnnotationMatches', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/best_matches', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/best_matches', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('SubsumedAnnotations', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/subsumed_annotations', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/subsumed_annotations', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('SimilarityCorpusSize', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/corpus_size', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/corpus_size', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('ProfileSize', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/profile_size', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/profile_size', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('ICDisparity', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/similarity/ic_disparity', {}, {
+		return $resource('http://kb.phenoscape.org/kb/similarity/ic_disparity', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
 	.factory('VariationProfileQuery', function ($resource) {
-		return $resource('http://pkb-new.nescent.org/kb/taxon/variation_profile', {}, {
+		return $resource('http://kb.phenoscape.org/kb/taxon/variation_profile', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
