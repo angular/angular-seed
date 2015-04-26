@@ -13,6 +13,7 @@
     "gulp-bower-files": "^0.2.7",
     "gulp-debug": "^2.0.1",
     "gulp-inject": "^1.2.0",
+    "gulp-jshint": "^1.10.0",
     "gulp-less": "^3.0.3",
     "gulp-modernizr": "^1.0.0-alpha",
     "http-server": "^0.6.1",

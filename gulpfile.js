@@ -9,6 +9,7 @@ var gulp = require('gulp')
   , less = require('gulp-less')
   , path = require('path')
   , jsonfile = require('jsonfile')
+  , jshint = require('gulp-jshint')
   ;
 
 var production = process.env.NODE_ENV === 'production';
@@ -95,6 +96,17 @@ gulp.task('assemble',
     gulp.src(extracted2(), {base: './app'})
       .pipe(gulp.dest('./dist'));
   });
+
+
+gulp.task('lint', function () {
+  gulp.src(['./app/js/**/*.js', './app/features/**/*.js'])
+    .pipe(debug())
+    .pipe(jshint())
+    // You can look into pretty reporters as well, but that's another story
+    .pipe(jshint.reporter('default'))
+    //.pipe(jshint.reporter('fail'))
+  ;
+});
 
 gulp.task('default', [
     'assemble'
