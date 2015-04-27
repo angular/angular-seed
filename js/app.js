@@ -5,6 +5,7 @@
 angular.module('pkb', [
 'ngRoute',
 'cgBusy',
+'ngScientificNotation',
 'pkb.filters',
 'pkb.services',
 'pkb.directives',
