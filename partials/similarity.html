@@ -29,7 +29,7 @@
                 <tbody>
                     <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
                         <td><span title="{{match.match_profile['@id']}}">{{match.match_profile.label}}</span></td>
-                        <td class="text-center"><a>{{match.expect_score &lt; 0.1 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 1) }}</a></td>
+                        <td class="text-center"><a>{{match.expect_score > 0.0 &amp;&amp; match.expect_score &lt; 0.01 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 2) }}</a></td>
                         <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
                     </tr>
                 </tbody>
@@ -65,7 +65,7 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label">Expect score:</label>
                         <div class="col-sm-9">
-                            <p class="form-control-static">{{selectedMatch.expect_score &lt; 0.1 ? (selectedMatch.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (selectedMatch.expect_score | number: 1) }}</p>
+                            <p class="form-control-static">{{selectedMatch.expect_score > 0.0 &amp;&amp; selectedMatch.expect_score &lt; 0.01 ? (selectedMatch.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (selectedMatch.expect_score | number: 2) }}</p>
                         </div>
                     </div>
                 </form>
