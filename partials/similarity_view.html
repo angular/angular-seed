@@ -1,0 +1,88 @@
+<div class="panel-body">
+    <div class="row" ng-show="gene">
+        <h4>Evolutionary profiles matching gene <b>{{gene.label}}</b> ({{gene.taxon.label}})</h4>
+        <div class="col-sm-4">
+            <table class="table table-condensed" cg-busy="topMatches.$promise">
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Taxon</th>
+                        <th popover="The Expect score is the number of matches one should expect to see at this level of similarity given the size of the database. The lower the Expect score, the more significant the match is." popover-trigger="mouseenter" popover-placement="bottom">Expect Score&nbsp;<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+                        <td><common-group taxon="match.match_profile['@id']"></common-group></td>
+                        <td><span title="{{match.match_profile['@id']}}">{{match.match_profile.label}}</span></td>
+                        <td class="text-center"><a>{{match.expect_score > 0.0 &amp;&amp; match.expect_score &lt; 0.01 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 2) }}</a></td>
+                        <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
+            <label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{gene['@id'] | encodeURI}}" role="button">Text</a>
+        </div>
+        <div class="col-sm-8">
+          <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2>
+          </div>
+          <div class="panel panel-default" style="margin-top: 1em;" ng-show="selectedMatch">
+            <div class="panel-heading"><h4 class="panel-title">Match details</h4></div>
+            <div class="panel-body">
+                <form class="form-horizontal kb-form-condensed">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Searched gene:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{gene.label}} ({{gene.taxon.label}}) <small><a href="#/gene/{{gene['@id'] | encodeURI}}">{{queryProfileSize.total}} phenotypes</a></small></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Matched taxon:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.match_profile.label}} <small><a href="#/query_variation_profile?taxa={{[selectedMatch.match_profile['@id']] | json | encodeURI}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Overall similarity:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.median_score | number : 2}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Expect score:</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{selectedMatch.expect_score > 0.0 &amp;&amp; selectedMatch.expect_score &lt; 0.01 ? (selectedMatch.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (selectedMatch.expect_score | number: 2) }}</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
+                <thead>
+                    <tr>
+                        <th>Gene Phenotype</th>
+                        <th>Taxon Phenotype</th>
+                        <th>Most Informative Common Ancestor</th>
+                        <th>Match Information Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="match in annotationMatches.results">
+                        <td>
+                            <a title="{{match.query_annotation['@id']}}">{{match.query_annotation.label}}</a>
+                        </td>
+                        <td>
+                            <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
+                        </td>
+                        <td>
+                            <a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a>
+                        </td>
+                        <td class="text-center">
+                            <span>{{match.best_subsumer.ic | number : 2}}</span> <button ng-show="match.best_subsumer.disparity > 0.25" type="button" class="btn btn-warning btn-xs" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left">IC warning</button>
+                        </td>
+                   </tr>
+                </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+</div>

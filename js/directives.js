@@ -44,4 +44,14 @@ angular.module('pkb.directives', [])
             options: '='
         }
     }
+})
+.directive('similarityView', function () {
+    return {
+        restrict: 'E',
+        controller: 'SimilarityViewController',
+        templateUrl: 'partials/similarity_view.html',
+        scope: {
+            gene: '='
+        }
+    }
 });

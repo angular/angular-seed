@@ -504,4 +504,39 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         
     };
     $scope.group = TaxonCommonGroup.query({iri: $scope.taxon});
-});
+})
+.controller('SimilarityViewController', function ($scope, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize) {
+    $scope.maxSize = 3;
+    $scope.matchesPage = 1;
+    $scope.matchesLimit = 20;
+    $scope.pageChanged = function () {
+        $scope.queryTopMatches();
+    }
+    //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
+    $scope.matchesTotal = {total: 1000};
+    $scope.queryTopMatches = function () {
+        $scope.selectedMatch = null;
+        $scope.topMatches = SimilarityMatches.query({
+            iri: $scope.gene['@id'],
+            limit: $scope.matchesLimit,
+            offset: ($scope.matchesPage - 1) * $scope.matchesLimit
+        });
+    };   
+    $scope.selectMatch = function (match) {
+        $scope.selectedMatch = match;
+        $scope.annotationMatches = null;
+        $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
+        $scope.annotationMatches = SimilarityAnnotationMatches.query({
+            query_iri: $scope.gene['@id'], 
+            corpus_iri: match.match_profile['@id']}
+        );
+    };
+//    $scope.selectedMatch = null;
+//    $scope.annotationMatches = null;
+//    $scope.queryProfileSize = null;
+//    $scope.matchesPage = 1;
+//    $scope.selectedMatchProfileSize = null;
+    $scope.queryTopMatches();
+    $scope.queryProfileSize = ProfileSize.query({iri: $scope.gene['@id']});
+})
+;
