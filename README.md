@@ -1,6 +1,19 @@
 [![Build Status](https://travis-ci.org/okigan/angular-seed.svg?branch=master)](https://travis-ci.org/okigan/angular-seed)
 
-# angular-seed — the seed for AngularJS apps
+# angular-sensible-seed — the *sensible* seed for AngularJS apps
+
+### Why? 
+Why another angular seed project? Because this one is different from many other forks:  
+  * index.html
+    * works as you expect, no build requires just open in browser and go
+    * works as you expect, no build requires just open in browser and go
+  * code organization
+    * application wide code separated from feature code
+    * individual feature code groupped together
+ * build automation
+    * gulp build system (ex. to update index.htm with new bower dependencies)
+    * separate build for the final distribution files
+ * no index-async.html -- there are other ways to do that, without requiring a separate main file
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
@@ -80,34 +93,6 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
 
 
 ## Directory Layout
-
-```
-app/                    --> all of the source files for the application
-  app.css               --> default stylesheet
-  components/           --> all app specific modules
-    version/              --> version related components
-      version.js                 --> version module declaration and basic "version" value service
-      version_test.js            --> "version" value service tests
-      version-directive.js       --> custom directive that returns the current app version
-      version-directive_test.js  --> version directive tests
-      interpolate-filter.js      --> custom interpolation filter
-      interpolate-filter_test.js --> interpolate filter tests
-  view1/                --> the view1 view template and logic
-    view1.html            --> the partial template
-    view1.js              --> the controller logic
-    view1_test.js         --> tests of the controller
-  view2/                --> the view2 view template and logic
-    view2.html            --> the partial template
-    view2.js              --> the controller logic
-    view2_test.js         --> tests of the controller
-  app.js                --> main application module
-  index.html            --> app layout file (the main html template file of the app)
-  index-async.html      --> just like index.html, but loads js files asynchronously
-karma.conf.js         --> config file for running unit tests with Karma
-e2e-tests/            --> end-to-end tests
-  protractor-conf.js    --> Protractor config file
-  scenarios.js          --> end-to-end scenarios to be run by Protractor
-```
 <pre>
 ├── app                         --> all of the source files for the application
 │   ├── bower_components        --> all external dependencies 
