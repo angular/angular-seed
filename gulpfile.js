@@ -34,7 +34,7 @@ gulp.task("protractor", function () {
 
 gulp.task('karma', function (done) {
   karma.server.start({
-    configFile: __dirname + '/karma.conf.js',
+    configFile: __dirname + '/test/karma.conf.js',
     singleRun: true
   }, function (code) {
     process.exit(code);
