@@ -7,7 +7,6 @@
   "private": true,
   "dependencies": {
     "angular": "~1",
-    "angular-route": "~1",
     "angular-loader": "~1",
     "angular-mocks": "~1",
     "angular-ui-router": "~0",
