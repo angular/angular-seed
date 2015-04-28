@@ -10,7 +10,7 @@ Why another angular seed project? Because this one is different from many other 
     * angular-loading-bar -- loading bar for improved user experience / feedback
   * index.html
     * works as you expect, no build requires just open in browser and go
-    * works as you expect, no build requires just open in browser and go
+    * just edit it, or partials, any js code -- refresh and go (livereload is nice when it works, but much more complex/fragile) 
   * code organization
     * application wide code separated from feature code
     * individual feature code groupped together
