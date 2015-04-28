@@ -109,6 +109,22 @@ e2e-tests/            --> end-to-end tests
   scenarios.js          --> end-to-end scenarios to be run by Protractor
 ```
 
+├── app                         --> all of the source files for the application
+│   ├── bower_components        --> all external dependencies 
+│   ├── features                --> all high level features 
+│   │   ├── feature1
+│   │   └── feature2
+│   ├── images                  --> application wide images
+│   ├── css                     --> application css (main.css produced from less, see below)
+│   ├── js                      --> application wide js code
+│   │   └── components
+│   └── partials                --> application wide partials (header, footer, nav, etc)
+├── doc                         --> documentation
+│   └── images
+├── less                        --> styles in less
+└── test                        --> js unit test bootstrap and e2e test bootstrap
+
+
 ## Testing
 
 There are two kinds of tests in the angular-seed application: Unit tests and End to End tests.
