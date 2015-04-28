@@ -19,6 +19,7 @@
     "http-server": "^0.6.1",
     "jsonfile": "^2.0.0",
     "karma": "~0.10",
+    "karma-coverage": "^0.3.1",
     "karma-junit-reporter": "^0.2.2",
     "main-bower-files": "^2.7.0",
     "protractor": "^1.1.1",
