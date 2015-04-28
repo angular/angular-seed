@@ -14,10 +14,10 @@ Why another angular seed project? Because this one is different from many other 
   * code organization
     * application wide code separated from feature code
     * individual feature code groupped together
- * build automation
+  * build automation
     * gulp build system (ex. to update index.htm with new bower dependencies)
     * separate build for the final distribution files
- * no index-async.html -- there are other ways to do that, without requiring a separate main file
+  * no index-async.html -- there are other ways to do that, without requiring a separate main file
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
