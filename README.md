@@ -7,6 +7,7 @@ Why another angular seed project? Because this one is different from many other 
   * include common libraries/elements expected in today's webapps:
     * brand logo -- fits in navbar
     * search bar -- ditto
+    * support routes with tabs 
     * angular-boostrap -- angular version of Twitter Bootstrap
     * angular-ui-router -- angular's state based router
     * angular-loading-bar -- loading bar for improved user experience / feedback

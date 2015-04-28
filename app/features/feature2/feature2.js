@@ -11,6 +11,6 @@ angular
       })
     ;
   })
-  .controller('Feature2Ctrl', [function () {
+  .controller('Feature2Ctrl', function () {
 
-  }]);
+  });

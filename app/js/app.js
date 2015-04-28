@@ -6,6 +6,7 @@ angular
   , ['ui.router'
     , 'myApp.view1'
     , 'myApp.view2'
+    , 'myApp.view3'
     , 'myApp.version'
     , 'angular-loading-bar'
   ])
