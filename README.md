@@ -108,7 +108,7 @@ e2e-tests/            --> end-to-end tests
   protractor-conf.js    --> Protractor config file
   scenarios.js          --> end-to-end scenarios to be run by Protractor
 ```
-
+<pre>
 ├── app                         --> all of the source files for the application
 │   ├── bower_components        --> all external dependencies 
 │   ├── features                --> all high level features 
@@ -123,7 +123,7 @@ e2e-tests/            --> end-to-end tests
 │   └── images
 ├── less                        --> styles in less
 └── test                        --> js unit test bootstrap and e2e test bootstrap
-
+</pre>
 
 ## Testing
 
