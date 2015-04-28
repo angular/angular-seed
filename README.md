@@ -3,7 +3,11 @@
 # angular-sensible-seed — the *sensible* seed for AngularJS apps
 
 ### Why? 
-Why another angular seed project? Because this one is different from many other forks:  
+Why another angular seed project? Because this one is different from many other forks:
+  * include common libraries/elements expected in today's webapps:
+    * angular-boostrap -- angular version of Twitter Bootstrap
+    * angular-ui-router -- angular's state based router
+    * angular-loading-bar -- loading bar for improved user experience / feedback
   * index.html
     * works as you expect, no build requires just open in browser and go
     * works as you expect, no build requires just open in browser and go
