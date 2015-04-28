@@ -492,4 +492,16 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     });
     $scope.queryDirty = false;
     mapParameters();
+})
+.controller('CommonGroupController', function ($scope, TaxonCommonGroup) {
+    $scope.smallImage = function (iri) {
+        if (iri) {
+            var uuid = iri.replace("http://phylopic.org/image/", "").replace("/", "");
+            return "http://phylopic.org/assets/images/submissions/" + uuid + ".64.png";
+        } else {
+            return "";
+        }
+        
+    };
+    $scope.group = TaxonCommonGroup.query({iri: $scope.taxon});
 });

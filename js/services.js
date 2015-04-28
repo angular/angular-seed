@@ -81,6 +81,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('TaxonCommonGroup', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/taxon/group', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('Gene', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/gene', {}, {
 			query: {

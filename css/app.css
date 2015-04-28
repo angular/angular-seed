@@ -13,3 +13,5 @@ blockquote.character { font-size: 14px; display: inline-block; }
 }
 
 .bottom-buffer { margin-bottom:20px; }
+
+.common-taxon-group img {max-height: 20px;}

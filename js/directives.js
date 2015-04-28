@@ -9,6 +9,17 @@ angular.module('pkb.directives', [])
         elm.text(version);
     };
 }])
+.directive('commonGroup', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'CommonGroupController',
+        templateUrl: 'partials/common_group.html',
+        scope: {
+            taxon: '='
+        }
+    }
+})
 .directive('termSearchList', function () {
     return {
         require: 'ngModel',
