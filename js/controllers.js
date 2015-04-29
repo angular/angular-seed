@@ -44,13 +44,24 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
 })
-.controller('GeneController', function ($scope, $routeParams, Gene, GenePhenotypes) {
+.controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes) {
     $scope.geneID = $routeParams.gene;
     $scope.gene = Gene.query({'iri': $scope.geneID});
     $scope.queryPhenotypes = function () {
         $scope.phenotypes = GenePhenotypes.query({'iri': $scope.geneID});
     }
     $scope.queryPhenotypes();
+    $scope.tabs = {
+        phenotypes: {active: true},
+        expression: {active: false},
+        similarity: {active: false}
+    }
+    if ($routeParams.tab && _.has($scope.tabs, $routeParams.tab)) {
+        $scope.tabs[$routeParams.tab].active = true;
+    }
+    $scope.selectTab = function (tabname) {
+        $location.search('tab', tabname);
+    };
 })
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;

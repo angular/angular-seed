@@ -17,7 +17,7 @@ config(['$routeProvider', function($routeProvider) {
     $routeProvider.when('/about/phenoscape', {templateUrl: 'partials/about_phenoscape.html', controller: 'AboutPhenoscapeController'});
     $routeProvider.when('/entity/:term*', {templateUrl: 'partials/entity.html', controller: 'EntityController'});
     $routeProvider.when('/taxon/:taxon*', {templateUrl: 'partials/taxon.html', controller: 'TaxonController'});
-    $routeProvider.when('/gene/:gene*', {templateUrl: 'partials/gene.html', controller: 'GeneController'});
+    $routeProvider.when('/gene/:gene*', {templateUrl: 'partials/gene.html', controller: 'GeneController', reloadOnSearch: false});
     $routeProvider.when('/characterstate/:state*', {templateUrl: 'partials/characterstate.html', controller: 'CharacterStateController'});
 	$routeProvider.when('/contents', {templateUrl: 'partials/contents.html', controller: 'ContentsController'});
 	$routeProvider.when('/presence_absence', {templateUrl: 'partials/presence_absence.html', controller: 'PresenceAbsenceController'});
