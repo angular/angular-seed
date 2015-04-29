@@ -538,7 +538,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 //    $scope.matchesPage = 1;
 //    $scope.selectedMatchProfileSize = null;
     
-    $scope.$watch('gene', function (value) {
+    $scope.$watch("gene['@id']", function (value) {
         if (value) {
             $scope.queryTopMatches();
         }
