@@ -56,12 +56,19 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         expression: {active: false},
         similarity: {active: false}
     }
+    $scope.activateTab = function (tabname) {
+        if (_.has($scope.tabs, tabname)) {
+            $scope.tabs[tabname].active = true;
+            $location.search('tab', tabname);
+        }
+        
+    }
+    $scope.$on('$routeUpdate', function() {
+      $scope.activateTab($location.search().tab);
+    });
     if ($routeParams.tab && _.has($scope.tabs, $routeParams.tab)) {
         $scope.tabs[$routeParams.tab].active = true;
     }
-    $scope.selectTab = function (tabname) {
-        $location.search('tab', tabname);
-    };
 })
 .controller('CharacterStateController', function ($scope, $routeParams, Label) {
     $scope.stateID = $routeParams.state;

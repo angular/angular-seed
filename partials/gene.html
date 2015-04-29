@@ -2,7 +2,7 @@
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
-            <tab heading="Phenotypes" active="tabs.phenotypes.active" select="selectTab('phenotypes')">
+            <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
                 <div class="panel panel-default" style="margin-top: 1em;">
                     <div class="panel-heading">
                         <h4>Phenotypes associated with {{gene.label}}</h4>
@@ -24,10 +24,10 @@
                     </table>
                 </div>
             </tab>
-            <tab heading="Expression" active="tabs.expression.active" select="selectTab('expression')">
+            <tab heading="Expression" active="tabs.expression.active" select="activateTab('expression')">
                 <p><i>Under construction.</i></p>
             </tab>
-            <tab heading="Similar evolutionary variation" active="tabs.similarity.active" select="selectTab('similarity')">
+            <tab heading="Similar evolutionary variation" active="tabs.similarity.active" select="activateTab('similarity')">
                 <similarity-view gene="gene"></similarity-view>
             </tab>
         </tabset>
