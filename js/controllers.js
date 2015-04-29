@@ -515,6 +515,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
     $scope.matchesTotal = {total: 1000};
     $scope.queryTopMatches = function () {
+        $scope.queryProfileSize = ProfileSize.query({iri: $scope.gene['@id']});
         $scope.selectedMatch = null;
         $scope.topMatches = SimilarityMatches.query({
             iri: $scope.gene['@id'],
@@ -536,7 +537,13 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 //    $scope.queryProfileSize = null;
 //    $scope.matchesPage = 1;
 //    $scope.selectedMatchProfileSize = null;
-    $scope.queryTopMatches();
-    $scope.queryProfileSize = ProfileSize.query({iri: $scope.gene['@id']});
+    
+    $scope.$watch('gene', function (value) {
+        if ($scope.gene) {
+            $scope.queryTopMatches();
+        }
+    });
+    
+    
 })
 ;
