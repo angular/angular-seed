@@ -378,15 +378,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, GeneSearch, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize, Vocab) {
-    $scope.maxSize = 3;
-    $scope.matchesPage = 1;
-    $scope.matchesLimit = 20;
-    $scope.pageChanged = function () {
-        $scope.queryTopMatches();
-    }
-    //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
-    $scope.matchesTotal = {total: 1000};
+.controller('SimilarityController', function ($scope, GeneSearch) {
     $scope.searchGenes = function (text) {
         return GeneSearch.query({
             limit: 20,
@@ -394,34 +386,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }).$promise.then(function (response) {
             return response.results;
         });
-    };
-    $scope.queryTopMatches = function () {
-        $scope.selectedMatch = null;
-        $scope.topMatches = SimilarityMatches.query({
-            iri: $scope.geneToQuery['@id'],
-            limit: $scope.matchesLimit,
-            offset: ($scope.matchesPage - 1) * $scope.matchesLimit
-        });
-    };
-    $scope.$watch('geneToQuery', function (value) {
-        $scope.selectedMatch = null;
-        $scope.annotationMatches = null;
-        $scope.queryProfileSize = null;
-        $scope.matchesPage = 1;
-        $scope.selectedMatchProfileSize = null;
-        if (value) {
-            $scope.queryTopMatches();
-            $scope.queryProfileSize = ProfileSize.query({iri: $scope.geneToQuery['@id']});
-        }
-    });    
-    $scope.selectMatch = function (match) {
-        $scope.selectedMatch = match;
-        $scope.annotationMatches = null;
-        $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
-        $scope.annotationMatches = SimilarityAnnotationMatches.query({
-            query_iri: $scope.geneToQuery['@id'], 
-            corpus_iri: match.match_profile['@id']}
-        );
     };
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab, Label, $q) {
