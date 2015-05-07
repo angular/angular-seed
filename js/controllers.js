@@ -46,9 +46,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes) {
     $scope.geneID = $routeParams.gene;
-    $scope.gene = Gene.query({'iri': $scope.geneID});
+    $scope.gene = Gene.query({iri: $scope.geneID});
     $scope.queryPhenotypes = function () {
-        $scope.phenotypes = GenePhenotypes.query({'iri': $scope.geneID});
+        $scope.phenotypes = GenePhenotypes.query({iri: $scope.geneID});
     }
     $scope.queryPhenotypes();
     $scope.tabs = {
@@ -378,7 +378,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     }
 })
-.controller('SimilarityController', function ($scope, GeneSearch) {
+.controller('SimilarityController', function ($scope, $routeParams, $q, $location, Gene, GeneSearch) {
     $scope.searchGenes = function (text) {
         return GeneSearch.query({
             limit: 20,
@@ -387,6 +387,16 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             return response.results;
         });
     };
+    $scope.$watch('geneToQuery', function (value) {
+        if (_.has(value, '@id')) {
+            $location.search('gene', value['@id']);
+        }
+    });
+    if ($routeParams.gene) {
+        Gene.query({iri: $routeParams.gene}).$promise.then(function (value) {
+            $scope.geneToQuery = value;
+        });
+    }
 })
 .controller('QueryPanelController', function ($scope, $location, Autocomplete, OMN, Vocab, Label, $q) {
     $scope.queryPages = [
