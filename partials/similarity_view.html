@@ -18,7 +18,7 @@
                     <tbody>
                         <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
                             <td><common-group taxon="match.match_profile['@id']"></common-group></td>
-                            <td><span title="{{match.match_profile['@id']}}">{{match.match_profile.label}}</span></td>
+                            <td><taxon-name iri="match.match_profile['@id']"></taxon-name></td>
                             <td class="text-center"><a>{{match.expect_score > 0.0 &amp;&amp; match.expect_score &lt; 0.01 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 2) }}</a></td>
                             <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
                         </tr>

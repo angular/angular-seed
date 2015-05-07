@@ -20,6 +20,17 @@ angular.module('pkb.directives', [])
         }
     }
 })
+.directive('taxonName', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'TaxonNameController',
+        templateUrl: 'partials/taxon_name.html',
+        scope: {
+            iri: '='
+        }
+    }
+})
 .directive('termSearchList', function () {
     return {
         require: 'ngModel',

@@ -497,6 +497,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     };
     $scope.group = TaxonCommonGroup.query({iri: $scope.taxon});
 })
+.controller('TaxonNameController', function ($scope, Taxon) {
+    $scope.taxon = Taxon.query({iri: $scope.iri});
+})
 .controller('SimilarityViewController', function ($scope, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize) {
     $scope.maxSize = 3;
     $scope.matchesPage = 1;
