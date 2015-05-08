@@ -31,6 +31,18 @@ angular.module('pkb.directives', [])
         }
     }
 })
+.directive('termName', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'TermNameController',
+        templateUrl: 'partials/term_name.html',
+        scope: {
+            iri: '='//,
+            //linker: '='
+        }
+    }
+})
 .directive('termSearchList', function () {
     return {
         require: 'ngModel',

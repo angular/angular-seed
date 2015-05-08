@@ -40,9 +40,38 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     
     $scope.queryPresentInTaxa();
 })
-.controller('TaxonController', function ($scope, $routeParams, Taxon) {
+.controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, VariationProfileQuery) {
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
+    $scope.variationProfilePage = 1;
+    $scope.variationProfileLimit = 20;
+    $scope.variationProfileMaxSize = 3;
+    $scope.variationProfileTotal = VariationProfileQuery.query({taxon: angular.toJson([$scope.taxonID]), total: true});
+    $scope.variationProfilePageChanged = function (newPage) {
+        $scope.variationProfilePage = newPage;
+        $log.log('Page changed to: ' + $scope.variationProfilePage);
+        $scope.variationProfile = VariationProfileQuery.query({taxon: angular.toJson([$scope.taxonID]), limit: $scope.variationProfileLimit, offset: ($scope.variationProfilePage - 1) * $scope.variationProfileLimit});
+    };
+    $scope.variationProfilePageChanged(1);
+    
+    $scope.tabs = {
+        classification: {active: true},
+        phenotypes: {active: false},
+        variation: {active: false},
+        misc: {active: false}
+    }
+    $scope.activateTab = function (tabname) {
+        if (_.has($scope.tabs, tabname)) {
+            $scope.tabs[tabname].active = true;
+            $location.search('tab', tabname);
+        }
+    }
+    $scope.$on('$routeUpdate', function() {
+      $scope.activateTab($location.search().tab);
+    });
+    if ($routeParams.tab && _.has($scope.tabs, $routeParams.tab)) {
+        $scope.tabs[$routeParams.tab].active = true;
+    }
 })
 .controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes) {
     $scope.geneID = $routeParams.gene;
@@ -499,6 +528,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('TaxonNameController', function ($scope, Taxon) {
     $scope.taxon = Taxon.query({iri: $scope.iri});
+})
+.controller('TermNameController', function ($scope, Label) {
+    $scope.term = Label.query({iri: $scope.iri});
 })
 .controller('SimilarityViewController', function ($scope, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize) {
     $scope.maxSize = 3;

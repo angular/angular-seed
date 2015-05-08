@@ -16,6 +16,11 @@ angular.module('pkb.filters', [])
           return "<" + uri + ">";
       };
   })
+  .filter('linkToTaxonVariationProfile', function ($window) {
+      return function (uri) {
+          return "#/taxon/" + $window.encodeURIComponent(uri) + "?tab=variation";
+      };
+  })
   .filter('prefixedURI', function () {
       return function (text) {
           var prefixes = {

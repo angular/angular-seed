@@ -2,10 +2,35 @@
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
-            <tab heading="Overview">
+            <tab heading="Classification" active="tabs.classification.active" select="activateTab('classification')">
                 <h4>Classification</h4>
             </tab>
-            <tab heading="Misc">
+            <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
+            </tab>
+            <tab heading="Variation profile" active="tabs.variation.active" select="activateTab('variation')">
+                <div class="panel panel-default" style="margin-top: 1em;">
+                    <div class="panel-heading">
+                        <h4>Phenotypes varying among immediate children of this taxon</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p>These phenotypes have been associated with the variation profile of <mark>{{taxon.label}}</mark> using an ancestral state reconstruction method.</p>
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="variationProfile.$promise">
+                        <thead>
+                            <tr>
+                                <th>Phenotype</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="phenotype in variationProfile.results">
+                                <td><term-name iri="phenotype['@id']"></term-name></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pagination total-items="variationProfileTotal.total" ng-model="variationProfilePage" max-size="variationProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="variationProfileLimit" cg-busy="variationProfileTotal.$promise" ng-change="variationProfilePageChanged(variationProfilePage)"></pagination>
+            </tab>
+            <tab heading="Misc" active="tabs.misc.active" select="activateTab('misc')">
                 <div class="panel panel-default" style="margin-top: 1em;">
                     <div class="panel-body">
                         <a href="http://kb.phenoscape.org/kb/taxon/newick?iri={{taxonID | encodeURI}}">Get Newick tree for this taxon (based on the VTO classification)</a>
