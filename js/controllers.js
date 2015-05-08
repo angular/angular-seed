@@ -46,11 +46,11 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.variationProfilePage = 1;
     $scope.variationProfileLimit = 20;
     $scope.variationProfileMaxSize = 3;
-    $scope.variationProfileTotal = VariationProfileQuery.query({taxon: angular.toJson([$scope.taxonID]), total: true});
+    $scope.variationProfileTotal = VariationProfileQuery.query({taxon: $scope.taxonID, total: true});
     $scope.variationProfilePageChanged = function (newPage) {
         $scope.variationProfilePage = newPage;
         $log.log('Page changed to: ' + $scope.variationProfilePage);
-        $scope.variationProfile = VariationProfileQuery.query({taxon: angular.toJson([$scope.taxonID]), limit: $scope.variationProfileLimit, offset: ($scope.variationProfilePage - 1) * $scope.variationProfileLimit});
+        $scope.variationProfile = VariationProfileQuery.query({taxon: $scope.taxonID, limit: $scope.variationProfileLimit, offset: ($scope.variationProfilePage - 1) * $scope.variationProfileLimit});
     };
     $scope.variationProfilePageChanged(1);
     
