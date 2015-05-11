@@ -12,6 +12,7 @@ ng.module('smart-table')
         var classDescent = attr.stClassDescent || stConfig.sort.descentClass;
         var stateClasses = [classAscent, classDescent];
         var sortDefault;
+        var skipNatural = attr.stSkipNatural !== undefined ? attr.stSkipNatural : stConfig.skipNatural;
 
         if (attr.stSortDefault) {
           sortDefault = scope.$eval(attr.stSortDefault) !== undefined ? scope.$eval(attr.stSortDefault) : attr.stSortDefault;
@@ -21,7 +22,7 @@ ng.module('smart-table')
         function sort () {
           index++;
           predicate = ng.isFunction(getter(scope)) ? getter(scope) : attr.stSort;
-          if (index % 3 === 0 && attr.stSkipNatural === undefined) {
+          if (index % 3 === 0 && !!skipNatural !== true) {
             //manual reset
             index = 0;
             ctrl.tableState().sort = {};

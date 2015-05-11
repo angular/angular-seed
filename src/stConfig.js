@@ -14,7 +14,8 @@ ng.module('smart-table')
     },
     sort: {
       ascentClass: 'st-sort-ascent',
-      descentClass: 'st-sort-descent'
+      descentClass: 'st-sort-descent',
+      skipNatural: false
     },
     pipe: {
       delay: 100 //ms
