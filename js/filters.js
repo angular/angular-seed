@@ -3,25 +3,35 @@
 /* Filters */
 
 angular.module('pkb.filters', [])
-    .filter('interpolate', ['version', function(version) {
+.filter('interpolate', ['version', function(version) {
     return function(text) {
       return String(text).replace(/\%VERSION\%/mg, version);
     }
-  }])
-  .filter('encodeURI', function ($window) {
+}])
+.filter('encodeURI', function ($window) {
       return $window.encodeURIComponent;
-  })
-  .filter('angled', function () {
+})
+.filter('angled', function () {
       return function (uri) {
           return "<" + uri + ">";
       };
-  })
-  .filter('linkToTaxonVariationProfile', function ($window) {
+})
+.filter('linkToEntity', function ($window) {
+      return function (uri) {
+          return "#/entity/" + $window.encodeURIComponent(uri);
+      };
+})
+.filter('linkToTaxon', function ($window) {
+      return function (uri) {
+          return "#/taxon/" + $window.encodeURIComponent(uri);
+      };
+})
+.filter('linkToTaxonVariationProfile', function ($window) {
       return function (uri) {
           return "#/taxon/" + $window.encodeURIComponent(uri) + "?tab=variation";
       };
-  })
-  .filter('prefixedURI', function () {
+})
+.filter('prefixedURI', function () {
       return function (text) {
           var prefixes = {
               "http://purl.obolibrary.org/obo/UBERON_": "UBERON:",
@@ -39,4 +49,4 @@ angular.module('pkb.filters', [])
               return text;
           }
       };
-  });
+});

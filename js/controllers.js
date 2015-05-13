@@ -522,7 +522,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         } else {
             return "";
         }
-        
     };
     $scope.group = TaxonCommonGroup.query({iri: $scope.taxon});
 })
@@ -531,6 +530,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('TermNameController', function ($scope, Label) {
     $scope.term = Label.query({iri: $scope.iri});
+})
+.controller('ClassificationController', function ($scope, $filter, Classification) {
+    $scope.classification = Classification.query({iri: $scope.iri})
+    $scope.linkMaker = $filter($scope.linkFilter);
 })
 .controller('SimilarityViewController', function ($scope, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize) {
     $scope.maxSize = 3;

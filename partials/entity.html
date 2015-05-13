@@ -3,10 +3,17 @@
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
+            <tab heading="Classification">
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-body">
+                        <classification iri="termID" link-filter="linkToEntity"></classification>
+                    </div>
+                </div>
+            </tab>
             <tab heading="Taxa">
-                <tabset type="pills" style="margin-top: 1em;">
+                <tabset type="pills" class="top-buffer">
                    <tab heading="Presence">
-                       <div class="panel panel-default" style="margin-top: 1em;">
+                       <div class="panel panel-default top-buffer">
                          <div class="panel-heading">Taxa exhibiting presence of {{term.label}}</div>
                          <div class="panel-body">
                            <p>This query uses inference to determine if any character states entail the presence of <mark>{{term.label}}</mark> in a given taxon.</p>
@@ -31,7 +38,7 @@
                        </div>
                    </tab>
                    <tab heading="Absence" select="queryAbsentInTaxa();">
-                       <div class="panel panel-default" style="margin-top: 1em;">
+                       <div class="panel panel-default top-buffer">
                          <div class="panel-heading">Taxa exhibiting absence of {{term.label}}</div>
                          <div class="panel-body">
                            <p>This query uses inference to determine if any character states entail the absence of <mark>{{term.label}}</mark> in a given taxon.</p>

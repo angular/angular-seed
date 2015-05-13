@@ -3,12 +3,16 @@
     <div class= "col-sm-12">
         <tabset>
             <tab heading="Classification" active="tabs.classification.active" select="activateTab('classification')">
-                <h4>Classification</h4>
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-body">
+                        <classification iri="taxonID" link-filter="linkToTaxon"></classification>
+                    </div>
+                </div>
             </tab>
             <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
             </tab>
             <tab heading="Variation profile" active="tabs.variation.active" select="activateTab('variation')">
-                <div class="panel panel-default" style="margin-top: 1em;">
+                <div class="panel panel-default top-buffer">
                     <div class="panel-heading">
                         <h4>Phenotypes varying among immediate children of this taxon</h4>
                     </div>
@@ -31,7 +35,7 @@
                 <pagination total-items="variationProfileTotal.total" ng-model="variationProfilePage" max-size="variationProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="variationProfileLimit" cg-busy="variationProfileTotal.$promise" ng-change="variationProfilePageChanged(variationProfilePage)"></pagination>
             </tab>
             <tab heading="Misc" active="tabs.misc.active" select="activateTab('misc')">
-                <div class="panel panel-default" style="margin-top: 1em;">
+                <div class="panel panel-default top-buffer">
                     <div class="panel-body">
                         <a href="http://kb.phenoscape.org/kb/taxon/newick?iri={{taxonID | encodeURI}}">Get Newick tree for this taxon (based on the VTO classification)</a>
                     </div>

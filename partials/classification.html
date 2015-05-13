@@ -1,0 +1,13 @@
+<div class="classification-level">
+    <ul class="list-unstyled">
+        <li ng-repeat="superclass in classification.subClassOf"><a href="{{linkMaker(superclass['@id'])}}">{{superclass.label}}</a></li>
+    </ul>
+    <div class="classification-level">
+        <p>{{classification.label}}</p>
+        <div class="classification-level">
+            <ul class="list-unstyled">
+                <li ng-repeat="subclass in classification.superClassOf"><a href="{{linkMaker(subclass['@id'])}}">{{subclass.label}}</a></li>
+            </ul>
+        </div>
+    <div>
+</div>

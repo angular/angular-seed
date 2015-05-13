@@ -14,6 +14,10 @@ blockquote.character { font-size: 14px; display: inline-block; }
 
 .bottom-buffer { margin-bottom:20px; }
 
+.top-buffer { margin-top: 1em;}
+
 .common-taxon-group img {max-height: 20px;}
 
 .taxon-name.extinct::before {content: "†";}
+
+div.classification-level div.classification-level {padding-left: 1.5em;}

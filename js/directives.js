@@ -77,4 +77,15 @@ angular.module('pkb.directives', [])
             gene: '='
         }
     }
+})
+.directive('classification', function () {
+    return {
+        restrict: 'E',
+        controller: 'ClassificationController',
+        templateUrl: 'partials/classification.html',
+        scope: {
+            iri: '=',
+            linkFilter: '@'
+        }
+    }
 });
