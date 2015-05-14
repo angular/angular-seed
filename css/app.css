@@ -12,6 +12,8 @@ blockquote.character { font-size: 14px; display: inline-block; }
     
 }
 
+h2 .badge { vertical-align: middle; }
+
 .bottom-buffer { margin-bottom:20px; }
 
 .top-buffer { margin-top: 1em;}
