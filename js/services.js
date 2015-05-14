@@ -179,6 +179,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('TaxonPhenotypesQuery', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/taxon/phenotypes', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('VariationProfileQuery', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/taxon/variation_profile', {}, {
 			query: {

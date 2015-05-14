@@ -40,9 +40,21 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     
     $scope.queryPresentInTaxa();
 })
-.controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, VariationProfileQuery) {
+.controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
+    
+    $scope.phenotypeProfilePage = 1;
+    $scope.phenotypeProfileLimit = 20;
+    $scope.phenotypeProfileMaxSize = 3;
+    $scope.phenotypeProfileTotal = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, total: true});
+    $scope.phenotypeProfilePageChanged = function (newPage) {
+        $scope.phenotypeProfilePage = newPage;
+        $log.log('Page changed to: ' + $scope.phenotypeProfilePage);
+        $scope.phenotypeProfile = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, limit: $scope.phenotypeProfileLimit, offset: ($scope.phenotypeProfilePage - 1) * $scope.phenotypeProfileLimit});
+    };
+    $scope.phenotypeProfilePageChanged(1);
+    
     $scope.variationProfilePage = 1;
     $scope.variationProfileLimit = 20;
     $scope.variationProfileMaxSize = 3;

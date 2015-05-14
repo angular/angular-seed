@@ -10,6 +10,27 @@
                 </div>
             </tab>
             <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-heading">
+                        <h4>Phenotypes directly annotated to this taxon</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p>These phenotypes have been annotated from character states directly associated with <mark>{{taxon.label}}</mark> in source data.</p>
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="variationProfile.$promise">
+                        <thead>
+                            <tr>
+                                <th>Phenotype</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="phenotype in phenotypeProfile.results">
+                                <td><term-name iri="phenotype['@id']"></term-name></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pagination total-items="phenotypeProfileTotal.total" ng-model="phenotypeProfilePage" max-size="phenotypeProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeProfileLimit" cg-busy="phenotypeProfileTotal.$promise" ng-change="phenotypeProfilePageChanged(phenotypeProfilePage)"></pagination>
             </tab>
             <tab heading="Variation profile" active="tabs.variation.active" select="activateTab('variation')">
                 <div class="panel panel-default top-buffer">
