@@ -9,7 +9,8 @@
                     </div>
                 </div>
             </tab>
-            <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
+            <tab active="tabs.phenotypes.active" select="activateTab('phenotypes')">
+                <tab-heading>Phenotypes <span class="badge">{{phenotypeProfileTotal.total}}</span></tab-heading>
                 <div class="panel panel-default top-buffer">
                     <div class="panel-heading">
                         <h4>Phenotypes directly annotated to this taxon</h4>
@@ -32,7 +33,8 @@
                 </div>
                 <pagination total-items="phenotypeProfileTotal.total" ng-model="phenotypeProfilePage" max-size="phenotypeProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeProfileLimit" cg-busy="phenotypeProfileTotal.$promise" ng-change="phenotypeProfilePageChanged(phenotypeProfilePage)"></pagination>
             </tab>
-            <tab heading="Variation profile" active="tabs.variation.active" select="activateTab('variation')">
+            <tab active="tabs.variation.active" select="activateTab('variation')">
+                <tab-heading>Variation profile <span class="badge">{{variationProfileTotal.total}}</span></tab-heading>
                 <div class="panel panel-default top-buffer">
                     <div class="panel-heading">
                         <h4>Phenotypes varying among immediate children of this taxon</h4>
