@@ -83,7 +83,7 @@
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="gene in phenotypeGenes.results">
-                                        <td><term-name iri="gene.label"></term-name></td>
+                                        <td><a href="{{gene['@id'] | linkToGene}}"><term-name iri="gene.label"></term-name></a></td>
                                     </tr>
                                 </tbody>
                             </table>
