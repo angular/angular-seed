@@ -23,3 +23,5 @@ h2 .badge { vertical-align: middle; }
 .taxon-name.extinct::before {content: "†";}
 
 div.classification-level div.classification-level {padding-left: 1.5em;}
+
+.nav-pills>.active>a .badge {color: #428bca; background-color: #fff;} /* angular-ui-bootstrap inserts an element between a and .badge, so the active color doesn't get set correctly by the Bootstrap CSS */
