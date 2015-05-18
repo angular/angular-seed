@@ -3,6 +3,7 @@
   "laxcomma": true,
   "globals": {
     "angular": false,
+    "less": false,
     "describe": false,
     "it": false,
     "expect": false,

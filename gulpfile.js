@@ -23,7 +23,7 @@ gulp.task("protractor", function () {
 
   gulp.src(['./app/tests/*.js'])
     .pipe(protractor({
-      'configFile': 'e2e-tests/protractor.conf.js',
+      'configFile': 'test/protractor.conf.js',
       'autoStartStopServer': true,
       'debug': true
     }))
