@@ -12,5 +12,8 @@ angular
     ;
   })
   .controller('Feature1Ctrl', function () {
+    less.registerStylesheets();
+    less.refresh(true);
+
 
   });

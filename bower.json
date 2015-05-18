@@ -12,6 +12,7 @@
     "angular-ui-router": "~0",
     "fontawesome": "~4",
     "bootstrap": "~3",
-    "angular-loading-bar": "~0.7.1"
+    "angular-loading-bar": "~0.7.1",
+    "less": "~2.5.0"
   }
 }
