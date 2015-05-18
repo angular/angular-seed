@@ -5,6 +5,7 @@
 
 ### Why? 
 Why another angular seed project? Because this one is different from many other forks:
+
   * include common libraries/elements expected in today's webapps:
     * brand logo -- fits in navbar
     * search bar -- ditto
@@ -14,8 +15,10 @@ Why another angular seed project? Because this one is different from many other 
     * angular-loading-bar -- loading bar for improved user experience / feedback
     * define production build
   * index.html
-    * works as you expect, no build requires just open in browser and go
-    * just edit it, or partials, any js code -- refresh and go (livereload is nice when it works, but much more complex/fragile) 
+    * static application works as you expect, no build requires just open in browser and go
+    * include *.less files directly in your content 
+    * directly edit index.html, partials, any js/less code -- refresh and go (livereload is nice when it works, but much more complex/fragile)
+    * edit from Developer Tools, IDE, Sublime or any other editor
   * code organization
     * application wide code separated from feature code
     * individual feature code grouped together
