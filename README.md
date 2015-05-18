@@ -2,6 +2,8 @@
 [![Code Climate](https://codeclimate.com/github/okigan/angular-seed/badges/gpa.svg)](https://codeclimate.com/github/okigan/angular-seed)
 
 # angular-sensible-seed — the *sensible* seed for AngularJS apps
+Opinionated angular starter project with per feature directory structure, 
+static content, gulp build system, integrated logo/search/ui-router/ui-bootstrap/less.
 
 ### Why? 
 Why another angular seed project? Because this one is different from many other forks:
@@ -9,11 +11,11 @@ Why another angular seed project? Because this one is different from many other 
   * include common libraries/elements expected in today's webapps:
     * brand logo -- fits in navbar
     * search bar -- ditto
-    * support routes with tabs 
+    * support routes **with tabs** 
     * angular-boostrap -- angular version of Twitter Bootstrap
     * angular-ui-router -- angular's state based router
     * angular-loading-bar -- loading bar for improved user experience / feedback
-    * define production build
+    * defined production build
   * index.html
     * static application works as you expect, no build requires just open in browser and go
     * include *.less files directly in your content 
