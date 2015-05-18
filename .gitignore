@@ -3,5 +3,7 @@ logs/*
 node_modules/
 bower_components/
 tmp
+dist
 .DS_Store
 .idea
+coverage

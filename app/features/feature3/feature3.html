@@ -1,0 +1,23 @@
+<ul class="nav nav-tabs">
+  <li role="presentation" ui-sref-active="active"><a ui-sref="feature3.tab1()">Tab 1</a></li>
+  <li role="presentation" ui-sref-active="active"><a ui-sref="feature3.tab2()">Tab 2</a></li>
+  <li role="presentation" ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab1'})">Tab 1 (Custom)</a></li>
+  <li role="presentation" ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab2'})">Tab 2 (Custom)</a></li>
+
+
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"
+      >More ({{state.tab}})<span class="caret"></span></a>
+
+    <ul class="dropdown-menu" role="menu">
+      <li ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab1'})">Tab 1</a></li>
+      <li ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab2'})">Tab 2</a></li>
+      <li ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab3'})">Tab 3</a></li>
+      <li ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab4'})">Tab 4</a></li>
+      <li ui-sref-active="active"><a ui-sref="feature3.custom({tab: 'tab5'})">Tab 5</a></li>
+    </ul>
+  </li>
+</ul>
+<div class="tab-content">
+  <div ui-view></div>
+</div>

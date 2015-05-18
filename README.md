@@ -1,4 +1,33 @@
-# angular-seed — the seed for AngularJS apps
+[![Build Status](https://travis-ci.org/okigan/angular-seed.svg?branch=master)](https://travis-ci.org/okigan/angular-seed)
+[![Code Climate](https://codeclimate.com/github/okigan/angular-seed/badges/gpa.svg)](https://codeclimate.com/github/okigan/angular-seed)
+
+# angular-sensible-seed — the *sensible* seed for AngularJS apps
+Opinionated angular starter project with per feature directory structure, 
+static content, gulp build system, integrated logo/search/ui-router/ui-bootstrap/less.
+
+### Why? 
+Why another angular seed project? Because this one is different from many other forks:
+
+  * include common libraries/elements expected in today's webapps:
+    * brand logo -- fits in navbar
+    * search bar -- ditto
+    * support routes **with tabs** 
+    * angular-boostrap -- angular version of Twitter Bootstrap
+    * angular-ui-router -- angular's state based router
+    * angular-loading-bar -- loading bar for improved user experience / feedback
+    * defined production build
+  * index.html
+    * static application works as you expect, no build requires just open in browser and go
+    * include *.less files directly in your content 
+    * directly edit index.html, partials, any js/less code -- refresh and go (livereload is nice when it works, but much more complex/fragile)
+    * edit from Developer Tools, IDE, Sublime or any other editor
+  * code organization
+    * application wide code separated from feature code
+    * individual feature code grouped together
+  * build automation
+    * gulp build system (ex. to update index.htm with new bower dependencies)
+    * separate build for the final distribution files
+  * no index-async.html -- there are other ways to do that, without requiring a separate main file
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
@@ -9,18 +38,15 @@ framework and a bunch of development and testing tools for instant web developme
 
 The seed app doesn't do much, just shows how to wire two controllers and views together.
 
+![Alt text](/doc/images/home.png?raw=true "Preview home page")
 
 ## Getting Started
 
 To get you started you can simply clone the angular-seed repository and install the dependencies:
 
 ### Prerequisites
-
-You need git to clone the angular-seed repository. You can get git from
-[http://git-scm.com/](http://git-scm.com/).
-
-We also use a number of node.js tools to initialize and test angular-seed. You must have node.js and
-its package manager (npm) installed.  You can get them from [http://nodejs.org/](http://nodejs.org/).
+  * git [http://git-scm.com/](http://git-scm.com/)
+  * npm [http://nodejs.org/](http://nodejs.org/)
 
 ### Clone angular-seed
 
@@ -29,37 +55,13 @@ Clone the angular-seed repository using [git][git]:
 ```
 git clone https://github.com/angular/angular-seed.git
 cd angular-seed
+npm install
+bower install
 ```
-
-If you just want to start a new project without the angular-seed commit history then you can do:
-
-```bash
-git clone --depth=1 https://github.com/angular/angular-seed.git <your-project-name>
-```
-
-The `depth=1` tells git to only pull down one commit worth of historical data.
 
 ### Install Dependencies
 
-We have two kinds of dependencies in this project: tools and angular framework code.  The tools help
-us manage and test the application.
-
-* We get the tools we depend upon via `npm`, the [node package manager][npm].
-* We get the angular code via `bower`, a [client-side code package manager][bower].
-
-We have preconfigured `npm` to automatically run `bower` so we can simply do:
-
-```
-npm install
-```
-
-Behind the scenes this will also call `bower install`.  You should find that you have two new
-folders in your project.
-
-* `node_modules` - contains the npm packages for the tools we need
-* `app/bower_components` - contains the angular framework files
-
-*Note that the `bower_components` folder would normally be installed in the root folder but
+Note that the `bower_components` folder would normally be installed in the root folder but
 angular-seed changes this location through the `.bowerrc` file.  Putting it in the app folder makes
 it easier to serve the files by a webserver.*
 
@@ -75,40 +77,29 @@ npm start
 Now browse to the app at `http://localhost:8000/app/index.html`.
 
 
-
 ## Directory Layout
-
 ```
-app/                    --> all of the source files for the application
-  app.css               --> default stylesheet
-  components/           --> all app specific modules
-    version/              --> version related components
-      version.js                 --> version module declaration and basic "version" value service
-      version_test.js            --> "version" value service tests
-      version-directive.js       --> custom directive that returns the current app version
-      version-directive_test.js  --> version directive tests
-      interpolate-filter.js      --> custom interpolation filter
-      interpolate-filter_test.js --> interpolate filter tests
-  view1/                --> the view1 view template and logic
-    view1.html            --> the partial template
-    view1.js              --> the controller logic
-    view1_test.js         --> tests of the controller
-  view2/                --> the view2 view template and logic
-    view2.html            --> the partial template
-    view2.js              --> the controller logic
-    view2_test.js         --> tests of the controller
-  app.js                --> main application module
-  index.html            --> app layout file (the main html template file of the app)
-  index-async.html      --> just like index.html, but loads js files asynchronously
-karma.conf.js         --> config file for running unit tests with Karma
-e2e-tests/            --> end-to-end tests
-  protractor-conf.js    --> Protractor config file
-  scenarios.js          --> end-to-end scenarios to be run by Protractor
+├── app                         --> all of the source files for the application
+│   ├── bower_components        --> all external dependencies 
+│   ├── features                --> all high level features 
+│   │   ├── feature1
+│   │   └── feature2
+│   ├── images                  --> application wide images
+│   ├── css                     --> application css (main.css produced from less, see below)
+│   ├── js                      --> application wide js code
+│   │   └── components
+│   └── partials                --> application wide partials (header, footer, nav, etc)
+├── doc                         --> documentation
+│   └── images
+├── less                        --> styles in less
+└── test                        --> js unit test bootstrap and e2e test bootstrap
 ```
 
 ## Testing
 
-There are two kinds of tests in the angular-seed application: Unit tests and End to End tests.
+There are two kinds of tests in the angular-seed application: 
+  * Unit tests and 
+  * End to End tests.
 
 ### Running Unit Tests
 
@@ -116,7 +107,7 @@ The angular-seed app comes preconfigured with unit tests. These are written in
 [Jasmine][jasmine], which we run with the [Karma Test Runner][karma]. We provide a Karma
 configuration file to run them.
 
-* the configuration is found at `karma.conf.js`
+* the configuration is found at `test/karma.conf.js`
 * the unit tests are found next to the code they are testing and are named as `..._test.js`.
 
 The easiest way to run the unit tests is to use the supplied npm script:
@@ -145,8 +136,8 @@ The angular-seed app comes with end-to-end tests, again written in [Jasmine][jas
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `e2e-tests/protractor-conf.js`
-* the end-to-end tests are found in `e2e-tests/scenarios.js`
+* the configuration is found at `test/protractor-conf.js`
+* the end-to-end tests are found in `test/scenarios.js`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
@@ -178,40 +169,14 @@ development server.
 
 ## Updating Angular
 
-Previously we recommended that you merge in changes to angular-seed into your own fork of the project.
-Now that the angular framework library code and tools are acquired through package managers (npm and
-bower) you can use these tools instead to update the dependencies.
-
-You can update the tool dependencies by running:
+Just run:
 
 ```
 npm update
-```
-
-This will find the latest versions that match the version ranges specified in the `package.json` file.
-
-You can update the Angular dependencies by running:
-
-```
 bower update
 ```
 
 This will find the latest versions that match the version ranges specified in the `bower.json` file.
-
-
-## Loading Angular Asynchronously
-
-The angular-seed project supports loading the framework and application scripts asynchronously.  The
-special `index-async.html` is designed to support this style of loading.  For it to work you must
-inject a piece of Angular JavaScript into the HTML page.  The project has a predefined script to help
-do this.
-
-```
-npm run update-index-async
-```
-
-This will copy the contents of the `angular-loader.js` library file into the `index-async.html` page.
-You can run this every time you update the version of Angular that you are using.
 
 
 ## Serving the Application Files
