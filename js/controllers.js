@@ -41,13 +41,18 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.phenotypeGenesPage = 1;
     $scope.phenotypeGenesMaxSize = 3;
     $scope.phenotypeGenesLimit = 20;
+    $scope.phenotypeGenesSettings = {};
+    $scope.phenotypeGenesSettings.includeParts = false;
     $scope.phenotypeGenesPageChanged = function (newPage) {
             $scope.phenotypeGenesPage = newPage;
-            $scope.phenotypeGenes = EntityPhenotypeGenes.query({iri: $scope.termID, limit: $scope.phenotypeGenesLimit, offset: ($scope.phenotypeGenesPage - 1) * $scope.phenotypeGenesLimit});
+            $scope.phenotypeGenes = EntityPhenotypeGenes.query({iri: $scope.termID, limit: $scope.phenotypeGenesLimit, offset: ($scope.phenotypeGenesPage - 1) * $scope.phenotypeGenesLimit, parts: $scope.phenotypeGenesSettings.includeParts});
     };
-    $scope.phenotypeGenesTotal = EntityPhenotypeGenes.query({iri: $scope.termID, total: true});
-    $scope.phenotypeGenesPageChanged(1);
+    $scope.resetPhenotypeGenes = function() {
+        $scope.phenotypeGenesTotal = EntityPhenotypeGenes.query({iri: $scope.termID, total: true, parts: $scope.phenotypeGenesSettings.includeParts});
+        $scope.phenotypeGenesPageChanged(1);
+    };
     
+    $scope.resetPhenotypeGenes();
     $scope.queryPresentInTaxa();
 })
 .controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {

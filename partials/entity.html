@@ -74,6 +74,11 @@
                             </div>
                             <div class="panel-body">
                                 <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark>.</p>
+                                <div class="checkbox well">
+                                    <label>
+                                      <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of {{term.label}}
+                                    </label>
+                                  </div>
                             </div>
                             <table class="table table-condensed table-striped" cg-busy="phenotypeGenes.$promise">
                                 <thead>
