@@ -21,6 +21,16 @@ angular.module('pkb.filters', [])
           return "#/entity/" + $window.encodeURIComponent(uri);
       };
 })
+.filter('linkToGene', function ($window) {
+      return function (uri) {
+          return "#/gene/" + $window.encodeURIComponent(uri);
+      };
+})
+.filter('linkToGenePhenotypes', function ($window) {
+      return function (uri) {
+          return "#/gene/" + $window.encodeURIComponent(uri) + "?tab=phenotypes";
+      };
+})
 .filter('linkToTaxon', function ($window) {
       return function (uri) {
           return "#/taxon/" + $window.encodeURIComponent(uri);

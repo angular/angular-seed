@@ -28,16 +28,31 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('AboutPhenoscapeController', function ($scope) {
     
 })
-.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence) {
+.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
     $scope.queryPresentInTaxa = function () {
-        $scope.presentInTaxa = EntityPresence.query({'entity': $scope.termID, 'limit': 20});
+        $scope.presentInTaxa = EntityPresence.query({entity: $scope.termID, limit: 20});
     };
     $scope.queryAbsentInTaxa = function () {
-        $scope.absentInTaxa = EntityAbsence.query({'entity': $scope.termID, 'limit': 20});
+        $scope.absentInTaxa = EntityAbsence.query({entity: $scope.termID, limit: 20});
     };
     
+    $scope.phenotypeGenesPage = 1;
+    $scope.phenotypeGenesMaxSize = 3;
+    $scope.phenotypeGenesLimit = 20;
+    $scope.phenotypeGenesSettings = {};
+    $scope.phenotypeGenesSettings.includeParts = false;
+    $scope.phenotypeGenesPageChanged = function (newPage) {
+            $scope.phenotypeGenesPage = newPage;
+            $scope.phenotypeGenes = EntityPhenotypeGenes.query({iri: $scope.termID, limit: $scope.phenotypeGenesLimit, offset: ($scope.phenotypeGenesPage - 1) * $scope.phenotypeGenesLimit, parts: $scope.phenotypeGenesSettings.includeParts});
+    };
+    $scope.resetPhenotypeGenes = function() {
+        $scope.phenotypeGenesTotal = EntityPhenotypeGenes.query({iri: $scope.termID, total: true, parts: $scope.phenotypeGenesSettings.includeParts});
+        $scope.phenotypeGenesPageChanged(1);
+    };
+    
+    $scope.resetPhenotypeGenes();
     $scope.queryPresentInTaxa();
 })
 .controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {
@@ -50,7 +65,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.phenotypeProfileTotal = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, total: true});
     $scope.phenotypeProfilePageChanged = function (newPage) {
         $scope.phenotypeProfilePage = newPage;
-        $log.log('Page changed to: ' + $scope.phenotypeProfilePage);
         $scope.phenotypeProfile = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, limit: $scope.phenotypeProfileLimit, offset: ($scope.phenotypeProfilePage - 1) * $scope.phenotypeProfileLimit});
     };
     $scope.phenotypeProfilePageChanged(1);
@@ -61,7 +75,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.variationProfileTotal = VariationProfileQuery.query({taxon: $scope.taxonID, total: true});
     $scope.variationProfilePageChanged = function (newPage) {
         $scope.variationProfilePage = newPage;
-        $log.log('Page changed to: ' + $scope.variationProfilePage);
         $scope.variationProfile = VariationProfileQuery.query({taxon: $scope.taxonID, limit: $scope.variationProfileLimit, offset: ($scope.variationProfilePage - 1) * $scope.variationProfileLimit});
     };
     $scope.variationProfilePageChanged(1);

@@ -20,16 +20,16 @@
                          </div>
                          <table class="table table-condensed table-striped" cg-busy="presentInTaxa.$promise">
                              <thead>
-                 				<tr>
-                 					<th>Taxon</th>
-                                    <th></th>
-                 				</tr>
+                                 <tr>
+                                     <th>Taxon</th>
+                                     <th></th>
+                                 </tr>
                              </thead>
                              <tbody>
-                 				<tr ng-repeat="taxon in presentInTaxa.results">
-                 					<td>{{taxon.label}}</td>
-                                    <td><a href="http://kb.phenoscape.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
-                 				</tr>
+                                 <tr ng-repeat="taxon in presentInTaxa.results">
+                                     <td>{{taxon.label}}</td>
+                                     <td><a href="http://kb.phenoscape.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                 </tr>
                              </tbody>
                          </table>
                        </div>
@@ -45,16 +45,16 @@
                          </div>
                          <table class="table table-condensed table-striped" cg-busy="absentInTaxa.$promise">
                              <thead>
-                 				<tr>
-                 					<th>Taxon</th>
-                                    <th></th>
-                 				</tr>
+                                 <tr>
+                                     <th>Taxon</th>
+                                     <th></th>
+                                 </tr>
                              </thead>
                              <tbody>
-                 				<tr ng-repeat="taxon in absentInTaxa.results">
-                 					<td>{{taxon.label}}</td>
-                                    <td><a href="http://kb.phenoscape.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
-                 				</tr>
+                                 <tr ng-repeat="taxon in absentInTaxa.results">
+                                     <td>{{taxon.label}}</td>
+                                     <td><a href="http://kb.phenoscape.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                 </tr>
                              </tbody>
                          </table>
                        </div>
@@ -65,13 +65,41 @@
                  </tabset>
             </tab>
             <tab heading="Genes">
-                <div>
-                    <a href="http://kb.phenoscape.org/kb/genes_affecting_phenotype?entity={{termID | encodeURI}}&amp;quality={{'http://purl.obolibrary.org/obo/PATO_0000001' | encodeURI}}">Genes affecting phenotypes</a>
-                </div>
-
-                <div>
-                    <a href="http://kb.phenoscape.org/kb/genes_expressed_in_structure?entity={{termID | encodeURI}}">Genes expressed within</a>
-                </div>
+                <tabset type="pills" class="top-buffer">
+                    <tab>
+                        <tab-heading>Phenotype <span class="badge">{{phenotypeGenesTotal.total}}</span></tab-heading>
+                        <div class="panel panel-default top-buffer">
+                            <div class="panel-heading">
+                                <h4>Genes affecting phenotype of this structure</h4>
+                            </div>
+                            <div class="panel-body">
+                                <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark>.</p>
+                                <div class="checkbox well">
+                                    <label>
+                                      <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of {{term.label}}
+                                    </label>
+                                  </div>
+                            </div>
+                            <table class="table table-condensed table-striped" cg-busy="phenotypeGenes.$promise">
+                                <thead>
+                                    <tr>
+                                        <th>Gene</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="gene in phenotypeGenes.results">
+                                        <td><a href="{{gene['@id'] | linkToGene}}"><term-name iri="gene.label"></term-name></a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination total-items="phenotypeGenesTotal.total" ng-model="phenotypeGenesPage" max-size="phenotypeGenesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeGenesLimit" cg-busy="phenotypeGenesTotal.$promise" ng-change="phenotypeGenesPageChanged(phenotypeGenesPage)"></pagination>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/gene/affecting_entity_phenotype?limit=0&amp;iri={{termID | encodeURI}}&amp;parts={{phenotypeGenesSettings.includeParts}}" role="button">Text</a></p>
+                    </tab>
+                    <tab heading="Expression">
+                        <p><a href="http://kb.phenoscape.org/kb/genes_expressed_in_structure?entity={{termID | encodeURI}}">Genes expressed within</a></p>
+                    </tab>
+                </tabset>
             </tab>
         </tabset>
     </div>
