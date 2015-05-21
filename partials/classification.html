@@ -1,4 +1,4 @@
-<div class="classification-level">
+<div class="classification-level" cg-busy="classification.$promise">
     <ul class="list-unstyled">
         <li ng-repeat="superclass in classification.subClassOf"><a href="{{linkMaker(superclass['@id'])}}">{{superclass.label}}</a></li>
     </ul>

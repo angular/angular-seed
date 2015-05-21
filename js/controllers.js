@@ -98,13 +98,17 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.tabs[$routeParams.tab].active = true;
     }
 })
-.controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes) {
+.controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes, GeneExpression) {
     $scope.geneID = $routeParams.gene;
     $scope.gene = Gene.query({iri: $scope.geneID});
     $scope.queryPhenotypes = function () {
         $scope.phenotypes = GenePhenotypes.query({iri: $scope.geneID});
     }
+    $scope.queryExpression = function () {
+        $scope.expression = GeneExpression.query({iri: $scope.geneID});
+    }
     $scope.queryPhenotypes();
+    $scope.queryExpression();
     $scope.tabs = {
         phenotypes: {active: true},
         expression: {active: false},

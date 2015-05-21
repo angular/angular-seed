@@ -3,8 +3,9 @@
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
-            <tab heading="Phenotypes" active="tabs.phenotypes.active" select="activateTab('phenotypes')">
-                <div class="panel panel-default" style="margin-top: 1em;">
+            <tab active="tabs.phenotypes.active" select="activateTab('phenotypes')">
+                <tab-heading>Phenotypes <span class="badge">{{phenotypes.results.length}}</span></tab-heading>
+                <div class="panel panel-default top-buffer">
                     <div class="panel-heading">
                         <h4>Phenotypes associated with {{gene.label}}</h4>
                     </div>
@@ -25,8 +26,29 @@
                     </table>
                 </div>
             </tab>
-            <tab heading="Expression" active="tabs.expression.active" select="activateTab('expression')">
-                <p><i>Under construction.</i></p>
+            <tab active="tabs.expression.active" select="activateTab('expression')">
+                <tab-heading>Expression <span class="badge">{{expression.results.length}}</span></tab-heading>
+                <div class="alert alert-warning top-buffer" role="alert" ng-show="{{geneID.indexOf('www.informatics.jax.org') > -1}}">Due to a data glitch, labels are not currently available for mouse gene expression location terms. They are coming soon.</div>
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-heading">
+                        <h4>Expression locations associated with {{gene.label}}</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><mark>{{gene.label}}</mark> has been annotated to have expression within these anatomical structures.</p>
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="expression.$promise">
+                        <thead>
+                            <tr>
+                                <th>Anatomical Structure</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="entity in expression.results">
+                                <td><a href="{{entity['@id'] | linkToEntity}}">{{entity.label}}</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </tab>
             <tab heading="Similar evolutionary variation" active="tabs.similarity.active" select="activateTab('similarity')">
                 <similarity-view gene="gene"></similarity-view>
