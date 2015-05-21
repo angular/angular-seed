@@ -28,7 +28,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('AboutPhenoscapeController', function ($scope) {
     
 })
-.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes) {
+.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
     $scope.queryPresentInTaxa = function () {
@@ -52,7 +52,20 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.phenotypeGenesPageChanged(1);
     };
     
+    $scope.expressionGenesPage = 1;
+    $scope.expressionGenesMaxSize = 3;
+    $scope.expressionGenesLimit = 20;
+    $scope.expressionGenesPageChanged = function (newPage) {
+            $scope.expressionGenesPage = newPage;
+            $scope.expressionGenes = EntityExpressionGenes.query({iri: $scope.termID, limit: $scope.expressionGenesLimit, offset: ($scope.expressionGenesPage - 1) * $scope.expressionGenesLimit});
+    };
+    $scope.resetExpressionGenes = function() {
+        $scope.expressionGenesTotal = EntityExpressionGenes.query({iri: $scope.termID, total: true});
+        $scope.expressionGenesPageChanged(1);
+    };
+    
     $scope.resetPhenotypeGenes();
+    $scope.resetExpressionGenes();
     $scope.queryPresentInTaxa();
 })
 .controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {

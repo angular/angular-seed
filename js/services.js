@@ -116,6 +116,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('EntityExpressionGenes', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/gene/expressed_within_entity', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('CharacterStateQuery', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/characterstate/query', {}, {
 			query: {

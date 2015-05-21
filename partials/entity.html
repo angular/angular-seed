@@ -73,7 +73,7 @@
                                 <h4>Genes affecting phenotype of this structure</h4>
                             </div>
                             <div class="panel-body">
-                                <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark>.</p>
+                                <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark> (directly or via inference).</p>
                                 <div class="checkbox well">
                                     <label>
                                       <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of {{term.label}}
@@ -96,8 +96,30 @@
                         <pagination total-items="phenotypeGenesTotal.total" ng-model="phenotypeGenesPage" max-size="phenotypeGenesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeGenesLimit" cg-busy="phenotypeGenesTotal.$promise" ng-change="phenotypeGenesPageChanged(phenotypeGenesPage)"></pagination>
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/gene/affecting_entity_phenotype?limit=0&amp;iri={{termID | encodeURI}}&amp;parts={{phenotypeGenesSettings.includeParts}}" role="button">Text</a></p>
                     </tab>
-                    <tab heading="Expression">
-                        <p><a href="http://kb.phenoscape.org/kb/genes_expressed_in_structure?entity={{termID | encodeURI}}">Genes expressed within</a></p>
+                    <tab>
+                        <tab-heading>Expression <span class="badge">{{expressionGenesTotal.total}}</span></tab-heading>
+                        <div class="panel panel-default top-buffer">
+                            <div class="panel-heading">
+                                <h4>Genes expressed within this structure</h4>
+                            </div>
+                            <div class="panel-body">
+                                <p>These genes have been annotated with expression locations within <mark>{{term.label}}</mark> (directly or via inference).</p>
+                            </div>
+                            <table class="table table-condensed table-striped" cg-busy="expressionGenes.$promise">
+                                <thead>
+                                    <tr>
+                                        <th>Gene</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="gene in expressionGenes.results">
+                                        <td><a href="{{gene['@id'] | linkToGene}}"><term-name iri="gene.label"></term-name></a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination total-items="expressionGenesTotal.total" ng-model="expressionGenesPage" max-size="expressionGenesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="expressionGenesLimit" cg-busy="expressionGenesTotal.$promise" ng-change="expressionGenesPageChanged(expressionGenesPage)"></pagination>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/gene/expressed_within_entity?limit=0&amp;iri={{termID | encodeURI}}" role="button">Text</a></p>
                     </tab>
                 </tabset>
             </tab>
