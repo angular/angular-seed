@@ -14,19 +14,28 @@
  
 </head>
  
-<body>
+<body ng-controller="HomeCtrl">
  
     <div class="container">
         <div class="jumbotron" style="padding-bottom:0px;">
             <h2>AngularJS & Firebase App!</h2>
         </div>
         <form class="form-signin" role="form">
+            <!--
             <input type="email" class="form-control" placeholder="Email address" required="" autofocus="">
             <input type="password" class="form-control" placeholder="Password" required="">
+            -->
+            <!-- Changes for Firebase login: -->
+            <input ng-model="user.email" type="email" class="form-control" placeholder="Email address" required="" autofocus="">
+            <input ng-model="user.password" type="password" class="form-control" placeholder="Password" required="">
+          
             <label class="checkbox">
                 <a href="#"> Sign Up</>
             </label>
+            <!--
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            -->
+            <button type="button" ng-click="SignIn($event)" class="btn btn-lg btn-primary btn-block">SignIn</button>
         </form>
  
     </div>
