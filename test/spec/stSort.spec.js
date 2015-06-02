@@ -37,8 +37,10 @@ describe('stSort Directive', function () {
     beforeEach(inject(function ($compile, $rootScope, stConfig) {
       var oldAscentClass = stConfig.sort.ascentClass;
       var oldDescentClass = stConfig.sort.descentClass;
+      var oldSkipNatural = stConfig.sort.skipNatural;
       stConfig.sort.ascentClass = 'custom-ascent';
       stConfig.sort.descentClass = 'custom-descent';
+      stConfig.sort.skipNatural = true;
 
       rootScope = $rootScope;
       scope = $rootScope.$new();
@@ -81,6 +83,7 @@ describe('stSort Directive', function () {
 
       stConfig.sort.ascentClass = oldAscentClass;
       stConfig.sort.descentClass = oldDescentClass;
+      stConfig.sort.skipNatural = oldSkipNatural;
     }));
 
     it('should customize classes for sorting', function() {
@@ -89,6 +92,26 @@ describe('stSort Directive', function () {
       expect(hasClass(ths[1], 'custom-ascent')).toBe(true);
       expect(hasClass(ths[1], 'custom-descent')).toBe(false);
     });
+
+    it('should skip natural order', function() {
+      var ths = element.find('th');
+      var th1 = angular.element(ths[1]);
+      th1.triggerHandler('click');
+      th1.triggerHandler('click');
+      th1.triggerHandler('click');
+      scope.$apply();
+      var actual = trToModel(element.find('tr.test-row'));
+      expect(hasClass(ths[1], 'custom-ascent')).toBe(true);
+      expect(hasClass(ths[1], 'custom-descent')).toBe(false);
+      expect(actual).toEqual([
+        {name: 'Faivre', firstname: 'Blandine', age: 44},
+        {name: 'Leponge', firstname: 'Bob', age: 22},
+        {name: 'Francoise', firstname: 'Frere', age: 99},
+        {name: 'Renard', firstname: 'Laurent', age: 66},
+        {name: 'Renard', firstname: 'Olivier', age: 33}
+      ]);
+    });
+
   });
 
   describe('normal stConfig', function() {
