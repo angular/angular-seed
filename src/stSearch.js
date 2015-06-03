@@ -1,5 +1,5 @@
 ng.module('smart-table')
-  .directive('stSearch', ['stConfig', '$timeout', function (stConfig, $timeout) {
+  .directive('stSearch', ['stConfig', '$timeout','$parse', function (stConfig, $timeout, $parse) {
     return {
       require: '^stTable',
       link: function (scope, element, attr, ctrl) {
@@ -21,8 +21,8 @@ ng.module('smart-table')
           return ctrl.tableState().search;
         }, function (newValue, oldValue) {
           var predicateExpression = attr.stSearch || '$';
-          if (newValue.predicateObject && newValue.predicateObject[predicateExpression] !== element[0].value) {
-            element[0].value = newValue.predicateObject[predicateExpression] || '';
+          if (newValue.predicateObject && $parse(predicateExpression)(newValue.predicateObject) !== element[0].value) {
+            element[0].value = $parse(predicateExpression)(newValue.predicateObject) || '';
           }
         }, true);
 

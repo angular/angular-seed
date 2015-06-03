@@ -30,6 +30,21 @@ ng.module('smart-table')
       }
     }
 
+    function deepDelete(object, path) {
+      if (path.indexOf('.') != -1) {
+          var partials = path.split('.');
+          var key = partials.pop();
+          var parentPath = partials.join('.'); 
+          var parentObject = $parse(parentPath)(object)
+          delete parentObject[key]; 
+          if (Object.keys(parentObject).length == 0) {
+            deepDelete(object, parentPath);
+          }
+        } else {
+          delete object[path];
+        }
+    }
+
     if ($attrs.stSafeSrc) {
       safeGetter = $parse($attrs.stSafeSrc);
       $scope.$watch(function () {
@@ -79,10 +94,10 @@ ng.module('smart-table')
       var prop = predicate ? predicate : '$';
 
       input = ng.isString(input) ? input.trim() : input;
-      predicateObject[prop] = input;
+      $parse(prop).assign(predicateObject, input);
       // to avoid to filter out null value
       if (!input) {
-        delete predicateObject[prop];
+        deepDelete(predicateObject, prop);
       }
       tableState.search.predicateObject = predicateObject;
       tableState.pagination.start = 0;
