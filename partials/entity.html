@@ -35,6 +35,9 @@
                          </table>
                        </div>
                        <pagination total-items="taxaWithPresenceTotal.total" ng-model="taxaWithPresencePage" max-size="taxaWithPresenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithPresenceLimit" cg-busy="taxaWithPresenceTotal.$promise" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)"></pagination>
+                       <div class="form-group form-inline">
+                           <label for="taxaWithPresencePageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPresencePageInput" ng-model="taxaWithPresencePage" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)">
+                       </div>
                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/presence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
                    </tab>
                    <tab>
@@ -60,6 +63,9 @@
                          </table>
                        </div>
                        <pagination total-items="taxaWithAbsenceTotal.total" ng-model="taxaWithAbsencePage" max-size="taxaWithAbsenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithAbsenceLimit" cg-busy="taxaWithAbsenceTotal.$promise" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)"></pagination>
+                       <div class="form-group form-inline">
+                           <label for="taxaWithAbsencePageInput">Jump to page:</label> <input type="number" class="form-control input-sm" min="1" id="taxaWithAbsencePageInput" ng-model="taxaWithAbsencePage" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)">
+                       </div>
                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/absence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
                    </tab>
                  </tabset>
