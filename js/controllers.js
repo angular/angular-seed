@@ -31,11 +31,29 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
-    $scope.queryPresentInTaxa = function () {
-        $scope.presentInTaxa = EntityPresence.query({entity: $scope.termID, limit: 20});
+    
+    $scope.taxaWithPresencePage = 1;
+    $scope.taxaWithPresenceMaxSize = 3;
+    $scope.taxaWithPresenceLimit = 20;
+    $scope.taxaWithPresencePageChanged = function (newPage) {
+            $scope.taxaWithPresencePage = newPage;
+            $scope.taxaWithPresence = EntityPresence.query({entity: $scope.termID, limit: $scope.taxaWithPresenceLimit, offset: ($scope.taxaWithPresencePage - 1) * $scope.taxaWithPresenceLimit});
     };
-    $scope.queryAbsentInTaxa = function () {
-        $scope.absentInTaxa = EntityAbsence.query({entity: $scope.termID, limit: 20});
+    $scope.resetTaxaWithPresence = function() {
+        $scope.taxaWithPresenceTotal = EntityPresence.query({entity: $scope.termID, total: true});
+        $scope.taxaWithPresencePageChanged(1);
+    };
+    
+    $scope.taxaWithAbsencePage = 1;
+    $scope.taxaWithAbsenceMaxSize = 3;
+    $scope.taxaWithAbsenceLimit = 20;
+    $scope.taxaWithAbsencePageChanged = function (newPage) {
+            $scope.taxaWithAbsencePage = newPage;
+            $scope.taxaWithAbsence = EntityAbsence.query({entity: $scope.termID, limit: $scope.taxaWithAbsenceLimit, offset: ($scope.taxaWithAbsencePage - 1) * $scope.taxaWithAbsenceLimit});
+    };
+    $scope.resetTaxaWithAbsence = function() {
+        $scope.taxaWithAbsenceTotal = EntityAbsence.query({entity: $scope.termID, total: true});
+        $scope.taxaWithAbsencePageChanged(1);
     };
     
     $scope.phenotypeGenesPage = 1;
@@ -64,9 +82,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.expressionGenesPageChanged(1);
     };
     
+    $scope.resetTaxaWithPresence();
+    $scope.resetTaxaWithAbsence();
     $scope.resetPhenotypeGenes();
     $scope.resetExpressionGenes();
-    $scope.queryPresentInTaxa();
 })
 .controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {
     $scope.taxonID = $routeParams.taxon;
