@@ -12,7 +12,7 @@
 <body>
 	<div class="container-fluid" ng-controller="AppController">
         <div class="row bottom-buffer">
-            <div class="col-xs-12">
+            <div class="col-xs-8">
                 <h1><img id="phenoscape_logo" src="img/phenoscape_logo.png"><a href="#/home">Phenoscape Knowledgebase</a></h1>
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">About <span class="caret"></span></button>
@@ -20,6 +20,42 @@
                         <li><a href="#/about/phenoscape">Phenoscape</a></li>
                         <li><a href="#/about/phenoscape/kb">Phenoscape Knowledgebase</a></li>
                     </ul>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-body">
+                        <form role="form" ng-submit="performSearches();">
+                            <div class="form-group">
+                                <label for="mainSearch">Find an item by name</label>
+                                <div class="input-group">
+                                    <input id="mainSearch" type="text" class="form-control input-sm" placeholder="Search for..." ng-model="searchText" ng-change="clearResults();">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default btn-sm" type="button" ng-click="clearSearch();">&times;</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+                        <div style="margin-top: 1em;" ng-show="searchText &amp;&amp; (anatomyResults)">
+                            <accordion close-others="true" style="z-index: 500; position: absolute; margin-right: 30px;">
+                                <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
+                                    <ul class="list-inline">
+                                        <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
+                                    </ul>
+                                </accordion-group>
+                                <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
+                                  <ul class="list-inline">
+                                      <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
+                                  </ul>
+                                </accordion-group>
+                                <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
+                                    <ul class="list-inline">
+                                        <li ng-repeat="gene in geneResults.results"><a href="#/gene/{{gene['@id'] | encodeURI}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
+                                    </ul>
+                                </accordion-group>
+                            </accordion>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

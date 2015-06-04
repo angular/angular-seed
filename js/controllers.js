@@ -3,8 +3,23 @@
 /* Controllers */
 
 angular.module('pkb.controllers', ['ui.bootstrap'])
-.controller('AppController', function ($scope) {
-	
+.controller('AppController', function ($scope, AnatomicalTermSearch, OntologyTermSearch, GeneSearch, Vocab) {
+    $scope.clearSearch = function () {
+        $scope.searchText = null;
+        $scope.clearResults();
+    };
+    $scope.clearResults = function () {
+        $scope.anatomyResults = null;
+        $scope.taxaResults = null;
+        $scope.geneResults = null;
+    };
+    $scope.performSearches = function () {
+        if ($scope.searchText) {
+            $scope.anatomyResults = AnatomicalTermSearch.query({text: $scope.searchText, limit: 20});
+            $scope.taxaResults = OntologyTermSearch.query({text: $scope.searchText, limit: 20, definedBy: Vocab.VTO});
+            $scope.geneResults = GeneSearch.query({text: $scope.searchText, limit: 20});
+        }
+    };
 })
 .controller('HomeController', function ($scope, AnatomicalTermSearch, CharacterStateSearch, OntologyTermSearch, GeneSearch, Vocab) {
     $scope.clearResults = function () {

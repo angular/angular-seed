@@ -1,37 +1,14 @@
 <div class="row">
-    <div class= "col-sm-9">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <form role="form">
-                    <h3>Find an item by name</h3>
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Taxa, characters, anatomical structures, genes..." ng-model="searchText" ng-change="clearResults();">
-                    </div>
-                    <button class="btn btn-default" ng-click="performSearches();">Search</button>
-                </form>
-                <div style="margin-top: 1em;" ng-show="searchText &amp;&amp; (anatomyResults)">
-                    <accordion close-others="true">
-                        <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise">
-                            <ul class="list-inline">
-                                <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
-                            </ul>
-                        </accordion-group>
-                        <accordion-group heading="Evolutionary characters" is-disabled="!statesResults.results.length > 0" cg-busy="statesResults.$promise">
-                                <blockquote ng-repeat="state in statesResults.results" class="character"><a href="#/characterstate/{{state['@id'] | encodeURI }}">{{state.description}}</a><footer>{{state.matrix.label}}</footer></blockquote>
-                        </accordion-group>
-                        <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise">
-                          <ul class="list-inline">
-                              <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
-                          </ul>
-                        </accordion-group>
-                        <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise">
-                            <ul class="list-inline">
-                                <li ng-repeat="gene in geneResults.results"><a href="#/gene/{{gene['@id'] | encodeURI}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
-                            </ul>
-                        </accordion-group>
-                    </accordion>
-                </div>
-            </div>
+    <div class="col-sm-9">
+        <div class="alert alert-info" role="alert">
+            <p>Welcome to the <a href="#/about/phenoscape/kb" class="alert-link">Phenoscape Knowledgebase</a>. The KB is a datastore of computable phenotypic descriptions of evolutionary diversity. Ontology-based annotations are used to power data navigation, search, and integration with phenotype data from genetic model organisms, imported from <a href="http://zfin.org/" class="alert-link">ZFIN</a>, <a href="http://www.informatics.jax.org" class="alert-link">MGI</a>, <a href="http://www.xenbase.org/" class="alert-link">Xenbase</a>, and the <a href="http://www.human-phenotype-ontology.org" class="alert-link">HPO</a>.</p>
+            <p>This version of the KB is under active development. Recently added data focus on comparative skeletal anatomy for fin and limb regions of sarcopterygian vertebrates, the clade in which the “fin to limb” transition occurred. Data from the first iteration of the KB, with broad coverage of ostariophysan fishes, are included here as well (and also available via the <a href="http://fish.phenoscape.org/" class="alert-link">previous KB software</a>).</p>
+            <p>New features available in the KB include:
+                <ul>
+                    <li>Generation of synthetic presence/absence comparative data matrices [<a href="http://dx.doi.org/10.1093/sysbio/syv031" class="alert-link">Systematic Biology</a>]</li>
+                    <li>Semantic similarity search for evolutionary variation related to gene phenotypes [<a href="http://phenoday2015.bio-lark.org/pdf/9.pdf" class="alert-link">Phenotype Day @ ISMB 2015</a>]</li>
+                </ul>
+            </p>
         </div>
     </div>
     <div class= "col-sm-3">
