@@ -37,8 +37,8 @@
                             </div>
                         </form>
                         <div style="margin-top: 1em;" ng-show="searchText &amp;&amp; (anatomyResults)">
-                            <accordion close-others="true" style="z-index: 500; position: absolute; margin-right: 30px;">
-                                <accordion-group heading="Anatomical structures" is-open="true" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
+                            <accordion close-others="true" class="search-accordion">
+                                <accordion-group heading="Anatomical structures" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise" class="search-accordion-group">
                                     <ul class="list-inline">
                                         <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
                                     </ul>

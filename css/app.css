@@ -25,3 +25,7 @@ h2 .badge { vertical-align: middle; }
 div.classification-level div.classification-level {padding-left: 1.5em;}
 
 .nav-pills>.active>a .badge {color: #428bca; background-color: #fff;} /* angular-ui-bootstrap inserts an element between a and .badge, so the active color doesn't get set correctly by the Bootstrap CSS */
+
+.search-accordion {z-index: 500; position: absolute; margin-right: 30px;}
+    
+.search-accordion-group {box-shadow: 10px 10px 5px #888888;}
