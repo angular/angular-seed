@@ -194,7 +194,6 @@ describe('stSearch Directive', function () {
             scope.$apply();
         }));
 
-
         it('should support binding on search predicate', inject(function ($compile, $timeout) {
             scope.searchPredicate = 'name';
             var ths = element.find('th');
@@ -288,7 +287,7 @@ describe('stSearch Directive', function () {
             input[0].value = 're';
             input.triggerHandler('input');
             $timeout.flush();
-            trs = element.find('tr.test-filtered');
+            var trs = element.find('tr.test-filtered');
             expect(trs.length).toBe(4);
             expect(trToModel(trs)).toEqual([
                 {name: 'Renard', firstname: 'Laurent', age: 66},
