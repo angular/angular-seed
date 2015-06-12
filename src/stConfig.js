@@ -6,7 +6,8 @@ ng.module('smart-table')
       displayedPages: 5
     },
     search: {
-      delay: 400 // ms
+      delay: 400, // ms
+      inputEvent: 'input'
     },
     select: {
       mode: 'single',

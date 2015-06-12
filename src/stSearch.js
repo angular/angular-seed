@@ -6,6 +6,7 @@ ng.module('smart-table')
         var tableCtrl = ctrl;
         var promise = null;
         var throttle = attr.stDelay || stConfig.search.delay;
+        var event = attr.stInputEvent || stConfig.search.inputEvent;
 
         attr.$observe('stSearch', function (newValue, oldValue) {
           var input = element[0].value;
@@ -26,7 +27,7 @@ ng.module('smart-table')
         }, true);
 
         // view -> table state
-        element.bind('input', function (evt) {
+        element.bind(event, function (evt) {
           evt = evt.originalEvent || evt;
           if (promise !== null) {
             $timeout.cancel(promise);
