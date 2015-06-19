@@ -16,7 +16,7 @@ To get you started you can simply clone the angular-seed repository and install 
 
 ### Prerequisites
 
-You need git to clone the angular-seed repository. You can get it from
+You need git to clone the angular-seed repository. You can get git from
 [http://git-scm.com/](http://git-scm.com/).
 
 We also use a number of node.js tools to initialize and test angular-seed. You must have node.js and
@@ -30,6 +30,14 @@ Clone the angular-seed repository using [git][git]:
 git clone https://github.com/angular/angular-seed.git
 cd angular-seed
 ```
+
+If you just want to start a new project without the angular-seed commit history then you can do:
+
+```bash
+git clone --depth=1 https://github.com/angular/angular-seed.git <your-project-name>
+```
+
+The `depth=1` tells git to only pull down one commit worth of historical data.
 
 ### Install Dependencies
 
@@ -70,33 +78,33 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
 
 ## Directory Layout
 
-    app/                --> all of the files to be used in production
-      css/              --> css files
-        app.css         --> default stylesheet
-      img/              --> image files
-      index.html        --> app layout file (the main html template file of the app)
-      index-async.html  --> just like index.html, but loads js files asynchronously
-      js/               --> javascript files
-        app.js          --> application
-        controllers.js  --> application controllers
-        directives.js   --> application directives
-        filters.js      --> custom angular filters
-        services.js     --> custom angular services
-      partials/             --> angular view partials (partial html templates)
-        partial1.html
-        partial2.html
-
-    test/               --> test config and source files
-      protractor-conf.js    --> config file for running e2e tests with Protractor
-      e2e/                  --> end-to-end specs
-        scenarios.js
-      karma.conf.js         --> config file for running unit tests with Karma
-      unit/                 --> unit level specs/tests
-        controllersSpec.js      --> specs for controllers
-        directivessSpec.js      --> specs for directives
-        filtersSpec.js          --> specs for filters
-        servicesSpec.js         --> specs for services
-
+```
+app/                    --> all of the source files for the application
+  app.css               --> default stylesheet
+  components/           --> all app specific modules
+    version/              --> version related components
+      version.js                 --> version module declaration and basic "version" value service
+      version_test.js            --> "version" value service tests
+      version-directive.js       --> custom directive that returns the current app version
+      version-directive_test.js  --> version directive tests
+      interpolate-filter.js      --> custom interpolation filter
+      interpolate-filter_test.js --> interpolate filter tests
+  view1/                --> the view1 view template and logic
+    view1.html            --> the partial template
+    view1.js              --> the controller logic
+    view1_test.js         --> tests of the controller
+  view2/                --> the view2 view template and logic
+    view2.html            --> the partial template
+    view2.js              --> the controller logic
+    view2_test.js         --> tests of the controller
+  app.js                --> main application module
+  index.html            --> app layout file (the main html template file of the app)
+  index-async.html      --> just like index.html, but loads js files asynchronously
+karma.conf.js         --> config file for running unit tests with Karma
+e2e-tests/            --> end-to-end tests
+  protractor-conf.js    --> Protractor config file
+  scenarios.js          --> end-to-end scenarios to be run by Protractor
+```
 
 ## Testing
 
@@ -108,8 +116,8 @@ The angular-seed app comes preconfigured with unit tests. These are written in
 [Jasmine][jasmine], which we run with the [Karma Test Runner][karma]. We provide a Karma
 configuration file to run them.
 
-* the configuration is found at `test/karma.conf.js`
-* the unit tests are found in `test/unit/`.
+* the configuration is found at `karma.conf.js`
+* the unit tests are found next to the code they are testing and are named as `..._test.js`.
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
@@ -137,8 +145,8 @@ The angular-seed app comes with end-to-end tests, again written in [Jasmine][jas
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `test/protractor-conf.js`
-* the end-to-end tests are found in `test/e2e/`
+* the configuration is found at `e2e-tests/protractor-conf.js`
+* the end-to-end tests are found in `e2e-tests/scenarios.js`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
@@ -229,7 +237,7 @@ Then you can start your own development web server to serve static files from a 
 running:
 
 ```
-http-server
+http-server -a localhost -p 8000
 ```
 
 Alternatively, you can choose to configure your own webserver, such as apache or nginx. Just
@@ -238,7 +246,7 @@ configure your server to serve the files under the `app/` directory.
 
 ### Running the App in Production
 
-This really depends on how complex is your app and the overall infrastructure of your system, but
+This really depends on how complex your app is and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
 Everything else should be omitted.
 
@@ -283,7 +291,7 @@ For more information on AngularJS please check out http://angularjs.org/
 [npm]: https://www.npmjs.org/
 [node]: http://nodejs.org
 [protractor]: https://github.com/angular/protractor
-[jasmine]: http://pivotal.github.com/jasmine/
+[jasmine]: http://jasmine.github.io
 [karma]: http://karma-runner.github.io
 [travis]: https://travis-ci.org/
 [http-server]: https://github.com/nodeapps/http-server
