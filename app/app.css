@@ -1,30 +1,88 @@
-/* app css stylesheet */
-
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+body{
+    background-color: white;
 }
 
-.menu:before {
-  content: "[";
+.wrapper{
+    position: fixed;
+    top: 0px;
+    left:0px;
+    right: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    height: 100%;
+
+    -webkit-box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 1);
+    -moz-box-shadow:    0px 0px 30px 0px rgba(0, 0, 0, 1);
+    box-shadow:         0px 0px 30px 0px rgba(0, 0, 0, 1);
 }
 
-.menu:after {
-  content: "]";
+.header{
+    position: absolute;
+    top: 0px;
+    background-color: #bc2e28;
+    width: 100%;
+    height: 20%
+
+
 }
 
-.menu > li {
-  display: inline;
+.header h1{
+    font-family: Calibri;
+    color: white;
+    font-size: 40px;
+    text-align: center;
+    vertical-align: middle;
+    text-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
 }
 
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
+.menu{
+    position: absolute;
+    top: 20%;
+    width: 100%;
+    height: 10%;
+    background-color: #ff312b;
 }
 
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
+.menuItem{
+    float: left;
+    height: 100%;
+    width: 33.33333333333333%;
+    background-color: #ff312b;
+    text-decoration:none;
+}
+
+.menuItem{
+    float: left;
+    height: 100%;
+    width: 33.33333333333333%;
+    background-color: #ff312b;
+    transition: 0.3s ease-in-out;
+    text-decoration:none;
+}
+
+.menuItem:hover{
+    float: left;
+    height: 100%;
+    width: 33.33333333333333%;
+    background-color: #bc2e28;
+    text-decoration:none;
+}
+
+.menuItem p{
+    font-family: Calibri;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: middle;
+    text-shadow: 0px 0px 6px rgba(0, 0, 0, 1);
+}
+
+.content{
+    position: absolute;
+    top: 30%;
+    width: 100%;
+    height: 70%;
+    background-color: lightgray;
+    text-align: center;
 }
