@@ -16,11 +16,15 @@
                         <thead>
                             <tr>
                                 <th>Phenotype</th>
+                                <th>Sources</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="phenotype in phenotypes.results">
                                 <td>{{phenotype.label}}</td>
+                                <td>
+                                    <span ng-repeat="source in phenotype.sources"><a href="{{source['@id']}}" target="_blank">{{source['@id'] | modSourceLabel}}</a> </span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -40,11 +44,15 @@
                         <thead>
                             <tr>
                                 <th>Anatomical Structure</th>
+                                <th>Sources</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="entity in expression.results">
                                 <td><a href="{{entity['@id'] | linkToEntity}}">{{entity.label}}</a></td>
+                                <td>
+                                    <span ng-repeat="source in entity.sources"><a href="{{source['@id']}}" target="_blank">{{source['@id'] | modSourceLabel}}</a> </span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

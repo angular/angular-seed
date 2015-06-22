@@ -41,6 +41,17 @@ angular.module('pkb.filters', [])
           return "#/taxon/" + $window.encodeURIComponent(uri) + "?tab=variation";
       };
 })
+.filter('modSourceLabel', function () {
+    return function (uri) {
+        if (uri.indexOf("http://www.informatics.jax.org/reference/summary?id=") > -1) {
+            return uri.replace("http://www.informatics.jax.org/reference/summary?id=", "MGI:")
+        } else if (uri.indexOf("http://zfin.org/") > -1) {
+            return uri.replace("http://zfin.org/", "ZFIN:")
+        } else {
+            return uri;
+        }
+    };
+})
 .filter('prefixedURI', function () {
       return function (text) {
           var prefixes = {
