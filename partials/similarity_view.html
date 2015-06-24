@@ -61,12 +61,23 @@
                     </div>
                 </form>
             </div>
+            <script type="text/ng-template" id="micaPopover">
+                <form>
+                    <div class="form-group">
+                        <label for="mica">Most Informative Common Ancestor</label>
+                        <p name="mica" class="form-control-static"><a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a></p>
+                      </div>
+                      <div class="form-group">
+                          <label for="ic">Information Content</label>
+                          <p name="ic" class="form-control-static"><span>{{match.best_subsumer.ic | number : 2}}</span></p>
+                      </div>
+                  </form>
+            </script>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
                     <tr>
                         <th>Gene Phenotype</th>
                         <th>Taxon Phenotype</th>
-                        <th>Most Informative Common Ancestor</th>
                         <th>Match Information Content</th>
                     </tr>
                 </thead>
@@ -78,11 +89,9 @@
                         <td>
                             <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
                         </td>
-                        <td>
-                            <a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a>
-                        </td>
                         <td class="text-center">
-                            <span>{{match.best_subsumer.ic | number : 2}}</span> <button ng-show="match.best_subsumer.disparity > 0.25" type="button" class="btn btn-warning btn-xs" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left">IC warning</button>
+                            <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>
+                            <button ng-show="match.best_subsumer.disparity > 0.25" type="button" class="btn btn-warning btn-xs" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left">IC warning</button>
                         </td>
                    </tr>
                 </tbody>
