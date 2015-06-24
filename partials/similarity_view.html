@@ -90,8 +90,7 @@
                             <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
                         </td>
                         <td class="text-center">
-                            <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>
-                            <button ng-show="match.best_subsumer.disparity > 0.25" type="button" class="btn btn-warning btn-xs" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left">IC warning</button>
+                            <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>&nbsp;<span ng-show="match.best_subsumer.disparity > 0.25" class="text-danger glyphicon glyphicon-flag" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left"></span>
                         </td>
                    </tr>
                 </tbody>
