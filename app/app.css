@@ -1,5 +1,9 @@
-body{
-    background-color: white;
+html {
+    background: url(background.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
 }
 
 .wrapper{
@@ -20,9 +24,10 @@ body{
 .header{
     position: absolute;
     top: 0px;
-    background-color: #bc2e28;
+    background-color: #000000;
     width: 100%;
-    height: 20%
+    height: 20%;
+    opacity: 0.7;
 
 
 }
@@ -30,10 +35,11 @@ body{
 .header h1{
     font-family: Calibri;
     color: white;
-    font-size: 40px;
+    font-size: 80px;
     text-align: center;
     vertical-align: middle;
     text-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+    opacity: 1;
 }
 
 .menu{
@@ -41,22 +47,17 @@ body{
     top: 20%;
     width: 100%;
     height: 10%;
-    background-color: #ff312b;
+    background-color: #ffffff;
+    opacity: 0.7;
 }
 
 .menuItem{
     float: left;
     height: 100%;
+    line-height: 100%;
+    text-align: center;
     width: 33.33333333333333%;
-    background-color: #ff312b;
-    text-decoration:none;
-}
-
-.menuItem{
-    float: left;
-    height: 100%;
-    width: 33.33333333333333%;
-    background-color: #ff312b;
+    background-color: #000000;
     transition: 0.3s ease-in-out;
     text-decoration:none;
 }
@@ -65,17 +66,30 @@ body{
     float: left;
     height: 100%;
     width: 33.33333333333333%;
-    background-color: #bc2e28;
+    background-color: lightgray;
+    text-decoration:none;
+}
+
+.menuItem:focus{
+    float: left;
+    height: 100%;
+    width: 33.33333333333333%;
+    background-color: lightgray;
+    outline: 0;
     text-decoration:none;
 }
 
 .menuItem p{
+    height: 100%;
     font-family: Calibri;
     color: white;
-    font-size: 20px;
+    font-size: 30px;
     text-align: center;
-    vertical-align: middle;
     text-shadow: 0px 0px 6px rgba(0, 0, 0, 1);
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
+    opacity: 1;
 }
 
 .content{
@@ -85,4 +99,5 @@ body{
     height: 70%;
     background-color: lightgray;
     text-align: center;
+    opacity: 0.8;
 }
