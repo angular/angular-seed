@@ -20,10 +20,6 @@
         "tests"
     ],
     "dependencies": {
-        "angular": "latest"
-    },
-    "devDependencies": {
-        "angular-mocks": "latest",
-        "jquery": "latest"
+        "angular": "^1.0.0"
     }
 }
