@@ -1,0 +1,21 @@
+<inspector-gadget data-placement="auto bottom" data-container="body">
+    <div><a href="#"><span class="term-name" title="{{description['@id']}}">{{description.description}}</span></a></div>
+    <inspector-title>Taxon Annotation Detail</inspector-title>
+    <inspector-content>
+        <form>
+            <div class="form-group">
+                <label for="phenotype">Character Description</label>
+                <p name="phenotype" class="form-control-static">{{description.description}}</p>
+            </div>
+            <div class="form-group">
+                <label for="source">Source</label>
+                <p name="source" class="form-control-static"><span title="{{description.matrix['@id']}}">{{description.matrix.label}}</span></p>
+            </div>
+            <div class="form-group">
+                <label for="eq">Ontology Annotation</label>
+                <p name="eq" class="form-control-static"><span title="{{description.phenotype['@id']}}">{{description.phenotype.label}}</span></p>
+            </div>
+        </form>
+    </inspector-content>
+</inspector-gadget>
+

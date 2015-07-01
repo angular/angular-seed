@@ -38,8 +38,18 @@ angular.module('pkb.directives', [])
         controller: 'TermNameController',
         templateUrl: 'partials/term_name.html',
         scope: {
-            iri: '='//,
-            //linker: '='
+            iri: '='
+        }
+    }
+})
+.directive('characterDescriptionAnnotation', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'CharacterDescriptionAnnotationController',
+        templateUrl: 'partials/character_description_annotation.html',
+        scope: {
+            iri: '='
         }
     }
 })

@@ -53,6 +53,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('CharacterDescriptionWithAnnotation', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/characterstate/with_annotation', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('Label', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/term/label', {}, {
 			query: {

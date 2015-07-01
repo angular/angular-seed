@@ -6,6 +6,7 @@ angular.module('pkb', [
 'ngRoute',
 'cgBusy',
 'ngScientificNotation',
+'swd.inspector-gadget',
 'pkb.filters',
 'pkb.services',
 'pkb.directives',

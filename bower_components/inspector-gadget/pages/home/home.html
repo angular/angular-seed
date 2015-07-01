@@ -1,0 +1,35 @@
+<div ng-controller='HomeCtrl'>	
+  <h2>Basic example, free running counter</h2>
+    <inspector-gadget data-placement="bottom" data-timeout="2000">
+        <p>Mouse me! {{tenSecTimer}}</p>
+          <p>Marry had a little lamb its fleece was white as snow</p>
+      <inspector-title>
+        Hello <b>World! Its {{tenSecTimer * 10}} o'clock</b>
+      </inspector-title>
+      <inspector-content>
+        Ipusum lorem <i>est</i> {{timer}}
+      </inspector-content>
+    </inspector-gadget>
+  <hr/>
+
+  <h2>NG repeat</h2>
+<inspector-gadget data-container="body" data-placement="bottom">
+    <div>Good times and bad times {{blah}} blah</div>
+    <inspector-title>
+    </inspector-title>
+    <inspector-content ng-non-bindable>
+      <span ng-controller="TestCtrl">
+        Stuff
+        {{name}}
+        <span ng-repeat="i in [1, 2, 3]">
+          <span ng-click="click(i)">click me</span>
+        </span>
+        Other Stuff
+      </span>
+    </inspector-content>
+</inspector-gadget>
+
+  <div>
+
+  </div>
+</div>

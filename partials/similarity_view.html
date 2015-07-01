@@ -84,10 +84,10 @@
                 <tbody>
                     <tr ng-repeat="match in annotationMatches.results">
                         <td>
-                            <a title="{{match.query_annotation['@id']}}">{{match.query_annotation.label}}</a>
+                            <term-name iri="match.query_annotation['@id']"></term-name>
                         </td>
                         <td>
-                            <a title="{{match.corpus_annotation['@id']}}">{{match.corpus_annotation.label}}</a>
+                            <character-description-annotation iri="match.corpus_annotation['@id']"></character-description-annotation>
                         </td>
                         <td class="text-center">
                             <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>&nbsp;<span ng-show="match.best_subsumer.disparity > 0.25" class="text-danger glyphicon glyphicon-flag" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left"></span>

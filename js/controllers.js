@@ -593,6 +593,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('TermNameController', function ($scope, Label) {
     $scope.term = Label.query({iri: $scope.iri});
 })
+.controller('CharacterDescriptionAnnotationController', function ($scope, CharacterDescriptionWithAnnotation) {
+    $scope.description = CharacterDescriptionWithAnnotation.query({iri: $scope.iri});
+})
 .controller('ClassificationController', function ($scope, $filter, Classification) {
     $scope.classification = Classification.query({iri: $scope.iri})
     $scope.linkMaker = $filter($scope.linkFilter);

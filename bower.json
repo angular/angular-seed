@@ -23,6 +23,7 @@
     "angular-ui-bootstrap-bower": "~0.13.0",
     "angular-busy": "~4.1.1",
     "bootstrap": "~3.3.0",
-    "underscore": "~1.7.0"
+    "underscore": "~1.7.0",
+    "inspector-gadget": "~0.2.0"
   }
 }

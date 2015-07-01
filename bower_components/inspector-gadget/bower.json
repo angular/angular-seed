@@ -1,0 +1,31 @@
+{
+  "name": "inspector-gadget",
+  "version": "0.2.0",
+  "authors": [
+    "Doug Turnbull <softwaredoug@gmail.com>"
+  ],
+  "description": "Demo",
+  "keywords": [
+    "popover",
+    "inspector",
+    "angularjs",
+    "directive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.0",
+    "jquery": "~2.1.1",
+    "bootstrap": "~3.2.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.2.0",
+    "angular-route": "~1.2.25"
+  }
+}
