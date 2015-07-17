@@ -140,3 +140,9 @@ function(tableState, tableController){
 * fix #254
 * fix wrong path to default config for stSkipNatural (@phuvo)
 * fix #406
+
+## version 2.1.1
+
+* support commonjs 
+* add totalItemCount on tableState (@eirikbell)
+

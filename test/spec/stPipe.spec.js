@@ -41,11 +41,11 @@ describe('stPipe directive', function () {
         $timeout.flush();
 
         expect(firstArg).toEqual({
-            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0}
+            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0, totalItemCount: 0}
         });
 
         expect(secondArg.tableState()).toEqual({
-            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0}
+            sort: {predicate: 'name', reverse: false}, search: {}, pagination: {start: 0, totalItemCount: 0}
         });
     }));
 });

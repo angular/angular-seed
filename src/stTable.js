@@ -11,7 +11,8 @@ ng.module('smart-table')
       sort: {},
       search: {},
       pagination: {
-        start: 0
+        start: 0,
+        totalItemCount: 0
       }
     };
     var filtered;
@@ -114,6 +115,7 @@ ng.module('smart-table')
       if (tableState.sort.predicate) {
         filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
       }
+      pagination.totalItemCount = filtered.length;
       if (pagination.number !== undefined) {
         pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
         pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;

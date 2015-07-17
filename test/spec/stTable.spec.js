@@ -28,6 +28,22 @@ describe('st table Controller', function () {
 
     }));
 
+    describe('init', function(){
+      it('should contain default tableState', function(){
+        var defaultTableState = {
+          sort: {},
+          search: {},
+          pagination: {
+            start: 0,
+            totalItemCount: 0
+          }
+        };
+
+        var tableState = ctrl.tableState();
+        expect(tableState).toEqual(defaultTableState);
+      });
+    });
+
     describe('sort', function () {
       it('should sort the data', function () {
         ctrl.sortBy('firstname');
@@ -191,6 +207,20 @@ describe('st table Controller', function () {
     });
 
     describe('pipe', function () {
+      it('should set totalItemCount on tableState pagination', function(){
+        var expectedLength = 5;
+        ctrl.pipe();
+        expect(scope.data.length).toBe(expectedLength);
+        expect(ctrl.tableState().pagination.totalItemCount).toBe(expectedLength);
+      });
+
+      it('should set totalItemCount as size of filtered array', function(){
+        var expectedLength = 3;
+        ctrl.search('re', 'name');
+        expect(scope.data.length).toBe(expectedLength);
+        expect(ctrl.tableState().pagination.totalItemCount).toBe(expectedLength);
+      });
+
       it('should remembered the last slice length but start back to zero when sorting', function () {
         ctrl.slice(1, 2);
         expect(scope.data.length).toBe(2);

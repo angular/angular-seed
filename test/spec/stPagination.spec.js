@@ -19,7 +19,7 @@ describe('stPagination directive', function () {
   var tableState = {
     sort: {},
     search: {},
-    pagination: {start: 0}
+    pagination: {start: 0, totalItemCount: 0}
   };
   var compile;
 
@@ -380,6 +380,36 @@ describe('stPagination directive', function () {
       expect(pages.length).toBe(0);
     });
 
+    describe('with extended template', function () {
+      var templateCache;
+      beforeEach(inject(function ($templateCache) {
+        templateCache = $templateCache;
+      }));
+
+      it('should save totalItemCount from paginationState on scope', function () {
+        templateCache.put('custom_template.html', '<nav ng-if="pages.length >= 2"><ul class="pagination">' +
+        '<li ng-repeat="page in pages" ng-class="{active: page==currentPage}"><a ng-click="selectPage(page)">{{page}}</a></li>' +
+        '</ul>' +
+        '<span>Showing {{(currentPage-1)*stItemsByPage+1}}-{{(currentPage)*stItemsByPage > totalItemCount ? totalItemCount : (currentPage)*stItemsByPage}} of {{totalItemCount}}</span>' +
+        '</nav>');
+
+        var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination="" st-template="custom_template.html" st-items-by-page="2"></td></tr></tfoot></table>';
+        element = compile(template)(rootScope);
+
+        rootScope.$apply();
+
+        tableState.pagination = {
+          start: 3,
+          numberOfPages: 3,
+          number: 2,
+          totalItemCount: 5
+        };
+
+        rootScope.$apply();
+
+        expect(element.find('SPAN')[0].innerHTML).toBe('Showing 3-4 of 5');
+      });
+    });
   });
 
   describe('select page', function () {
@@ -485,7 +515,7 @@ describe('stPagination directive', function () {
       expect(rootScope.onPageChange).toHaveBeenCalledWith(3);
       expect(rootScope.onPageChange.calls.length).toBe(1);
 
-      tableState.pagination.numberOfPages=5;
+      tableState.pagination.numberOfPages = 5;
 
       rootScope.$apply();
       pages = getPages();
