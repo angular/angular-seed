@@ -1,9 +1,9 @@
 {
-  "name": "angular-seed",
+  "name": "hereiam",
   "private": true,
-  "version": "0.0.0",
-  "description": "A starter project for AngularJS",
-  "repository": "https://github.com/angular/angular-seed",
+  "version": "0.0.1",
+  "description": "A project for projection",
+  "repository": "https://github.com/josefsalyer/hereiam-spa",
   "license": "MIT",
   "devDependencies": {
     "bower": "^1.3.1",
