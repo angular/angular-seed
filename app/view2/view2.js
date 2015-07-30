@@ -9,5 +9,5 @@ angular.module('myApp.view2', ['ngRoute'])
 }])
 
 .controller('View2Ctrl', [function() {
-
+    this.title = "Hello World";
 }]);
