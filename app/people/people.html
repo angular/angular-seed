@@ -1,0 +1,23 @@
+
+<h1>People <span><a href="#/people/add">add a person</a></span></h1>
+
+<table ng-controller="PeopleController as people">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>PhoneNumber</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="person in people.peopleList">
+            <td>{{person._id}}</td>
+            <td>{{person.Name}}</td>
+            <td>{{person.PhoneNumber}}</td>
+            <td>
+            	<button ng-click="people.removePerson(person)">Delete</button>
+            </td>
+        </tr>
+    </tbody>
+</table>

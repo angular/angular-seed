@@ -1,0 +1,36 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'run', 'protractor' ]
+2 info using npm@2.11.3
+3 info using node@v0.12.7
+4 verbose run-script [ 'preprotractor', 'protractor', 'postprotractor' ]
+5 info preprotractor angular-seed@0.0.0
+6 verbose unsafe-perm in lifecycle true
+7 info protractor angular-seed@0.0.0
+8 verbose unsafe-perm in lifecycle true
+9 info angular-seed@0.0.0 Failed to exec protractor script
+10 verbose stack Error: angular-seed@0.0.0 protractor: `protractor e2e-tests/protractor.conf.js`
+10 verbose stack Exit status 1
+10 verbose stack     at EventEmitter.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/lifecycle.js:213:16)
+10 verbose stack     at EventEmitter.emit (events.js:110:17)
+10 verbose stack     at ChildProcess.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/spawn.js:24:14)
+10 verbose stack     at ChildProcess.emit (events.js:110:17)
+10 verbose stack     at maybeClose (child_process.js:1015:16)
+10 verbose stack     at Process.ChildProcess._handle.onexit (child_process.js:1087:5)
+11 verbose pkgid angular-seed@0.0.0
+12 verbose cwd /Users/josefsalyer/Documents/projects/hereiam-spa
+13 error Darwin 14.4.0
+14 error argv "node" "/usr/local/bin/npm" "run" "protractor"
+15 error node v0.12.7
+16 error npm  v2.11.3
+17 error code ELIFECYCLE
+18 error angular-seed@0.0.0 protractor: `protractor e2e-tests/protractor.conf.js`
+18 error Exit status 1
+19 error Failed at the angular-seed@0.0.0 protractor script 'protractor e2e-tests/protractor.conf.js'.
+19 error This is most likely a problem with the angular-seed package,
+19 error not with npm itself.
+19 error Tell the author that this fails on your system:
+19 error     protractor e2e-tests/protractor.conf.js
+19 error You can get their info via:
+19 error     npm owner ls angular-seed
+19 error There is likely additional logging output above.
+20 verbose exit [ 1, true ]
