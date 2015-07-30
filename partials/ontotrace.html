@@ -21,11 +21,15 @@
               </div>
               <div>
                   <label>
-                    <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of <span ng-show="{{queryEntity == null}}">entity</span><span ng-show="queryEntity">{{queryEntity.label}}</span>
+                    <input type="checkbox" ng-model="ontotraceSettings.includeParts"> Include parts of <span ng-hide="queryEntity">entity</span><span ng-show="queryEntity"><mark>{{queryEntity.label}}</mark></span>
+                  </label>
+                  <br>
+                  <label>
+                    <input type="checkbox" ng-model="ontotraceSettings.includeAllCharacters"> Include all characters with values (only variable characters are included by default—those with data for both presence and absence)
                   </label>
               </div>
           </div>
-          <a class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryEntity || !queryTaxon" ng-href="http://kb.phenoscape.org/kb/ontotrace?entity={{queryEntity['@id'] | angled|encodeURI}}&amp;taxon={{queryTaxon['@id'] | angled|encodeURI}}">Download matrix as NeXML</a>
+          <a class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryEntity || !queryTaxon" ng-href="http://kb.phenoscape.org/kb/ontotrace?entity={{queryEntity['@id'] | angled | encodeURI}}&amp;taxon={{queryTaxon['@id'] | angled | encodeURI}}&amp;variable_only={{!ontotraceSettings.includeAllCharacters}}&amp;parts={{ontotraceSettings.includeParts}}">Download matrix as NeXML</a>
         </form>
     </div>
 </div>

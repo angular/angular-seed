@@ -450,6 +450,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTotal();
 })
 .controller('OntoTraceController', function ($scope, OntologyTermSearch, Vocab) {
+    $scope.ontotraceSettings = {
+        includeParts: false,
+        includeAllCharacters: false 
+    };
     $scope.searchTaxa = function (text) {
         return OntologyTermSearch.query({
             limit: 20,
