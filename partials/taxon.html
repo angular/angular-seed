@@ -49,12 +49,16 @@
                     <table class="table table-condensed table-striped" cg-busy="variationProfile.$promise">
                         <thead>
                             <tr>
-                                <th>Phenotype</th>
+                                <th>Character Description</th>
+                                <th>Source</th>
+                                <th>Ontology Annotation</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="phenotype in variationProfile.results">
-                                <td><term-name iri="phenotype['@id']"></term-name></td>
+                            <tr ng-repeat="annotation in variationProfile.results">
+                                <td><span title="annotation['@id']">{{annotation.description}}</span></td>
+                                <td><span title="annotation.matrix['@id']">{{annotation.matrix.label}}</span></td>
+                                <td><span title="annotation.phenotype['@id']">{{annotation.phenotype.label}}</span></td>
                             </tr>
                         </tbody>
                     </table>
