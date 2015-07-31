@@ -2,41 +2,52 @@
 
 /* https://github.com/angular/protractor/blob/master/docs/toc.md */
 
-describe('my app', function() {
+describe('hereiam app', function() {
 
 
-  it('should automatically redirect to /view1 when location hash/fragment is empty', function() {
-    browser.get('index.html');
-    expect(browser.getLocationAbsUrl()).toMatch("/view1");
-  });
-
-
-  describe('view1', function() {
-
-    beforeEach(function() {
-      browser.get('index.html#/view1');
+    it('should automatically redirect to /events when location hash/fragment is empty', function() {
+        browser.get('index.html');
+        expect(browser.getLocationAbsUrl()).toMatch("/events");
     });
 
 
-    it('should render view1 when user navigates to /view1', function() {
-      expect(element.all(by.css('[ng-view] p')).first().getText()).
-        toMatch(/partial for view 1/);
+    describe('events', function() {
+
+        beforeEach(function() {
+            browser.get('index.html#/events');
+        });
+
+
+        it('should render events when user navigates to /events', function() {
+            expect(element.all(by.css('[ng-view] p')).first().getText()).
+            toMatch(/partial for events/);
+        });
+
     });
 
-  });
+
+    describe('people', function() {
+
+        beforeEach(function() {
+            browser.get('index.html#/people');
+        });
 
 
-  describe('view2', function() {
+        it('should render people when user navigates to /people', function() {
+            expect(element.all(by.css('[ng-view] p')).first().getText()).
+            toMatch(/partial for people/);
+        });
 
-    beforeEach(function() {
-      browser.get('index.html#/view2');
     });
+    describe('blah', function() {
 
+        beforeEach(function() {
+            browser.get('index.html#/people');
+        });
 
-    it('should render view2 when user navigates to /view2', function() {
-      expect(element.all(by.css('[ng-view] p')).first().getText()).
-        toMatch(/partial for view 2/);
+        it('should list people in a table', function() {
+            expect(element.all("tr").to().equal(8));
+        });
+
     });
-
-  });
 });

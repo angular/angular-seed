@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.version', [
-  'myApp.version.interpolate-filter',
-  'myApp.version.version-directive'
+angular.module('hereiam.version', [
+  'hereiam.version.interpolate-filter',
+  'hereiam.version.version-directive'
 ])
 
 .value('version', '0.1');
