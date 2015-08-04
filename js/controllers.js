@@ -23,8 +23,8 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('HomeController', function ($scope, AnatomicalTermSearch, CharacterStateSearch, OntologyTermSearch, GeneSearch, Vocab) {
 })
-.controller('AboutPhenoscapeKBController', function ($scope) {
-    
+.controller('AboutPhenoscapeKBController', function ($scope, AnnotationSummary) {
+    $scope.annotationSummary = AnnotationSummary.query();
 })
 .controller('AboutPhenoscapeController', function ($scope) {
     
