@@ -16,15 +16,6 @@ var src = (['smart-table.module', 'stConfig', 'stTable']).concat(pluginList).map
 src.push('src/bottom.txt');
 src.unshift('src/top.txt');
 
-//modules
-gulp.task('uglify', function () {
-    gulp.src(src)
-        .pipe(concat('smart-table.min.js'))
-        .pipe(uglify())
-        .pipe(gulp.dest(disFolder));
-});
-
-
 //just as indication
 gulp.task('lint', function () {
     gulp.src(src)
@@ -41,12 +32,19 @@ gulp.task('karma-CI', function (done) {
     karma.start(conf, done);
 });
 
+gulp.task('uglify', function () {
+    gulp.src(src)
+      .pipe(concat('smart-table.min.js'))
+      .pipe(sourcemaps.init())
+      .pipe(uglify())
+      .pipe(sourcemaps.write('.'))
+      .pipe(gulp.dest(disFolder));
+});
+
 gulp.task('concat', function () {
     gulp.src(src, { base: '.' })
-        .pipe(sourcemaps.init())
-        .pipe(concat('smart-table.js'))
-        .pipe(sourcemaps.write())
-        .pipe(gulp.dest(disFolder));
+      .pipe(concat('smart-table.js'))
+      .pipe(gulp.dest(disFolder));
 });
 
 gulp.task('test', ['karma-CI']);

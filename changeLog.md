@@ -146,3 +146,6 @@ function(tableState, tableController){
 * support commonjs 
 * add totalItemCount on tableState (@eirikbell)
 
+## version 2.1.2
+
+* improve build #461 [stanleyxu](https://github.com/stanleyxu2005)
