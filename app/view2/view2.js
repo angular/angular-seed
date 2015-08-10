@@ -1,13 +1,7 @@
 'use strict';
 
-angular.module('myApp.view2', ['ngRoute'])
-
-.config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/view2', {
-    templateUrl: 'view2/view2.html'
-  });
-}])
+angular.module('myApp.view2', [])
 
 .controller('View2Ctrl', [function() {
-    this.title = "Hello World";
+    this.content = "Content for view2";
 }]);

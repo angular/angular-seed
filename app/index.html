@@ -10,22 +10,17 @@
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
-    <li><a href="#/view3">view3</a></li>
-  </ul>
 
-  <div class="container-fluid">
-    <div ng-view></div>
-  </div>
-
-  <div>Angular seed app: v<span app-version></span></div>
+  <div ui-view="header"></div>
+  <div ui-view="content"></div>
+  <div ui-view="footer"></div>
 
   <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
   <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
   <script src="app.js"></script>
+  <script src="view_header/header.js"></script>
+  <script src="view_footer/footer.js"></script>
   <script src="view1/view1.js"></script>
   <script src="view2/view2.js"></script>
   <script src="view3/view3.js"></script>
