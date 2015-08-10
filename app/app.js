@@ -16,58 +16,49 @@ angular.module('myApp', [
   '$stateProvider',
   '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider) {
-//    $routeProvider.otherwise({redirectTo: '/view1'});
     $urlRouterProvider.otherwise('/view1');
 
     $stateProvider
-      .state('view1', {
-          url: '/view1',
+      .state('app', {
+          url: '/',
           views: {
             'header': {
               templateUrl: 'view_header/header.html',
               controller: 'HeaderController'
             },
-            'content': {
-              templateUrl: 'view1/view1.html',
-              controller: 'View1Ctrl'
-            },
+            //'content': {
+              //template: '<p>default content</p>'
+            //},
             'footer': {
               templateUrl: 'view_footer/footer.html',
               controller: 'FooterController'
             }
           }
       })
-      .state('view2', {
-        url: '/view2',
+      .state('app.view1', {
+          url: 'view1',
+          views: {
+            'content@': {
+              templateUrl: 'view1/view1.html',
+              controller: 'View1Ctrl'
+            }
+          }
+      })
+      .state('app.view2', {
+        url: 'view2',
         views: {
-          'header': {
-            templateUrl: 'view_header/header.html',
-            controller: 'HeaderController'
-          },
-          'content': {
+          'content@': {
             templateUrl: 'view2/view2.html',
             controller: 'View2Ctrl'
-          },
-          'footer': {
-            templateUrl: 'view_footer/footer.html',
-            controller: 'FooterController'
           }
         }
       })
-      .state('view3', {
-        url: '/view3',
+      .state('app.view3', {
+        url: 'view3',
         views: {
-          'header': {
-            templateUrl: 'view_header/header.html',
-            controller: 'HeaderController'
-          },
-          'content': {
+          'content@': {
             templateUrl: 'view3/view3.html',
             controller: 'View3Ctrl'
-          },
-          'footer': {
-            templateUrl: 'view_footer/footer.html',
-            controller: 'FooterController'
           }
         }
       });
