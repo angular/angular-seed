@@ -1,12 +1,6 @@
 'use strict';
 
-angular.module('myApp.view3', ['ngRoute'])
-
-.config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/view3', {
-    templateUrl: 'view3/view3.html'
-  });
-}])
+angular.module('myApp.view3', [])
 
 .controller('View3Ctrl', ['$scope', function($scope) {
 }])
