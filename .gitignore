@@ -5,3 +5,5 @@ app/bower_components/
 tmp
 .DS_Store
 .idea
+manifest.json
+dist/

@@ -9,7 +9,7 @@ angular.module('myApp', [
   'myApp.view2',
   'myApp.view3',
   'myApp.version',
-  'ui.bootstrap'
+  'ui.bootstrap',
 ])
 
 .config([

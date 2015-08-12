@@ -11,24 +11,29 @@
     "http-server": "^0.6.1",
     "bower": "^1.3.1",
     "shelljs": "^0.2.6",
-    "karma-junit-reporter": "^0.2.2"
+    "karma-junit-reporter": "^0.2.2",
+
+    "gulp-watch": "~4.3.4",
+    "gulp-concat": "~2.6.0",
+    "gulp-uglify": "~1.2.0",
+    "combined-stream": "~1.0.5",
+    "gulp-minify-css": "~1.2.0",
+    "gulp-rev": "~5.1.0",
+    "gulp-rev-replace": "~0.4.2",
+    "bower-files": "~3.9.1",
+    "gulp": "~3.9.0"
   },
   "scripts": {
     "postinstall": "bower install",
 
     "prestart": "npm install",
-    "start": "http-server -a localhost -p 8000 -c-1",
+    "start": "(gulp debug &); http-server -a localhost dist/ -p 8000 -c-1",
 
     "pretest": "npm install",
     "test": "karma start karma.conf.js",
     "test-single-run": "karma start karma.conf.js  --single-run",
 
-    "preupdate-webdriver": "npm install",
-    "update-webdriver": "webdriver-manager update",
-
     "preprotractor": "npm run update-webdriver",
-    "protractor": "protractor e2e-tests/protractor.conf.js",
-
-    "update-index-async": "node -e \"require('shelljs/global'); sed('-i', /\\/\\/@@NG_LOADER_START@@[\\s\\S]*\\/\\/@@NG_LOADER_END@@/, '//@@NG_LOADER_START@@\\n' + sed(/sourceMappingURL=angular-loader.min.js.map/,'sourceMappingURL=bower_components/angular-loader/angular-loader.min.js.map','app/bower_components/angular-loader/angular-loader.min.js') + '\\n//@@NG_LOADER_END@@', 'app/index-async.html');\""
+    "protractor": "protractor e2e-tests/protractor.conf.js"
   }
 }
