@@ -1,7 +1,12 @@
-'use strict';
+(function(){
+  'use strict';
 
-angular.module('myApp.footer', [])
+  angular
+    .module('myApp.footer', [])
+    .controller('FooterController', FooterController);
 
-.controller('FooterController', ['$scope', function($scope){
+  function FooterController ($scope) {
     $scope.myfooter = 'my footer haha';
-}]);
+  };
+
+})();

@@ -1,13 +1,20 @@
-'use strict';
+(function(){
+  'use strict';
 
-angular.module('myApp.view3', [])
+  angular
+    .module('myApp.view3', [])
+    .controller('View3Ctrl', View3Ctrl)
+    .controller('AddUserController', AddUserController);
 
-.controller('View3Ctrl', ['$scope', function($scope) {
-}])
+  function View3Ctrl ($scope) {
 
-.controller('AddUserController', ['$scope', function($scope) {
+  }
+
+  function AddUserController ($scope) {
     $scope.message = '';
     $scope.addUser = function(){
         $scope.message = 'Thanks, ' + $scope.user.first + ', we added you!';
     };
-}]);
+  }
+
+})();
