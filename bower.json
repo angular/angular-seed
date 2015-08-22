@@ -7,11 +7,10 @@
   "private": true,
   "dependencies": {
     "angular": "1.4.3",
-    "angular-route": "1.4.3",
+    "angular-ui-router": "~0.2.15",
     "angular-loader": "1.4.3",
     "angular-bootstrap": "0.13.1",
-    "bootstrap": "~3.3.5",
-    "angular-ui-router": "~0.2.15"
+    "bootstrap": "~3.3.5"
   },
   "devDependencies": {
     "angular-mocks": "~1.4.3"
