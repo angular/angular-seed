@@ -27,7 +27,7 @@
     "postinstall": "bower install",
 
     "prestart": "npm install",
-    "start": "(gulp debug &); http-server -a localhost dist/ -p 8000 -c-1",
+    "start": "(gulp debug &); http-server dist/ -p 8000 -c-1 --cors",
 
     "pretest": "npm install",
     "test": "karma start karma.conf.js",

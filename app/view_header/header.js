@@ -1,6 +1,11 @@
-'use strict';
-angular.module('myApp.header', [])
+(function(){
+  'use strict';
+  angular
+    .module('myApp.header', [])
+    .controller('HeaderController', HeaderController);
 
-.controller('HeaderController', ['$scope', function($scope){
+  function HeaderController ($scope){
     $scope.myheader = 'hello world';
-}]);
+  };
+
+})();
