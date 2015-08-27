@@ -149,3 +149,7 @@ function(tableState, tableController){
 ## version 2.1.2
 
 * improve build #461 [stanleyxu](https://github.com/stanleyxu2005)
+
+## version 2.1.3
+
+* fix #477
