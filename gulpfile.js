@@ -79,7 +79,7 @@ gulp.task('assets', function() {
     .pipe(gulp.dest(build_path + '/fonts'));
 });
 
-gulp.task('html', function() {
+gulp.task('html', ['javascript', 'css'], function() {
   return gulp.src(paths.our_html)
     .pipe(rev_rep({
       manifest: gulp.src('manifest.json')
