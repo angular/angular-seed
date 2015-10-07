@@ -153,3 +153,8 @@ function(tableState, tableController){
 ## version 2.1.3
 
 * fix #477
+
+## version 2.1.4
+
+* add throttle to sort
+* add watch to first item in collection (@matthewbednarski)
