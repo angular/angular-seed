@@ -5,11 +5,11 @@ describe('stSort Directive', function () {
   var element;
   var tableState;
 
-  function hasClass(element, classname) {
+  function hasClass (element, classname) {
     return Array.prototype.indexOf.call(element.classList, classname) !== -1
   }
 
-  function trToModel(trs) {
+  function trToModel (trs) {
     return Array.prototype.map.call(trs, function (ele) {
       return {
         name: ele.cells[0].innerHTML,
@@ -32,7 +32,7 @@ describe('stSort Directive', function () {
     });
   }));
 
-  describe('customized stConfig', function() {
+  describe('customized stConfig', function () {
 
     beforeEach(inject(function ($compile, $rootScope, stConfig) {
       var oldAscentClass = stConfig.sort.ascentClass;
@@ -52,10 +52,10 @@ describe('stSort Directive', function () {
         {name: 'Faivre', firstname: 'Blandine', age: 44}
       ];
       scope.getters = {
-        age: function ageGetter(row) {
+        age: function ageGetter (row) {
           return row.name.length;
         },
-        name: function nameGetter(row) {
+        name: function nameGetter (row) {
           return row.name.length;
         }
       };
@@ -86,20 +86,21 @@ describe('stSort Directive', function () {
       stConfig.sort.skipNatural = oldSkipNatural;
     }));
 
-    it('should customize classes for sorting', function() {
+    it('should customize classes for sorting', inject(function ($timeout) {
       var ths = element.find('th');
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       expect(hasClass(ths[1], 'custom-ascent')).toBe(true);
       expect(hasClass(ths[1], 'custom-descent')).toBe(false);
-    });
+    }));
 
-    it('should skip natural order', function() {
+    it('should skip natural order', inject(function ($timeout) {
       var ths = element.find('th');
       var th1 = angular.element(ths[1]);
       th1.triggerHandler('click');
       th1.triggerHandler('click');
       th1.triggerHandler('click');
-      scope.$apply();
+      $timeout.flush();
       var actual = trToModel(element.find('tr.test-row'));
       expect(hasClass(ths[1], 'custom-ascent')).toBe(true);
       expect(hasClass(ths[1], 'custom-descent')).toBe(false);
@@ -110,11 +111,11 @@ describe('stSort Directive', function () {
         {name: 'Renard', firstname: 'Laurent', age: 66},
         {name: 'Renard', firstname: 'Olivier', age: 33}
       ]);
-    });
+    }));
 
   });
 
-  describe('normal stConfig', function() {
+  describe('normal stConfig', function () {
 
     beforeEach(inject(function ($compile, $rootScope) {
 
@@ -128,10 +129,10 @@ describe('stSort Directive', function () {
         {name: 'Faivre', firstname: 'Blandine', age: 44}
       ];
       scope.getters = {
-        age: function ageGetter(row) {
+        age: function ageGetter (row) {
           return row.name.length;
         },
-        name: function nameGetter(row) {
+        name: function nameGetter (row) {
           return row.name.length;
         }
       };
@@ -157,10 +158,11 @@ describe('stSort Directive', function () {
       scope.$apply();
     }));
 
-    it('should sort by clicked header', function () {
+    it('should sort by clicked header', inject(function ($timeout) {
       var ths = element.find('th');
       var actual;
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       actual = trToModel(element.find('tr.test-row'));
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
       expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
@@ -171,14 +173,15 @@ describe('stSort Directive', function () {
         {name: 'Renard', firstname: 'Laurent', age: 66},
         {name: 'Renard', firstname: 'Olivier', age: 33}
       ]);
+    }));
 
-    });
-
-    it('should revert on the second click', function () {
+    it('should revert on the second click', inject(function ($timeout) {
       var ths = element.find('th');
       var actual;
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       actual = trToModel(element.find('tr.test-row'));
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(false);
       expect(hasClass(ths[1], 'st-sort-descent')).toBe(true);
@@ -189,20 +192,22 @@ describe('stSort Directive', function () {
         {name: 'Leponge', firstname: 'Bob', age: 22},
         {name: 'Faivre', firstname: 'Blandine', age: 44}
       ]);
+    }));
 
-    });
-
-    it('should reset the sort state on the third call', function () {
+    it('should reset the sort state on the third call', inject(function ($timeout) {
       var ths = element.find('th');
       var actual;
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       tableState.sort = {
         predicate: 'firstname',
         reverse: true
       };
       tableState.pagination.start = 40;
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       actual = trToModel(element.find('tr.test-row'));
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(false);
       expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
@@ -215,13 +220,13 @@ describe('stSort Directive', function () {
       ]);
       expect(tableState.sort).toEqual({});
       expect(tableState.pagination.start).toEqual(0);
+    }));
 
-    });
-
-    it('should support getter function as predicate', function () {
+    it('should support getter function as predicate', inject(function ($timeout) {
       var ths = element.find('th');
       var actual;
       angular.element(ths[2]).triggerHandler('click');
+      $timeout.flush();
       actual = trToModel(element.find('tr.test-row'));
       expect(actual).toEqual([
         {name: 'Renard', firstname: 'Laurent', age: 66},
@@ -230,25 +235,26 @@ describe('stSort Directive', function () {
         {name: 'Leponge', firstname: 'Bob', age: 22},
         {name: 'Francoise', firstname: 'Frere', age: 99}
       ]);
+    }));
 
-    });
-
-    it('should switch from getter function to the other', function () {
+    it('should switch from getter function to the other', inject(function ($timeout) {
       var ths = element.find('th');
       var actual;
       angular.element(ths[2]).triggerHandler('click');
+      $timeout.flush();
       expect(hasClass(ths[2], 'st-sort-ascent')).toBe(true);
       expect(hasClass(ths[3], 'st-sort-ascent')).toBe(false);
 
       angular.element(ths[3]).triggerHandler('click');
+      $timeout.flush();
       expect(hasClass(ths[2], 'st-sort-ascent')).toBe(false);
       expect(hasClass(ths[3], 'st-sort-ascent')).toBe(true);
+    }));
 
-    });
-
-    it('should reset its class if table state has changed', function () {
+    it('should reset its class if table state has changed', inject(function ($timeout) {
       var ths = element.find('th');
       angular.element(ths[1]).triggerHandler('click');
+      $timeout.flush();
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
 
       tableState.sort = {
@@ -259,9 +265,9 @@ describe('stSort Directive', function () {
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(false);
       expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
 
-    });
+    }));
 
-    it('should sort by default a column', inject(function ($compile) {
+    it('should sort by default a column', inject(function ($compile, $timeout) {
       var template = '<table dummy="" st-table="rowCollection">' +
         '<thead>' +
         '<tr><th st-sort="name">name</th>' +
@@ -280,7 +286,7 @@ describe('stSort Directive', function () {
 
       element = $compile(template)(scope);
 
-      scope.$apply();
+      $timeout.flush();
 
       var ths = element.find('th');
       var actual = trToModel(element.find('tr.test-row'));
@@ -333,7 +339,7 @@ describe('stSort Directive', function () {
 
     }));
 
-    it('should sort by default a column in reverse mode', inject(function ($compile) {
+    it('should sort by default a column in reverse mode', inject(function ($compile, $timeout) {
       var template = '<table dummy="" st-table="rowCollection">' +
         '<thead>' +
         '<tr><th st-sort="name">name</th>' +
@@ -352,7 +358,7 @@ describe('stSort Directive', function () {
 
       element = $compile(template)(scope);
 
-      scope.$apply();
+      $timeout.flush();
 
       var ths = element.find('th');
       var actual = trToModel(element.find('tr.test-row'));
@@ -368,7 +374,7 @@ describe('stSort Directive', function () {
     }));
 
 
-    it('should skip natural order', inject(function ($compile) {
+    it('should skip natural order', inject(function ($compile, $timeout) {
       var template = '<table dummy="" st-table="rowCollection">' +
         '<thead>' +
         '<tr><th>name</th>' +
@@ -392,9 +398,11 @@ describe('stSort Directive', function () {
       var ths = element.find('th');
       var th1 = angular.element(ths[1]);
       th1.triggerHandler('click');
+      $timeout.flush();
       th1.triggerHandler('click');
+      $timeout.flush();
       th1.triggerHandler('click');
-      scope.$apply();
+      $timeout.flush();
       var actual = trToModel(element.find('tr.test-row'));
       expect(hasClass(ths[1], 'st-sort-ascent')).toBe(true);
       expect(hasClass(ths[1], 'st-sort-descent')).toBe(false);
@@ -406,7 +414,7 @@ describe('stSort Directive', function () {
         {name: 'Renard', firstname: 'Olivier', age: 33}
       ]);
     }));
-    
+
   });
 
 

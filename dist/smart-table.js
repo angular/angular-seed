@@ -1,5 +1,5 @@
 /** 
-* @version 2.1.3
+* @version 2.1.4
 * @license MIT
 */
 (function (ng, undefined){
@@ -31,7 +31,8 @@ ng.module('smart-table')
     sort: {
       ascentClass: 'st-sort-ascent',
       descentClass: 'st-sort-descent',
-      skipNatural: false
+      skipNatural: false,
+      delay:300
     },
     pipe: {
       delay: 100 //ms
@@ -322,7 +323,7 @@ ng.module('smart-table')
   }]);
 
 ng.module('smart-table')
-  .directive('stSort', ['stConfig', '$parse', function (stConfig, $parse) {
+  .directive('stSort', ['stConfig', '$parse', '$timeout', function (stConfig, $parse, $timeout) {
     return {
       restrict: 'A',
       require: '^stTable',
@@ -336,6 +337,8 @@ ng.module('smart-table')
         var stateClasses = [classAscent, classDescent];
         var sortDefault;
         var skipNatural = attr.stSkipNatural !== undefined ? attr.stSkipNatural : stConfig.sort.skipNatural;
+        var promise = null;
+        var throttle = attr.stDelay || stConfig.sort.delay;
 
         if (attr.stSortDefault) {
           sortDefault = scope.$eval(attr.stSortDefault) !== undefined ? scope.$eval(attr.stSortDefault) : attr.stSortDefault;
@@ -344,21 +347,26 @@ ng.module('smart-table')
         //view --> table state
         function sort () {
           index++;
+          var func;
           predicate = ng.isFunction(getter(scope)) ? getter(scope) : attr.stSort;
           if (index % 3 === 0 && !!skipNatural !== true) {
             //manual reset
             index = 0;
             ctrl.tableState().sort = {};
             ctrl.tableState().pagination.start = 0;
-            ctrl.pipe();
+            func = ctrl.pipe.bind(ctrl);
           } else {
-            ctrl.sortBy(predicate, index % 2 === 0);
+            func = ctrl.sortBy.bind(ctrl, predicate, index % 2 === 0);
           }
+          if (promise !== null) {
+            $timeout.cancel(promise);
+          }
+          promise = $timeout(func, throttle);
         }
 
         element.bind('click', function sortClick () {
           if (predicate) {
-            scope.$apply(sort);
+            sort();
           }
         });
 
