@@ -37,7 +37,11 @@ ng.module('smart-table')
           if (promise !== null) {
             $timeout.cancel(promise);
           }
-          promise = $timeout(func, throttle);
+          if (throttle < 0) {
+            func();
+          } else {
+            promise = $timeout(func, throttle);
+          }
         }
 
         element.bind('click', function sortClick () {
