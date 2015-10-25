@@ -137,7 +137,14 @@ predefined script to do this:
 ```
 npm run test-single-run
 ```
+#### Code Coverage Reports
 
+Unit test coverage reports are automatically generated using the [karma-coverage][karma-coverage] plugin.
+This plugin creates an HTML code coverage report with [Istanbul][istanbul] to give you Statement, Branch,
+Function, and Line coverage statistics for your tests.
+
+* the configuration is found at 'karma.conf.js'
+* the reports are available under 'build/reports/coverage/'
 
 ### End to end testing
 
@@ -293,5 +300,7 @@ For more information on AngularJS please check out http://angularjs.org/
 [protractor]: https://github.com/angular/protractor
 [jasmine]: http://jasmine.github.io
 [karma]: http://karma-runner.github.io
+[karma-coverage]: https://github.com/karma-runner/karma-coverage
+[istanbul]: https://github.com/gotwarlost/istanbul
 [travis]: https://travis-ci.org/
 [http-server]: https://github.com/nodeapps/http-server
