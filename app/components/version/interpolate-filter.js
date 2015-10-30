@@ -3,17 +3,15 @@
   'use strict';
 
   angular
-	  .module('myApp.version.interpolate-filter', [
+    .module('myApp.version.interpolate-filter', [])
+    .filter('interpolate', Interpolate);
 
-	  ])
-	  .filter('interpolate', Interpolate);
+  Interpolate.$inject = ['version'];
 
-	Interpolate.$inject = ['version'];
-
-	function Interpolate(version) {
-		return function(text) {
-			return String(text).replace(/\%VERSION\%/mg, version);
-		};
-	}
+  function Interpolate(version) {
+    return function(text) {
+      return String(text).replace(/\%VERSION\%/mg, version);
+    };
+  }
 
 })();

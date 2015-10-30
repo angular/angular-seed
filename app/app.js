@@ -1,24 +1,24 @@
-(function () {
+(function() {
 
-	'use strict';
+  'use strict';
 
-	// Declare app level module which depends on views, and components
-	angular
-		.module('myApp', [
-			'ngRoute',
-			'myApp.view1',
-			'myApp.view2',
-			'myApp.version'
-		])
-		.config(Config);
+  // Declare app level module which depends on views, and components
+  angular
+    .module('myApp', [
+      'ngRoute',
+      'myApp.view1',
+      'myApp.view2',
+      'myApp.version'
+    ])
+    .config(Config);
 
-	Config.$inject = ['$routeProvider'];
+  Config.$inject = ['$routeProvider'];
 
-	function Config($routeProvider) {
-		$routeProvider
-			.otherwise({
-				redirectTo: '/view1'
-			});
-	}
+  function Config($routeProvider) {
+    $routeProvider
+      .otherwise({
+        redirectTo: '/view1'
+      });
+  }
 
 })();
