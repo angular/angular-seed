@@ -9,6 +9,16 @@ framework and a bunch of development and testing tools for instant web developme
 
 The seed app doesn't do much, just shows how to wire two controllers and views together.
 
+## Forked Differences
+
+There are a few small differences between this project and the official Angular seed project. One
+configuration change so it can run better on my work machine and two directory changes to help
+organize the project better.
+
+### Configuration Changes
+
+- Added `directConnect: true,` to e2e-tets/protractor.config.js to run on Windows 8.
+
 
 ## Getting Started
 
@@ -22,22 +32,6 @@ You need git to clone the angular-seed repository. You can get git from
 We also use a number of node.js tools to initialize and test angular-seed. You must have node.js and
 its package manager (npm) installed.  You can get them from [http://nodejs.org/](http://nodejs.org/).
 
-### Clone angular-seed
-
-Clone the angular-seed repository using [git][git]:
-
-```
-git clone https://github.com/angular/angular-seed.git
-cd angular-seed
-```
-
-If you just want to start a new project without the angular-seed commit history then you can do:
-
-```bash
-git clone --depth=1 https://github.com/angular/angular-seed.git <your-project-name>
-```
-
-The `depth=1` tells git to only pull down one commit worth of historical data.
 
 ### Install Dependencies
 
