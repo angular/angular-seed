@@ -66,6 +66,7 @@ describe('stSort Directive', function () {
         '<th st-sort="firstname">firstname</th>' +
         '<th st-sort="getters.age">age</th>' +
         '<th st-sort="getters.name">age</th>' +
+        '<th st-sort="[\'name\', \'age\']">age</th>' +
         '</tr>' +
         '</thead>' +
         '<tbody>' +
@@ -110,6 +111,22 @@ describe('stSort Directive', function () {
         {name: 'Francoise', firstname: 'Frere', age: 99},
         {name: 'Renard', firstname: 'Laurent', age: 66},
         {name: 'Renard', firstname: 'Olivier', age: 33}
+      ]);
+    }));
+
+    it('should sort properly with array value', inject(function ($timeout) {
+      var ths = element.find('th');
+      var th4 = angular.element(ths[4]);
+      th4.triggerHandler('click');
+      th4.triggerHandler('click');
+      $timeout.flush();
+      var actual = trToModel(element.find('tr.test-row'));
+      expect(actual).toEqual([
+        {name: 'Renard', firstname: 'Laurent', age: 66},
+        {name: 'Renard', firstname: 'Olivier', age: 33},
+        {name: 'Leponge', firstname: 'Bob', age: 22},
+        {name: 'Francoise', firstname: 'Frere', age: 99},
+        {name: 'Faivre', firstname: 'Blandine', age: 44},
       ]);
     }));
 
