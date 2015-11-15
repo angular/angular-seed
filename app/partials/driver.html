@@ -1,0 +1,39 @@
+<section id="main">
+  <a href="./#/drivers"><- Back to drivers list</a>
+  <nav id="secondary" class="main-nav">
+    <div class="driver-picture">
+      <div class="avatar">
+        <img ng-show="driver" src="img/drivers/{{driver.Driver.driverId}}.png" />
+        <img ng-show="driver" src="img/flags/{{driver.Driver.nationality}}.png" /><br/>
+        {{driver.Driver.givenName}} {{driver.Driver.familyName}}
+      </div>
+    </div>
+    <div class="driver-status">
+      Country: {{driver.Driver.nationality}}   <br/>
+      Team: {{driver.Constructors[0].name}}<br/>
+      Birth: {{driver.Driver.dateOfBirth}}<br/>
+      <a href="{{driver.Driver.url}}" target="_blank">Biography</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <table class="result-table">
+      <thead>
+        <tr><th colspan="5">Formula 1 2013 Results</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Round</td> <td>Grand Prix</td> <td>Team</td> <td>Grid</td> <td>Race</td>
+        </tr>
+        <tr ng-repeat="race in races">
+          <td>{{race.round}}</td>
+          <td><img  src="img/flags/{{race.Circuit.Location.country}}.png" />{{race.raceName}}</td>
+          <td>{{race.Results[0].Constructor.name}}</td>
+          <td>{{race.Results[0].grid}}</td>
+          <td>{{race.Results[0].position}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
