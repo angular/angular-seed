@@ -1,6 +1,7 @@
 angular.module('F1FeederApp.services', [])
 .factory('ergastAPIservice', function($http) {
 
+  // ergastAPI is a part of a http API for Angular
   var ergastAPI = {};
 
   ergastAPI.getDrivers = function() {
