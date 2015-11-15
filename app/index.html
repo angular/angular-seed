@@ -5,12 +5,13 @@
 </head>
 
 <body ng-app="F1FeederApp" ng-controller="driversController">
+  <input type="text" ng-model="nameFilter" placeholder="Search..."/>
   <table>
     <thead>
       <tr><th colspan="4">Drivers Championship Standings</th></tr>
     </thead>
     <tbody>
-      <tr ng-repeat="driver in driversList">
+      <tr ng-repeat="driver in driversList | filter: nameFilter">
         <td>{{$index + 1}}</td>
         <td>
           <img src="img/flags/{{driver.Driver.nationality}}.png" />
