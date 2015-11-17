@@ -29,3 +29,7 @@ div.classification-level div.classification-level {padding-left: 1.5em;}
 .search-accordion {z-index: 500; position: absolute; margin-right: 30px;}
     
 .search-accordion-group {box-shadow: 10px 10px 5px #888888;}
+
+.sciCrunchAnnotation {color: #428bca;}
+.sciCrunchAnnotation:hover, .sciCrunchAnnotation:focus {color: #2a6496;}
+.annotation-link {display: block;}

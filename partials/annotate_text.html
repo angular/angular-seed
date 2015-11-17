@@ -1,0 +1,39 @@
+<div class="row">
+    <div class= "col-sm-12">
+<h2>Annotate text</h2>
+<p>Powered by the <a href="https://github.com/SciGraph/SciGraph" target="_blank">SciGraph</a> Annotation Service</p>
+</div>
+</div>
+<div class="row" class="top-buffer">
+    <div class= "col-sm-12">
+        <tabset>
+            <tab heading="Input Text" active="tabs.input.active">
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-body">
+                        <form role="form">
+                            <div class="form-group">
+                                <h4>Enter text to be annotated with ontology terms:</h4>
+                                <textarea cols="100" rows="20" ng-model="data.inputText" required="true" class="form-control"></textarea>
+                                <div class="top-buffer">
+                                <button class="btn btn-primary" type="submit" ng-click="runQuery(data.inputText);">Annotate</button>
+                                <div class="checkbox">
+                                    <label>
+                                      <input type="checkbox" ng-model="data.longestOnly"> Always use longest match
+                                    </label>
+                                </div>
+                            </div>
+                          </div>
+                        </form>
+                    </div>
+                </div>
+            </tab>
+            <tab heading="Annotated Text" active="tabs.output.active">
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-body">
+                        <annotated-text content="data.annotatedText"></annotated-text>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+</div>

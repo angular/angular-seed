@@ -235,6 +235,14 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+    .factory('ScigraphAnnotator', function ($resource) {
+        return $resource('http://kb.phenoscape.org/scigraph/annotations/entities', {}, {
+            query: {
+                method: 'GET',
+                headers: {'Accept': 'application/json'},
+                isArray: true
+        }})
+    })
     .factory('Vocab', function () {
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",

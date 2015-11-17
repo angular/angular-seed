@@ -28,5 +28,6 @@ config(['$routeProvider', function($routeProvider) {
     $routeProvider.when('/query_variation_profile', {templateUrl: 'partials/query_variation_profile.html', controller: 'QueryVariationProfileController'});
     $routeProvider.when('/ontotrace', {templateUrl: 'partials/ontotrace.html', controller: 'OntoTraceController'});
     $routeProvider.when('/similarity', {templateUrl: 'partials/similarity.html', controller: 'SimilarityController'});
+    $routeProvider.when('/annotate_text', {templateUrl: 'partials/annotate_text.html', controller: 'AnnotateTextController'});
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);

@@ -29,6 +29,38 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('AboutPhenoscapeController', function ($scope) {
     
 })
+.controller('AnnotateTextController', function ($scope, $sce, $http, ScigraphAnnotator) {
+    $scope.data = {
+        testInput: "",
+        inputText: "",
+        annotatedText: "",
+        longestOnly: false
+    }
+    $scope.tabs = {
+        input: {active: true},
+        output: {active: false}
+    }
+    $scope.runQuery = function (inputText) {
+        $http.get('http://kb.phenoscape.org/scigraph/annotations', {params: {content: $scope.data.inputText, longestOnly: $scope.data.longestOnly}}).then(function (response) { 
+            var text = response.data;
+            $scope.data.annotatedText = text;
+//            var html = jQuery('<div>' + text + '</div>');
+//            var result = html.find('.sciCrunchAnnotation').append('helloooo'); // {
+//            var newText = text.replace('<span class="sciCrunchAnnotation"', '<a href="http://google.com" title="Click to see match details" popover-template="\'micaPopover\'" popover-title="Match Details" popover-placement="left" popover-trigger="click"').replace('</span>', '</a>');
+//            $scope.data.annotatedText = $sce.trustAsHtml(newText);
+            $scope.tabs.output.active = true;
+        }
+      );
+        
+        // ScigraphAnnotator.query({content: $scope.inputText}).$promise.then(function (response) {
+//             alert(response);
+//             console.log(response);
+//                     return $scope.annotatedText = $sce.trustAsHtml(response);
+//                 });
+        //$scope.annotatedText = $sce.trustAsHtml(ScigraphAnnotator.query({content: $scope.inputText}));
+        //TODO select annotated tab
+    };
+})
 .controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
