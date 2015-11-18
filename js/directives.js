@@ -99,7 +99,7 @@ angular.module('pkb.directives', [])
                     var components = annotation.split(",")
                     var label = components[0];
                     var termID = components[1];
-                   return '<a class="annotation-link" target="_blank" href="http://purl.obolibrary.org/obo/' + termID.replace(':', '_') + '">' + label + '</a>';
+                   return '<p><a class="annotation-link" target="_blank" href="http://purl.obolibrary.org/obo/' + termID.replace(':', '_') + '">' + label + '</a><span class="annotation-termid">' + termID + '</span</p>';
                 });
                 scope.popups.push($sce.trustAsHtml(links.join(' ')));
                 jQuery(el).attr('uib-popover-html', 'popups[' + i + ']');
