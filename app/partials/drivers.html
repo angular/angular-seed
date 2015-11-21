@@ -1,20 +1,13 @@
-<div class="panel-heading">
-  <b>Drivers Championship Standings</b>
-</div>
-<div class="panel-body">
-  <input class="form-control" type="text" ng-model="nameFilter" placeholder="Search Drivers..."/><br />
-  <div class="table-responsive">
-    <table class="table table-hover table-condensed">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Country</th>
-          <th>Driver</th>
-          <th>Team</th>
-          <th>Points</th>
-        </tr>
-      </thead>
-      <tbody>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="text-center">Drivers Championship Standings</h4>
+    <input class="form-control" type="text" ng-model="nameFilter" placeholder="Search Drivers..."/>
+  </div>
+  <div class="panel-body">
+    <div class="table-responsive">
+      <table class="table table-hover table-condensed">
+        <tbody>
+        <p ng-hide="driver.driversList">Crunching data.. Please Wait</p>
         <tr ng-repeat="driver in driversList | filter: searchFilter">
           <!-- Rank -->
           <td>{{$index + 1}}</td>
@@ -31,7 +24,8 @@
           <!-- Tournament Points -->
           <td>{{driver.points}}</td>
         </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

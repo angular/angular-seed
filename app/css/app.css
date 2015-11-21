@@ -1,41 +1,24 @@
 /* app css stylesheet */
 
-html {
-  background-color: gray;
-  box-shadow: 0.2em 0.2em #000;
-}
-
 body {
-  margin: 15px;
-  border: 1px #fff solid;
-  border-radius: 8px;
-  box-shadow: 0.0em 0.2em 0.1em #000;
+  background: #666666;
 }
 
-/*table {
-    width: 100%;
+.container {
+  margin: 15px auto;
+  padding: 0;
 }
 
-thead, tbody, tr, td, th { display: block; }
-
-tr:after {
-    content: ' ';
-    display: block;
-    visibility: hidden;
-    clear: both;
+.container > .modal > .modal-dialog {
+  max-width: 600px;
 }
 
-thead th {
-    height: 30px;
+.container > .panel {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-tbody {
-    height: auto;
-    overflow-y: auto;
+.container > .panel > .panel-body {
+  max-height: 500px;
+  overflow: auto;
 }
-
-
-tbody td, thead th {
-    width: 19.2%;
-    float: left;
-}*/

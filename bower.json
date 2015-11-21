@@ -11,7 +11,6 @@
     "angular-loader": "~1.4.0",
     "angular-mocks": "~1.4.0",
     "bootstrap": "3.3.5",
-    "html5-boilerplate": "~5.2.0",
-    "jQuery": "2.1.4"
+    "html5-boilerplate": "~5.2.0"
   }
 }
