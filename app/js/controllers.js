@@ -1,3 +1,6 @@
+/*
+ * This is how controller could manipulate elements in AngularJS with directives
+ */
 angular.module('F1FeederApp.controllers', []).
 
   /* Drivers controller */
@@ -22,7 +25,7 @@ angular.module('F1FeederApp.controllers', []).
     $scope.driver = null;
 
     ergastAPIservice.getDriverDetails($scope.id).success(function (response) {
-        $scope.driver = response.MRData.StandingsTable.StandingsLists[0].DriverStandings[0]; 
+        $scope.driver = response.MRData.StandingsTable.StandingsLists[0].DriverStandings[0];
     });
 
     ergastAPIservice.getDriverRaces($scope.id).success(function (response) {

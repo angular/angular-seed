@@ -11,11 +11,12 @@
     </div>
 
     <div ng-show="driver">
-      <img src="img/drivers/{{driver.Driver.driverId}}.png" />
-      <span style="margin-left:12px; font-size: 20px;">{{driver.Driver.givenName}} {{driver.Driver.familyName}}</span>
+      <img class="pull-left" src="img/drivers/{{driver.Driver.driverId}}.png" />
+      <span class="pull-left" style="margin-left:12px; font-size: 20px;">{{driver.Driver.givenName}} {{driver.Driver.familyName}}</span>
       <div class="pull-right" ng-show="driver">
         Nationality: <img src="img/flags/{{driver.Driver.nationality}}.png" />
       </div>
+      <div style="height: 65px;"></div>
     </div>
 
   </div>
