@@ -1,4 +1,7 @@
 exports.config = {
+
+  directConnect: true,
+  
   allScriptsTimeout: 11000,
 
   specs: [
