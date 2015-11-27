@@ -1,0 +1,64 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+
+    <div class="progress" ng-hide="driver">
+      <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+      </div>
+    </div>
+
+    <div class="panel-body text-center bg-success" style="width: 100%; margin: 0 auto; padding: 0;">
+      <p ng-hide="driver" class="text-center bg-success" style="margin: 0;">Crunching data.. Please Wait..</p>
+    </div>
+
+    <div ng-show="driver">
+      <img class="pull-left" src="img/drivers/{{driver.Driver.driverId}}.png" />
+      <span class="pull-left" style="margin-left:12px; font-size: 20px;">{{driver.Driver.givenName}} {{driver.Driver.familyName}}</span>
+      <div class="pull-right" ng-show="driver">
+        Nationality: <img src="img/flags/{{driver.Driver.nationality}}.png" />
+      </div>
+      <div style="height: 65px;"></div>
+    </div>
+
+  </div>
+  <div class="panel-body" ng-show="driver">
+
+    <a ng-show="driver" class="text-center" href="./#/drivers">&larr; Go back to Drivers list..<br /><br /></a>
+
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        Driver Information
+      </div>
+      <div class="panel-body">
+        Country: {{driver.Driver.nationality}}   <br/>
+        Team: {{driver.Constructors[0].name}}<br/>
+        Birth: {{driver.Driver.dateOfBirth}}<br/>
+        <a href="{{driver.Driver.url}}" target="_blank">Biography</a> (External Link)
+      </div>
+    </div>
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        Formula 1 2013 Results
+      </div>
+      <table class="table table-hover" ng-show="races">
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Grand Prix</th>
+            <th>Team</th>
+            <th>Grid</th>
+            <th>Race</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="race in races">
+          <td>{{race.round}}</td>
+          <td><img  src="img/flags/{{race.Circuit.Location.country}}.png" />&nbsp;{{race.raceName}}</td>
+          <td>{{race.Results[0].Constructor.name}}</td>
+          <td>{{race.Results[0].grid}}</td>
+          <td>{{race.Results[0].position}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

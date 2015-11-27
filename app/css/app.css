@@ -1,0 +1,30 @@
+/* app css stylesheet */
+
+body {
+  background: #666666;
+}
+
+.container {
+  padding: 15px !important;
+  padding: 0;
+}
+
+.container > .modal > .modal-dialog {
+  max-width: 600px;
+}
+
+.container > .panel {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.container > .panel > .panel-body {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.table-size>tbody>tr>td, .table-size>tbody>tr>th,
+.table-size>tfoot>tr>td, .table-size>tfoot>tr>th,
+.table-size>thead>tr>td, .table-size>thead>tr>th {
+  padding: 0px 8px !important;
+} 
