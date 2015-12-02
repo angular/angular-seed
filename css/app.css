@@ -33,3 +33,8 @@ div.classification-level div.classification-level {padding-left: 1.5em;}
 .sciCrunchAnnotation {color: #428bca;}
 .sciCrunchAnnotation:hover, .sciCrunchAnnotation:focus {color: #2a6496;}
 .annotation-link {display: block;}
+.annotation-prefix-UBERON {color: #3f0080;}
+.annotation-prefix-VTO {color: #006633;}
+.annotation-prefix-PATO {color: #b35900;}
+.annotation-prefix-BSPO {color: #b38f00;}
+.annotation-prefix-multiple {color: #cc0066;}

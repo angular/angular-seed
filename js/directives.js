@@ -95,12 +95,21 @@ angular.module('pkb.directives', [])
             var html = jQuery('<div>' + scope.content + '</div>');
             html.find('.sciCrunchAnnotation').each(function (i, el) {
                 var annotations = jQuery(el).data('scigraph').split('|');
+                var prefixes = [];
                 var links = _.map(annotations, function (annotation) {
                     var components = annotation.split(",")
                     var label = components[0];
                     var termID = components[1];
-                   return '<p><a class="annotation-link" target="_blank" href="http://purl.obolibrary.org/obo/' + termID.replace(':', '_') + '">' + label + '</a><span class="annotation-termid">' + termID + '</span</p>';
+                    var prefix = termID.split(":")[0];
+                    prefixes.push(prefix);
+                   return '<p><a class="annotation-link annotation-prefix-' + prefix + '" target="_blank" href="http://purl.obolibrary.org/obo/' + termID.replace(':', '_') + '">' + label + '</a><span class="annotation-termid">' + termID + '</span</p>';
                 });
+                var uniquePrefixes = _.uniq(prefixes);
+                if (uniquePrefixes.length == 1) {
+                    jQuery(el).addClass('annotation-prefix-' + uniquePrefixes[0]);
+                } else {
+                    jQuery(el).addClass('annotation-prefix-multiple');
+                }
                 scope.popups.push($sce.trustAsHtml(links.join(' ')));
                 jQuery(el).attr('uib-popover-html', 'popups[' + i + ']');
                 jQuery(el).attr('popover-trigger', 'focus');
