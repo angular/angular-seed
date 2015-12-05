@@ -1,8 +1,8 @@
-# angular-seed — the seed for AngularJS apps
+# angular-seed-coffee — the seed for AngularJS apps
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
 You can use it to quickly bootstrap your angular webapp projects and dev environment for these
-projects.
+projects. Using CoffeeScript language. 
 
 The seed contains a sample AngularJS application and is preconfigured to install the Angular
 framework and a bunch of development and testing tools for instant web development gratification.
@@ -83,27 +83,27 @@ app/                    --> all of the source files for the application
   app.css               --> default stylesheet
   components/           --> all app specific modules
     version/              --> version related components
-      version.js                 --> version module declaration and basic "version" value service
-      version_test.js            --> "version" value service tests
-      version-directive.js       --> custom directive that returns the current app version
-      version-directive_test.js  --> version directive tests
-      interpolate-filter.js      --> custom interpolation filter
-      interpolate-filter_test.js --> interpolate filter tests
+      version.coffee                 --> version module declaration and basic "version" value service
+      version_test.coffee            --> "version" value service tests
+      version-directive.coffee       --> custom directive that returns the current app version
+      version-directive_test.coffee  --> version directive tests
+      interpolate-filter.coffee      --> custom interpolation filter
+      interpolate-filter_test.coffee --> interpolate filter tests
   view1/                --> the view1 view template and logic
     view1.html            --> the partial template
-    view1.js              --> the controller logic
-    view1_test.js         --> tests of the controller
+    view1.coffee              --> the controller logic
+    view1_test.coffee         --> tests of the controller
   view2/                --> the view2 view template and logic
     view2.html            --> the partial template
-    view2.js              --> the controller logic
-    view2_test.js         --> tests of the controller
-  app.js                --> main application module
+    view2.coffee              --> the controller logic
+    view2_test.coffee         --> tests of the controller
+  app.coffee                --> main application module
   index.html            --> app layout file (the main html template file of the app)
   index-async.html      --> just like index.html, but loads js files asynchronously
-karma.conf.js         --> config file for running unit tests with Karma
+karma/conf.coffee         --> config file for running unit tests with Karma
 e2e-tests/            --> end-to-end tests
-  protractor-conf.js    --> Protractor config file
-  scenarios.js          --> end-to-end scenarios to be run by Protractor
+  protractor-conf.coffee    --> Protractor config file
+  scenarios.coffee          --> end-to-end scenarios to be run by Protractor
 ```
 
 ## Testing
@@ -116,8 +116,8 @@ The angular-seed app comes preconfigured with unit tests. These are written in
 [Jasmine][jasmine], which we run with the [Karma Test Runner][karma]. We provide a Karma
 configuration file to run them.
 
-* the configuration is found at `karma.conf.js`
-* the unit tests are found next to the code they are testing and are named as `..._test.js`.
+* the configuration is found at `karma/conf.coffee`
+* the unit tests are found next to the code they are testing and are named as `..._test.coffee`.
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
@@ -145,8 +145,8 @@ The angular-seed app comes with end-to-end tests, again written in [Jasmine][jas
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `e2e-tests/protractor-conf.js`
-* the end-to-end tests are found in `e2e-tests/scenarios.js`
+* the configuration is found at `e2e-tests/protractor-conf.coffee`
+* the end-to-end tests are found in `e2e-tests/scenarios.coffee`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
