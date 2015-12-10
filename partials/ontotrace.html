@@ -3,33 +3,61 @@
 <div class="panel panel-default">
     <div class="panel-body">
         <form role="form">
-          <div>
-              <h4>Taxon is:</h4>
-              <div class="form-group" ng-class="{'has-success': queryTaxon, 'has-feedback': queryTaxon}">
-                  <input type="text" ng-model="queryTaxon" placeholder="any taxonomic group" typeahead="taxon as taxon.label for taxon in searchTaxa($viewValue)" typeahead-loading="loadingTaxa" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
-                  <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxon"></span>
-                  <i ng-show="loadingTaxa" class="glyphicon glyphicon-refresh"></i>
-              </div>
-          </div>
-          <h5><i>and</i></h5>
-          <div>
-              <h4>Entity is:</h4>
-              <div class="form-group" ng-class="{'has-success': queryEntity, 'has-feedback': queryEntity}">
-                  <input type="text" ng-model="queryEntity" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in searchEntities($viewValue)" typeahead-loading="loadingEntities" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
-                  <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntity"></span>
-                  <i ng-show="loadingEntities" class="glyphicon glyphicon-refresh"></i>
-              </div>
-              <div>
-                  <label>
-                    <input type="checkbox" ng-model="ontotraceSettings.includeParts"> Include parts of <span ng-hide="queryEntity">entity</span><span ng-show="queryEntity"><mark>{{queryEntity.label}}</mark></span>
-                  </label>
-                  <br>
-                  <label>
+            <div class="btn-group">
+                    <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'simple'">Simple Input</label>
+                    <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'expression'">OWL Expression Input</label>
+                </div>
+            <div ng-show="inputType == 'simple'">
+                <div>
+                    <h4>Taxon is:</h4>
+                    <div class="form-group" ng-class="{'has-success': queryTaxon, 'has-feedback': queryTaxon}">
+                        <input type="text" ng-model="queryTaxon" placeholder="any taxonomic group" typeahead="taxon as taxon.label for taxon in searchTaxa($viewValue)" typeahead-loading="loadingTaxa" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxon"></span>
+                        <i ng-show="loadingTaxa" class="glyphicon glyphicon-refresh"></i>
+                    </div>
+                </div>
+                <h5><i>and</i></h5>
+                <div>
+                    <h4>Entity is:</h4>
+                    <div class="form-group" ng-class="{'has-success': queryEntity, 'has-feedback': queryEntity}">
+                        <input type="text" ng-model="queryEntity" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in searchEntities($viewValue)" typeahead-loading="loadingEntities" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntity"></span>
+                        <i ng-show="loadingEntities" class="glyphicon glyphicon-refresh"></i>
+                    </div>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" ng-model="ontotraceSettings.includeParts"> Include parts of <span ng-hide="queryEntity">entity</span><span ng-show="queryEntity"><mark>{{queryEntity.label}}</mark></span>
+                    </label>
+                </div>
+            </div>
+            <div ng-show="inputType == 'expression'">
+                <div>
+                    <h4>Taxon is:</h4>
+                    <div class="form-group" ng-class="{'has-success': queryTaxonExpression, 'has-feedback': (queryTaxonExpression || taxonExpressionErrorMessage)}">
+                        <input title="{{queryTaxonExpression}}" type="text" ng-model="queryTaxonLabelExpression" placeholder="any taxonomic group" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
+                        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxonExpression"></span>
+                        <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true" ng-show="taxonExpressionErrorMessage"></span>
+                    </div>
+                    <div class="alert alert-danger" role="alert" ng-show="taxonExpressionErrorMessage">{{taxonExpressionErrorMessage}}</div>
+                </div>
+                <h5><i>and</i></h5>
+                <div>
+                    <h4>Entity is:</h4>
+                    <div class="form-group" ng-class="{'has-success': queryEntityExpression, 'has-feedback': (queryEntityExpression || entityExpressionErrorMessage), 'has-error': entityExpressionErrorMessage}">
+                        <input title="{{queryEntityExpression}}" type="text" ng-model="queryEntityLabelExpression" placeholder="any anatomical entity" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
+                        <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntityExpression"></span>
+                        <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true" ng-show="entityExpressionErrorMessage"></span>
+                    </div>
+                    <div class="alert alert-danger" role="alert" ng-show="entityExpressionErrorMessage">{{entityExpressionErrorMessage}}</div>
+                </div>
+            </div>
+            <div>
+                <label>
                     <input type="checkbox" ng-model="ontotraceSettings.includeAllCharacters"> Include all characters with values (only variable characters are included by default—those with data for both presence and absence)
-                  </label>
-              </div>
-          </div>
-          <a class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!queryEntity || !queryTaxon" ng-href="http://kb.phenoscape.org/kb/ontotrace?entity={{queryEntity['@id'] | angled | encodeURI}}&amp;taxon={{queryTaxon['@id'] | angled | encodeURI}}&amp;variable_only={{!ontotraceSettings.includeAllCharacters}}&amp;parts={{ontotraceSettings.includeParts}}">Download matrix as NeXML</a>
+                </label>
+            </div>
+            <a class="btn btn-primary btn-block" disabled="disabled" ng-disabled="!ontotraceURL" ng-href="{{ontotraceURL}}">Download matrix as NeXML</a>
         </form>
     </div>
 </div>

@@ -470,11 +470,47 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryGenes();
     $scope.queryTotal();
 })
-.controller('OntoTraceController', function ($scope, OntologyTermSearch, Vocab) {
+.controller('OntoTraceController', function ($scope, OntologyTermSearch, $http, Vocab, $filter) {
+    $scope.ontotraceURL = null;
+    $scope.inputType = 'simple';
     $scope.ontotraceSettings = {
         includeParts: false,
         includeAllCharacters: false 
     };
+    $scope.queryEntityExpression = null;
+    $scope.queryTaxonExpression = null;
+    $scope.$watch('queryEntityLabelExpression', function (value) {
+        if (value) {
+            $http.get('http://kb.phenoscape.org/api/term/resolve_label_expression', {params: {expression: value}}).then(
+            function (response) { 
+                $scope.entityExpressionErrorMessage = null;
+                $scope.queryEntityExpression = response.data;
+            },
+            function (error) {
+                $scope.entityExpressionErrorMessage = error.data;
+                $scope.queryEntityExpression = null;
+            }
+          );
+        } else {
+            $scope.queryEntityExpression = null;
+        }
+    });
+    $scope.$watch('queryTaxonLabelExpression', function (value) {
+        if (value) {
+            $http.get('http://kb.phenoscape.org/api/term/resolve_label_expression', {params: {expression: value}}).then(
+            function (response) { 
+                $scope.taxonExpressionErrorMessage = null;
+                $scope.queryTaxonExpression = response.data;
+            },
+            function (error) {
+                $scope.taxonExpressionErrorMessage = error.data;
+                $scope.queryTaxonExpression = null;
+            }
+          );
+        } else {
+            $scope.queryTaxonExpression = null;
+        }
+    });
     $scope.searchTaxa = function (text) {
         return OntologyTermSearch.query({
             limit: 20,
@@ -483,7 +519,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }).$promise.then(function (response) {
             return response.results;
         });
-    }
+    };
     $scope.searchEntities = function (text) {
         return OntologyTermSearch.query({
             limit: 20,
@@ -492,7 +528,19 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }).$promise.then(function (response) {
             return response.results;
         });
+    };
+    function prepareTerm(term) {
+        return $filter('encodeURI')($filter('angled')(term['@id']));
     }
+    $scope.$watchGroup(['queryEntity', 'queryTaxon', 'queryEntityExpression', 'queryTaxonExpression', 'inputType'], function (value) {
+        if ($scope.inputType == 'simple' && $scope.queryEntity && $scope.queryTaxon) {
+            $scope.ontotraceURL = "http://kb.phenoscape.org/kb/ontotrace?entity=" + prepareTerm($scope.queryEntity) + "&taxon=" + prepareTerm($scope.queryTaxon) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=" + $scope.ontotraceSettings.includeParts;
+        } else if ($scope.inputType == 'expression' && $scope.queryEntityExpression && $scope.queryTaxonExpression) {
+            $scope.ontotraceURL = "http://kb.phenoscape.org/kb/ontotrace?entity=" + $filter('encodeURI')($scope.queryEntityExpression) + "&taxon=" + $filter('encodeURI')($scope.queryTaxonExpression) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=false";
+        } else {
+            $scope.ontotraceURL = null;
+        }
+    });
 })
 .controller('SimilarityController', function ($scope, $routeParams, $q, $location, Gene, GeneSearch) {
     $scope.searchGenes = function (text) {
