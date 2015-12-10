@@ -28,9 +28,9 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="annotation in phenotypeProfile.results">
-                                <td><span title="annotation['@id']">{{annotation.description}}</span></td>
-                                <td><span title="annotation.matrix['@id']">{{annotation.matrix.label}}</span></td>
-                                <td><span title="annotation.phenotype['@id']">{{annotation.phenotype.label}}</span></td>
+                                <td><span title="{{annotation['@id']}}">{{annotation.description}}</span></td>
+                                <td><span title="{{annotation.matrix['@id']}}">{{annotation.matrix.label}}</span></td>
+                                <td><span title="{{annotation.phenotype['@id']}}">{{annotation.phenotype.label}}</span></td>
                             </tr>
                         </tbody>
                     </table>
