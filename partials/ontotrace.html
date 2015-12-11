@@ -4,10 +4,11 @@
     <div class="panel-body">
         <form role="form">
             <div class="btn-group">
-                    <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'simple'">Simple Input</label>
-                    <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'expression'">OWL Expression Input</label>
-                </div>
+                <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'simple'">Simple Input</label>
+                <label class="btn btn-default" ng-model="inputType" uib-btn-radio="'expression'">OWL Expression Input</label>
+            </div>
             <div ng-show="inputType == 'simple'">
+                <p class="top-buffer">Choose a taxonomic group and type of anatomical structure using the autocomplete fields.</p>
                 <div>
                     <h4>Taxon is:</h4>
                     <div class="form-group" ng-class="{'has-success': queryTaxon, 'has-feedback': queryTaxon}">
@@ -32,10 +33,20 @@
                 </div>
             </div>
             <div ng-show="inputType == 'expression'">
+                <p class="top-buffer">Enter taxonomic and anatomical expressions using term labels in OWL Manchester syntax (as in <a href="http://protege.stanford.edu">Protégé</a>). Labels containing spaces must be single-quoted, e.g. <mark>'basihyal bone'</mark>. Exact label matches will be resolved to term identifiers by the Knowledgebase.</p>
+                <p>Example:</p>
+                <div class="well">
+                    <dl>
+                        <dt>Taxon</dt>
+                        <dd>Characiformes or Siluriformes</dd>
+                        <dt>Entity</dt>
+                        <dd>'skeletal element' and ('part of' some fin)</dd>
+                    </dl>
+                </div>
                 <div>
                     <h4>Taxon is:</h4>
                     <div class="form-group" ng-class="{'has-success': queryTaxonExpression, 'has-feedback': (queryTaxonExpression || taxonExpressionErrorMessage)}">
-                        <input title="{{queryTaxonExpression}}" type="text" ng-model="queryTaxonLabelExpression" placeholder="any taxonomic group" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
+                        <input title="{{queryTaxonExpression}}" type="text" ng-model="queryTaxonLabelExpression" placeholder="taxonomic group expression" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
                         <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryTaxonExpression"></span>
                         <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true" ng-show="taxonExpressionErrorMessage"></span>
                     </div>
@@ -45,7 +56,7 @@
                 <div>
                     <h4>Entity is:</h4>
                     <div class="form-group" ng-class="{'has-success': queryEntityExpression, 'has-feedback': (queryEntityExpression || entityExpressionErrorMessage), 'has-error': entityExpressionErrorMessage}">
-                        <input title="{{queryEntityExpression}}" type="text" ng-model="queryEntityLabelExpression" placeholder="any anatomical entity" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
+                        <input title="{{queryEntityExpression}}" type="text" ng-model="queryEntityLabelExpression" placeholder="anatomical entity expression" class="form-control" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 500, 'blur': 0 } }">
                         <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="queryEntityExpression"></span>
                         <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true" ng-show="entityExpressionErrorMessage"></span>
                     </div>
