@@ -9,5 +9,5 @@ describe 'myApp.view1 module', ->
     it 'should ....', inject ($controller) ->
       #spec body
       view1Ctrl = $controller 'View1Ctrl'
-      expect view1Ctrl
+      expect(view1Ctrl)
         .toBeDefined()
