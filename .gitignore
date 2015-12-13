@@ -5,3 +5,6 @@ bower_components/
 tmp
 .DS_Store
 .idea
+app/**/*.js
+e2e-tests/**/*.js
+karma/**/*.js
