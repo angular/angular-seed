@@ -1,17 +1,26 @@
-gulp    = require 'gulp'
-plumber = require 'gulp-plumber'
-coffee  = require 'gulp-coffee'
-
 app     = 'app/'
 e2e     = 'e2e-tests/'
 karma   = 'karma/'
 coffees = '**/*.coffee'
+gulp    = require 'gulp'
+coffee  = require 'gulp-coffee'
+
+require 'colors'
+log = (error) ->
+  console.log [
+    "BUILD FAILED: #{error.name ? ''}".red.underline
+    '\u0007' # beep
+    "#{error.code ? ''}"
+    "#{error.message ? error}"
+    "in #{error.filename ? ''}"
+    "gulp plugin: #{error.plugin ? ''}"
+  ].join '\n'
+  this.end()
 
 compile = (srcDir) ->
-  gulp.src srcDir + coffees
-    .pipe plumber()
-    .pipe coffee bare: true
-      .on 'error', -> console?.log error
+  gulp.src(srcDir + coffees)
+    .pipe(coffee bare: true)
+    .on('error', log)
     .pipe gulp.dest srcDir
 
 gulp.task 'coffee-app', ->

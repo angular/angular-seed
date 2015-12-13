@@ -6,6 +6,5 @@ angular.module 'myApp.version.interpolate-filter', []
   'version'
   (version) ->
     (text) ->
-      String text
-        .replace /\%VERSION\%/mg, version
+      String(text).replace /\%VERSION\%/mg, version
 ]

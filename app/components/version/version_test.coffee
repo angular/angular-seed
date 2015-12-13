@@ -7,5 +7,5 @@ describe 'myApp.version module', ->
   describe 'version service', ->
 
     it 'should return current version', inject (version) ->
-      expect version
+      expect(version)
         .toEqual '0.1'
