@@ -532,7 +532,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     function prepareTerm(term) {
         return $filter('encodeURI')($filter('angled')(term['@id']));
     }
-    $scope.$watchGroup(['queryEntity', 'queryTaxon', 'queryEntityExpression', 'queryTaxonExpression', 'inputType'], function (value) {
+    $scope.$watchGroup(['queryEntity', 'queryTaxon', 'queryEntityExpression', 'queryTaxonExpression', 'inputType', 'ontotraceSettings.includeAllCharacters', 'ontotraceSettings.includeParts'], function (value) {
         if ($scope.inputType == 'simple' && $scope.queryEntity && $scope.queryTaxon) {
             $scope.ontotraceURL = "http://kb.phenoscape.org/kb/ontotrace?entity=" + prepareTerm($scope.queryEntity) + "&taxon=" + prepareTerm($scope.queryTaxon) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=" + $scope.ontotraceSettings.includeParts;
         } else if ($scope.inputType == 'expression' && $scope.queryEntityExpression && $scope.queryTaxonExpression) {
