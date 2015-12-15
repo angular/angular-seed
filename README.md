@@ -175,6 +175,8 @@ npm run protractor
 This script will execute the end-to-end tests against the application being hosted on the
 development server.
 
+Note that protractor uses selenium which is written in Java, so you need to have the latest JDK installed on your system.
+
 
 ## Updating Angular
 
