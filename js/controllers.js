@@ -50,33 +50,68 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
       );
     };
 })
-.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes) {
+.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
     
+    $scope.autocompleteTaxa = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.VTO
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
+    
+    $scope.filters = {};
+    
+    $scope.filters.presenceTaxonFilter = null;
     $scope.taxaWithPresencePage = 1;
     $scope.taxaWithPresenceMaxSize = 3;
     $scope.taxaWithPresenceLimit = 20;
     $scope.taxaWithPresencePageChanged = function (newPage) {
             $scope.taxaWithPresencePage = newPage;
-            $scope.taxaWithPresence = EntityPresence.query({entity: $scope.termID, limit: $scope.taxaWithPresenceLimit, offset: ($scope.taxaWithPresencePage - 1) * $scope.taxaWithPresenceLimit});
+            var params = {entity: $scope.termID, limit: $scope.taxaWithPresenceLimit, offset: ($scope.taxaWithPresencePage - 1) * $scope.taxaWithPresenceLimit};
+            if ($scope.filters.presenceTaxonFilter) {
+                params.in_taxon = $scope.filters.presenceTaxonFilter['@id'];
+            }
+            $scope.taxaWithPresence = EntityPresence.query(params);
     };
     $scope.resetTaxaWithPresence = function() {
-        $scope.taxaWithPresenceTotal = EntityPresence.query({entity: $scope.termID, total: true});
+        var params = {entity: $scope.termID, total: true};
+        if ($scope.filters.presenceTaxonFilter) {
+            params.in_taxon = $scope.filters.presenceTaxonFilter['@id'];
+        }
+        $scope.taxaWithPresenceTotal = EntityPresence.query(params);
         $scope.taxaWithPresencePageChanged(1);
     };
+    $scope.$watch('filters.presenceTaxonFilter', function (value) {
+        $scope.resetTaxaWithPresence();
+    });
     
     $scope.taxaWithAbsencePage = 1;
     $scope.taxaWithAbsenceMaxSize = 3;
     $scope.taxaWithAbsenceLimit = 20;
     $scope.taxaWithAbsencePageChanged = function (newPage) {
             $scope.taxaWithAbsencePage = newPage;
-            $scope.taxaWithAbsence = EntityAbsence.query({entity: $scope.termID, limit: $scope.taxaWithAbsenceLimit, offset: ($scope.taxaWithAbsencePage - 1) * $scope.taxaWithAbsenceLimit});
+            var params = {entity: $scope.termID, limit: $scope.taxaWithAbsenceLimit, offset: ($scope.taxaWithPresencePage - 1) * $scope.taxaWithAbsenceLimit};
+            if ($scope.filters.absenceTaxonFilter) {
+                params.in_taxon = $scope.filters.absenceTaxonFilter['@id'];
+            }
+            $scope.taxaWithAbsence = EntityAbsence.query(params);
     };
     $scope.resetTaxaWithAbsence = function() {
-        $scope.taxaWithAbsenceTotal = EntityAbsence.query({entity: $scope.termID, total: true});
+        var params = {entity: $scope.termID, total: true};
+        if ($scope.filters.absenceTaxonFilter) {
+            params.in_taxon = $scope.filters.absenceTaxonFilter['@id'];
+        }
+        $scope.taxaWithAbsenceTotal = EntityAbsence.query(params);
         $scope.taxaWithAbsencePageChanged(1);
     };
+    $scope.$watch('filters.absenceTaxonFilter', function (value) {
+        $scope.resetTaxaWithAbsence();
+    });
     
     $scope.phenotypeGenesPage = 1;
     $scope.phenotypeGenesMaxSize = 3;

@@ -12,63 +12,83 @@
             </tab>
             <tab heading="Taxa">
                 <tabset type="pills" class="top-buffer">
-                   <tab>
-                       <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
-                       <div class="panel panel-default top-buffer">
-                         <div class="panel-heading"><h4>Taxa exhibiting presence of {{term.label}}</h4></div>
-                         <div class="panel-body">
-                           <p>This query uses inference to determine if any character states entail the presence of <mark>{{term.label}}</mark> in a given taxon.</p>
-                         </div>
-                         <table class="table table-condensed table-striped" cg-busy="taxaWithPresence.$promise">
-                             <thead>
-                                 <tr>
-                                     <th>Taxon</th>
-                                     <th></th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 <tr ng-repeat="taxon in taxaWithPresence.results">
-                                     <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
-                                     <td><a href="http://kb.phenoscape.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                       </div>
-                       <pagination total-items="taxaWithPresenceTotal.total" ng-model="taxaWithPresencePage" max-size="taxaWithPresenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithPresenceLimit" cg-busy="taxaWithPresenceTotal.$promise" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)"></pagination>
-                       <div class="form-group form-inline">
-                           <label for="taxaWithPresencePageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPresencePageInput" ng-model="taxaWithPresencePage" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)">
-                       </div>
-                       <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/presence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
-                   </tab>
-                   <tab>
-                       <tab-heading>Absence <span class="badge">{{taxaWithAbsenceTotal.total}}</span></tab-heading>
-                       <div class="panel panel-default top-buffer">
-                         <div class="panel-heading"><h4>Taxa exhibiting absence of {{term.label}}</h4></div>
-                         <div class="panel-body">
-                           <p>This query uses inference to determine if any character states entail the absence of <mark>{{term.label}}</mark> in a given taxon.</p>
-                         </div>
-                         <table class="table table-condensed table-striped" cg-busy="taxaWithAbsence.$promise">
-                             <thead>
-                                 <tr>
-                                     <th>Taxon</th>
-                                     <th></th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 <tr ng-repeat="taxon in taxaWithAbsence.results">
-                                     <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
-                                     <td><a href="http://kb.phenoscape.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
-                                 </tr>
-                             </tbody>
-                         </table>
-                       </div>
-                       <pagination total-items="taxaWithAbsenceTotal.total" ng-model="taxaWithAbsencePage" max-size="taxaWithAbsenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithAbsenceLimit" cg-busy="taxaWithAbsenceTotal.$promise" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)"></pagination>
-                       <div class="form-group form-inline">
-                           <label for="taxaWithAbsencePageInput">Jump to page:</label> <input type="number" class="form-control input-sm" min="1" id="taxaWithAbsencePageInput" ng-model="taxaWithAbsencePage" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)">
-                       </div>
-                       <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/absence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
-                   </tab>
-                 </tabset>
+                    <tab>
+                        <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
+                        <div class="panel panel-default top-buffer">
+                            <div class="panel-heading"><h4>Taxa exhibiting presence of {{term.label}}</h4></div>
+                            <div class="panel-body">
+                                <p>This query uses inference to determine if any character states entail the presence of <mark>{{term.label}}</mark> in a given taxon.</p>
+                                <div class="well">
+                                    <form class="form-inline">
+                                        <div class="form-group" ng-class="{'has-success': filters.presenceTaxonFilter, 'has-feedback': filters.presenceTaxonFilter}">
+                                            <label for="withinTaxonInputPresence">Within taxon</label>
+                                            <input id="withinTaxonInputPresence" type="text" ng-model="filters.presenceTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPresence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.presenceTaxonFilter"></span>
+                                            <i ng-show="loadingWithinTaxonPresence" class="glyphicon glyphicon-refresh"></i>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <table class="table table-condensed table-striped" cg-busy="taxaWithPresence.$promise">
+                                <thead>
+                                    <tr>
+                                        <th>Taxon</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="taxon in taxaWithPresence.results">
+                                        <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
+                                        <td><a href="http://kb.phenoscape.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination total-items="taxaWithPresenceTotal.total" ng-model="taxaWithPresencePage" max-size="taxaWithPresenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithPresenceLimit" cg-busy="taxaWithPresenceTotal.$promise" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)"></pagination>
+                        <div class="form-group form-inline">
+                            <label for="taxaWithPresencePageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPresencePageInput" ng-model="taxaWithPresencePage" ng-change="taxaWithPresencePageChanged(taxaWithPresencePage)">
+                        </div>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/presence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
+                    </tab>
+                    <tab>
+                        <tab-heading>Absence <span class="badge">{{taxaWithAbsenceTotal.total}}</span></tab-heading>
+                        <div class="panel panel-default top-buffer">
+                            <div class="panel-heading"><h4>Taxa exhibiting absence of {{term.label}}</h4></div>
+                            <div class="panel-body">
+                                <p>This query uses inference to determine if any character states entail the absence of <mark>{{term.label}}</mark> in a given taxon.</p>
+                                <div class="well">
+                                    <form class="form-inline">
+                                        <div class="form-group" ng-class="{'has-success': filters.absenceTaxonFilter, 'has-feedback': filters.absenceTaxonFilter}">
+                                            <label for="withinTaxonInputAbsence">Within taxon</label>
+                                            <input id="withinTaxonInputAbsence" type="text" ng-model="filters.absenceTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonAbsence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.absenceTaxonFilter"></span>
+                                            <i ng-show="loadingWithinTaxonAbsence" class="glyphicon glyphicon-refresh"></i>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <table class="table table-condensed table-striped" cg-busy="taxaWithAbsence.$promise">
+                                <thead>
+                                    <tr>
+                                        <th>Taxon</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="taxon in taxaWithAbsence.results">
+                                        <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
+                                        <td><a href="http://kb.phenoscape.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination total-items="taxaWithAbsenceTotal.total" ng-model="taxaWithAbsencePage" max-size="taxaWithAbsenceMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithAbsenceLimit" cg-busy="taxaWithAbsenceTotal.$promise" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)"></pagination>
+                        <div class="form-group form-inline">
+                            <label for="taxaWithAbsencePageInput">Jump to page:</label> <input type="number" class="form-control input-sm" min="1" id="taxaWithAbsencePageInput" ng-model="taxaWithAbsencePage" ng-change="taxaWithAbsencePageChanged(taxaWithAbsencePage)">
+                        </div>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/absence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
+                    </tab>
+                </tabset>
             </tab>
             <tab heading="Genes">
                 <tabset type="pills" class="top-buffer">
@@ -82,7 +102,7 @@
                                 <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark> (directly or via inference).</p>
                                 <div class="checkbox well">
                                     <label>
-                                      <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of {{term.label}}
+                                        <input type="checkbox" ng-model="phenotypeGenesSettings.includeParts" ng-click="resetPhenotypeGenes();"> Include parts of {{term.label}}
                                     </label>
                                 </div>
                             </div>
