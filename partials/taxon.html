@@ -17,6 +17,22 @@
                     </div>
                     <div class="panel-body">
                         <p>These phenotypes have been annotated from character states directly associated with <mark>{{taxon.label}}</mark> in source data.</p>
+                        <div class="well">
+                            <form class="form-inline">
+                                <div class="form-group" ng-class="{'has-success': filters.phenotypesEntityFilter, 'has-feedback': filters.phenotypesEntityFilter}">
+                                    <label for="entityInputPhenotypes">Entity</label>
+                                    <input id="entityInputPhenotypes" type="text" ng-model="filters.phenotypesEntityFilter" placeholder="anatomical entity" typeahead="entity as entity.label for entity in autocompleteEntity($viewValue)" typeahead-loading="loadingEntityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                    <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesEntityFilter"></span>
+                                    <i ng-show="loadingEntityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                </div>
+                                <div class="form-group" ng-class="{'has-success': filters.phenotypesQualityFilter, 'has-feedback': filters.phenotypesQualityFilter}">
+                                    <label for="qualityInputPhenotypes">Quality</label>
+                                    <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                    <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
+                                    <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     <table class="table table-condensed table-striped" cg-busy="phenotypeProfile.$promise">
                         <thead>

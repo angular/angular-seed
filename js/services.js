@@ -18,6 +18,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('TaxaWithPhenotype', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/taxon/with_phenotype', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('AnatomicalTermSearch', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/entity/search', {}, {
 			query: {
@@ -254,6 +261,7 @@ angular.module('pkb.services', ['ngResource'])
         return {
             OWLThing: "http://www.w3.org/2002/07/owl#Thing",
             VTO: "http://purl.obolibrary.org/obo/vto.owl",
+            PATO: "http://purl.obolibrary.org/obo/pato.owl",
             Uberon: "http://purl.obolibrary.org/obo/uberon.owl",
             Gene: "http://purl.obolibrary.org/obo/SO_0000704"
         }

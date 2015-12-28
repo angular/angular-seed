@@ -13,6 +13,48 @@
             <tab heading="Taxa">
                 <tabset type="pills" class="top-buffer">
                     <tab>
+                        <tab-heading>Phenotypes <span class="badge">{{taxaWithPhenotypesTotal.total}}</span></tab-heading>
+                        <div class="panel panel-default top-buffer">
+                            <div class="panel-heading"><h4>Taxa exhibiting phenotypes for {{term.label}}</h4></div>
+                            <div class="panel-body">
+                                <p>This query uses inference to find taxa annotated with phenotypes pertaining to <mark>{{term.label}}</mark>.</p>
+                                <div class="well">
+                                    <form class="form-inline">
+                                        <div class="form-group" ng-class="{'has-success': filters.phenotypesTaxonFilter, 'has-feedback': filters.phenotypesTaxonFilter}">
+                                            <label for="withinTaxonInputPhenotypes">Within taxon</label>
+                                            <input id="withinTaxonInputPhenotypes" type="text" ng-model="filters.phenotypesTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesTaxonFilter"></span>
+                                            <i ng-show="loadingWithinTaxonPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                        </div>
+                                        <div class="form-group" ng-class="{'has-success': filters.phenotypesQualityFilter, 'has-feedback': filters.phenotypesQualityFilter}">
+                                            <label for="qualityInputPhenotypes">Quality</label>
+                                            <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
+                                            <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <table class="table table-condensed table-striped" cg-busy="taxaWithPhenotypes.$promise">
+                                <thead>
+                                    <tr>
+                                        <th>Taxon</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="taxon in taxaWithPhenotypes.results">
+                                        <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <pagination total-items="taxaWithPhenotypesTotal.total" ng-model="taxaWithPhenotypesPage" max-size="taxaWithPhenotypesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaWithPhenotypesLimit" cg-busy="taxaWithPhenotypesTotal.$promise" ng-change="taxaWithPhenotypesPageChanged(taxaWithPhenotypesPage)"></pagination>
+                        <div class="form-group form-inline">
+                            <label for="taxaWithPhenotypesPageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPhenotypesPageInput" ng-model="taxaWithPhenotypesPage" ng-change="taxaWithPhenotypesPageChanged(taxaWithPresencePage)">
+                        </div>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://google.com/fixme" role="button">Text</a></p>
+                    </tab>
+                    <tab>
                         <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting presence of {{term.label}}</h4></div>

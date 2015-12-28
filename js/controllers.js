@@ -50,7 +50,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
       );
     };
 })
-.controller('EntityController', function ($scope, $routeParams, Term, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab) {
+.controller('EntityController', function ($scope, $routeParams, Term, TaxaWithPhenotype, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab, OMN) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
     
@@ -64,7 +64,48 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         });
     };
     
+    $scope.autocompleteQuality = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.PATO
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
+    
     $scope.filters = {};
+
+    $scope.filters.phenotypesTaxonFilter = null;
+    $scope.filters.phenotypesQualityFilter = null;
+    $scope.taxaWithPhenotypesPage = 1;
+    $scope.taxaWithPhenotypesMaxSize = 3;
+    $scope.taxaWithPhenotypesLimit = 20;
+    $scope.taxaWithPhenotypesPageChanged = function (newPage) {
+            $scope.taxaWithPhenotypesPage = newPage;
+            var params = {entity: OMN.angled($scope.termID), limit: $scope.taxaWithPhenptypesLimit, offset: ($scope.taxaWithPhenotypesPage - 1) * $scope.taxaWithPhenotypesLimit};
+            if ($scope.filters.phenotypesTaxonFilter) {
+                params.in_taxon = $scope.filters.phenotypesTaxonFilter['@id'];
+            }
+            if ($scope.filters.phenotypesQualityFilter) {
+                params.quality = OMN.angled($scope.filters.phenotypesQualityFilter['@id']);
+            }
+            $scope.taxaWithPhenotypes = TaxaWithPhenotype.query(params);
+    };
+    $scope.resetTaxaWithPhenotypes = function() {
+        var params = {entity: OMN.angled($scope.termID), total: true};
+        if ($scope.filters.phenotypesTaxonFilter) {
+            params.in_taxon = $scope.filters.phenotypesTaxonFilter['@id'];
+        }
+        if ($scope.filters.phenotypesQualityFilter) {
+            params.quality = OMN.angled($scope.filters.phenotypesQualityFilter['@id']);
+        }
+        $scope.taxaWithPhenotypesTotal = TaxaWithPhenotype.query(params);
+        $scope.taxaWithPhenotypesPageChanged(1);
+    };
+    $scope.$watchGroup(['filters.phenotypesTaxonFilter', 'filters.phenotypesQualityFilter'], function (value) {
+        $scope.resetTaxaWithPhenotypes();
+    });
     
     $scope.filters.presenceTaxonFilter = null;
     $scope.taxaWithPresencePage = 1;
@@ -144,19 +185,87 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.resetPhenotypeGenes();
     $scope.resetExpressionGenes();
 })
-.controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery) {
+.controller('TaxonController', function ($scope, $routeParams, $location, $log, Taxon, TaxonPhenotypesQuery, VariationProfileQuery, OntologyTermSearch, OMN, Vocab, Label) {
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
+    $scope.filters = {
+        phenotypesEntityFilter: null,
+        phenotypesQualityFilter: null
+    };
+    if ($routeParams['phenotypes.entity']) {
+        Label.query({'iri': $routeParams['phenotypes.entity']}).$promise.then(function (response) {
+            $scope.filters.phenotypesEntityFilter = response;
+        });
+    }
+    if ($routeParams['phenotypes.quality']) {
+        Label.query({'iri': $routeParams['phenotypes.quality']}).$promise.then(function (response) {
+            $scope.filters.phenotypesQualityFilter = response;
+        });
+    }
+    
+    $scope.autocompleteEntity = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.Uberon
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
+    $scope.autocompleteQuality = function (text) {
+        return OntologyTermSearch.query({
+            limit: 20,
+            text: text,
+            definedBy: Vocab.PATO
+        }).$promise.then(function (response) {
+            return response.results;
+        });
+    };
     
     $scope.phenotypeProfilePage = 1;
     $scope.phenotypeProfileLimit = 20;
     $scope.phenotypeProfileMaxSize = 3;
-    $scope.phenotypeProfileTotal = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, total: true});
+    
     $scope.phenotypeProfilePageChanged = function (newPage) {
         $scope.phenotypeProfilePage = newPage;
-        $scope.phenotypeProfile = TaxonPhenotypesQuery.query({taxon: $scope.taxonID, limit: $scope.phenotypeProfileLimit, offset: ($scope.phenotypeProfilePage - 1) * $scope.phenotypeProfileLimit});
+        var params = {taxon: $scope.taxonID, limit: $scope.phenotypeProfileLimit, offset: ($scope.phenotypeProfilePage - 1) * $scope.phenotypeProfileLimit};
+        if ($scope.filters.phenotypesEntityFilter) {
+            params.entity = OMN.angled($scope.filters.phenotypesEntityFilter['@id']);
+        }
+        if ($scope.filters.phenotypesQualityFilter) {
+            params.quality = OMN.angled($scope.filters.phenotypesQualityFilter['@id']);
+        }
+        $scope.phenotypeProfile = TaxonPhenotypesQuery.query(params);
     };
-    $scope.phenotypeProfilePageChanged(1);
+    $scope.resetPhenotypeProfile = function () {
+        var params = {taxon: $scope.taxonID, total: true};
+        if ($scope.filters.phenotypesEntityFilter) {
+            params.entity = OMN.angled($scope.filters.phenotypesEntityFilter['@id']);
+        }
+        if ($scope.filters.phenotypesQualityFilter) {
+            params.quality = OMN.angled($scope.filters.phenotypesQualityFilter['@id']);
+        }
+        $scope.phenotypeProfileTotal = TaxonPhenotypesQuery.query(params);
+        $scope.phenotypeProfilePageChanged(1);
+    }
+    $scope.resetPhenotypeProfile();
+    $scope.$watchGroup(['filters.phenotypesEntityFilter', 'filters.phenotypesQualityFilter'], function (value) {
+        $scope.resetPhenotypeProfile();
+    });
+    $scope.$watch('filters.phenotypesEntityFilter', function (value) {
+        if ($scope.filters.phenotypesEntityFilter) {
+            $location.search('phenotypes.entity', $scope.filters.phenotypesEntityFilter['@id']);
+        } else {
+            $location.search('phenotypes.entity', null);
+        }
+    });
+    $scope.$watch('filters.phenotypesQualityFilter', function (value) {
+        if ($scope.filters.phenotypesQualityFilter) {
+            $location.search('phenotypes.quality', $scope.filters.phenotypesQualityFilter['@id']);
+        } else {
+            $location.search('phenotypes.quality', null);
+        }
+    });
     
     $scope.variationProfilePage = 1;
     $scope.variationProfileLimit = 20;
