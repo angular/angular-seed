@@ -9,6 +9,8 @@ angular.module('myApp.view1', ['ngRoute'])
   });
 }])
 
-.controller('View1Ctrl', [function() {
-
+.controller('View1Ctrl', ['$scope', 'CatGifs', function($scope, CatGifs) {
+	$scope.loading = true;
+	$scope.loadingStyle = {display: 'block'};
+	$scope.images = CatGifs.query(function(data) { $scope.loading = false; $scope.loadingStyle = {display: 'none'}; });
 }]);
