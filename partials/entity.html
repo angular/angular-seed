@@ -22,13 +22,13 @@
                                     <form class="form-inline">
                                         <div class="form-group" ng-class="{'has-success': filters.phenotypesTaxonFilter, 'has-feedback': filters.phenotypesTaxonFilter}">
                                             <label for="withinTaxonInputPhenotypes">Within taxon</label>
-                                            <input id="withinTaxonInputPhenotypes" type="text" ng-model="filters.phenotypesTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <input id="withinTaxonInputPhenotypes" type="text" ng-model="filters.phenotypesTaxonFilter" placeholder="any taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                             <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesTaxonFilter"></span>
                                             <i ng-show="loadingWithinTaxonPhenotypes" class="glyphicon glyphicon-refresh"></i>
                                         </div>
                                         <div class="form-group" ng-class="{'has-success': filters.phenotypesQualityFilter, 'has-feedback': filters.phenotypesQualityFilter}">
                                             <label for="qualityInputPhenotypes">Quality</label>
-                                            <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="any phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                             <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
                                             <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
                                         </div>
@@ -44,6 +44,7 @@
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithPhenotypes.results">
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
+                                        <td><a href="{{ {taxon: taxon, entity: {'@id': termID}, quality: filters.phenotypesQualityFilter} | linkToTaxonPhenotypeProfile}}">View phenotypes</a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -52,7 +53,7 @@
                         <div class="form-group form-inline">
                             <label for="taxaWithPhenotypesPageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPhenotypesPageInput" ng-model="taxaWithPhenotypesPage" ng-change="taxaWithPhenotypesPageChanged(taxaWithPresencePage)">
                         </div>
-                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://google.com/fixme" role="button">Text</a></p>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="{{ {entity: {'@id': termID}, quality: filters.phenotypesQualityFilter, in_taxon: filters.phenotypesTaxonFilter} | linkToTaxaWithPhenotypeDownload}}" role="button">Text</a></p>
                     </tab>
                     <tab>
                         <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
@@ -64,7 +65,7 @@
                                     <form class="form-inline">
                                         <div class="form-group" ng-class="{'has-success': filters.presenceTaxonFilter, 'has-feedback': filters.presenceTaxonFilter}">
                                             <label for="withinTaxonInputPresence">Within taxon</label>
-                                            <input id="withinTaxonInputPresence" type="text" ng-model="filters.presenceTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPresence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <input id="withinTaxonInputPresence" type="text" ng-model="filters.presenceTaxonFilter" placeholder="any taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonPresence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                             <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.presenceTaxonFilter"></span>
                                             <i ng-show="loadingWithinTaxonPresence" class="glyphicon glyphicon-refresh"></i>
                                         </div>
@@ -81,7 +82,7 @@
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithPresence.results">
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
-                                        <td><a href="http://kb.phenoscape.org/kb/entity/presence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                        <td><a href="{{ {entity: {'@id': termID}, taxon: taxon} | linkToTaxonPresencePhenotypeProfile}}">View phenotypes</a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -102,7 +103,7 @@
                                     <form class="form-inline">
                                         <div class="form-group" ng-class="{'has-success': filters.absenceTaxonFilter, 'has-feedback': filters.absenceTaxonFilter}">
                                             <label for="withinTaxonInputAbsence">Within taxon</label>
-                                            <input id="withinTaxonInputAbsence" type="text" ng-model="filters.absenceTaxonFilter" placeholder="taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonAbsence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                            <input id="withinTaxonInputAbsence" type="text" ng-model="filters.absenceTaxonFilter" placeholder="any taxonomic group" typeahead="withinTaxon as withinTaxon.label for withinTaxon in autocompleteTaxa($viewValue)" typeahead-loading="loadingWithinTaxonAbsence" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                             <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.absenceTaxonFilter"></span>
                                             <i ng-show="loadingWithinTaxonAbsence" class="glyphicon glyphicon-refresh"></i>
                                         </div>
@@ -119,7 +120,7 @@
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithAbsence.results">
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}">{{taxon.label}}</a></td>
-                                        <td><a href="http://kb.phenoscape.org/kb/entity/absence/evidence?entity={{termID | encodeURI}}&amp;taxon={{taxon['@id'] | encodeURI}}">evidence</a></td>
+                                        <td><a href="{{ {entity: {'@id': termID}, taxon: taxon} | linkToTaxonAbsencePhenotypeProfile}}">View phenotypes</a></td>
                                     </tr>
                                 </tbody>
                             </table>

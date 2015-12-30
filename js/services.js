@@ -18,6 +18,20 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('EntityPresenceEvidence', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/entity/presence/evidence', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
+	.factory('EntityAbsenceEvidence', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/entity/absence/evidence', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('TaxaWithPhenotype', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/taxon/with_phenotype', {}, {
 			query: {
@@ -215,7 +229,7 @@ angular.module('pkb.services', ['ngResource'])
 		}})
 	})
 	.factory('TaxonPhenotypesQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon/phenotypes', {}, {
+		return $resource('http://kb.phenoscape.org/api/taxon/phenotypes', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}

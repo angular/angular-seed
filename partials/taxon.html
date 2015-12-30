@@ -21,15 +21,35 @@
                             <form class="form-inline">
                                 <div class="form-group" ng-class="{'has-success': filters.phenotypesEntityFilter, 'has-feedback': filters.phenotypesEntityFilter}">
                                     <label for="entityInputPhenotypes">Entity</label>
-                                    <input id="entityInputPhenotypes" type="text" ng-model="filters.phenotypesEntityFilter" placeholder="anatomical entity" typeahead="entity as entity.label for entity in autocompleteEntity($viewValue)" typeahead-loading="loadingEntityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
+                                    <input id="entityInputPhenotypes" type="text" ng-model="filters.phenotypesEntityFilter" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in autocompleteEntity($viewValue)" typeahead-loading="loadingEntityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                     <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesEntityFilter"></span>
                                     <i ng-show="loadingEntityPhenotypes" class="glyphicon glyphicon-refresh"></i>
                                 </div>
-                                <div class="form-group" ng-class="{'has-success': filters.phenotypesQualityFilter, 'has-feedback': filters.phenotypesQualityFilter}">
-                                    <label for="qualityInputPhenotypes">Quality</label>
-                                    <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
-                                    <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
-                                    <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                <div class="form-group">
+                                    <label style="width: 100%"> Quality
+                                        <div class="radio">
+                                            <label style="width: 100%">
+                                                <input type="radio" name="qualityRadio" value="quality-phenotype" ng-model="filters.quality_type">
+                                                <div class="form-group" ng-class="{'has-success': filters.phenotypesQualityFilter, 'has-feedback': filters.phenotypesQualityFilter}">
+                                                    <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="any phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control" ng-disabled="filters.quality_type != 'quality-phenotype'">
+                                                    <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
+                                                    <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label style="width: 100%">
+                                                <input type="radio" name="qualityRadio" value="entailing-presence" ng-model="filters.quality_type" ng-disabled="!filters.phenotypesEntityFilter">
+                                                Entailing presence
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label style="width: 100%">
+                                                <input type="radio" name="qualityRadio" value="entailing-absence" ng-model="filters.quality_type" ng-disabled="!filters.phenotypesEntityFilter">
+                                                Entailing absence
+                                            </label>
+                                        </div>
+                                    </label>
                                 </div>
                             </form>
                         </div>
@@ -52,6 +72,7 @@
                     </table>
                 </div>
                 <pagination total-items="phenotypeProfileTotal.total" ng-model="phenotypeProfilePage" max-size="phenotypeProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeProfileLimit" cg-busy="phenotypeProfileTotal.$promise" ng-change="phenotypeProfilePageChanged(phenotypeProfilePage)"></pagination>
+                <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="{{linkToTaxonPhenotypeProfileDownload}}" role="button">Text</a></p>
             </tab>
             <tab active="tabs.variation.active" select="activateTab('variation')">
                 <tab-heading>Variation profile <span class="badge">{{variationProfileTotal.total}}</span></tab-heading>

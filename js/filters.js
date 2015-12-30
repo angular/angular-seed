@@ -41,6 +41,66 @@ angular.module('pkb.filters', [])
           return "#/taxon/" + $window.encodeURIComponent(uri) + "?tab=variation";
       };
 })
+.filter('linkToTaxonPhenotypeProfile', function ($window, OMN) {
+      return function (params) {
+          var urlParams = ["tab=phenotypes"];
+          if (params.entity) {
+              urlParams.push("phenotypes.entity=" + $window.encodeURIComponent(params.entity['@id']));
+          }
+          if (params.quality) {
+              urlParams.push("phenotypes.quality=" + $window.encodeURIComponent(params.quality['@id']));
+          }
+          return "#/taxon/" + $window.encodeURIComponent(params.taxon['@id']) + "?" + urlParams.join("&");
+      };
+})
+.filter('linkToTaxonPresencePhenotypeProfile', function ($window) {
+        return function (params) {
+            var urlParams = ["tab=phenotypes",
+            "phenotypes.quality_type=entailing-presence",
+            "phenotypes.entity=" + $window.encodeURIComponent(params.entity['@id'])];
+            return "#/taxon/" + $window.encodeURIComponent(params.taxon['@id']) + "?" + urlParams.join("&");
+        };
+})
+.filter('linkToTaxonAbsencePhenotypeProfile', function ($window) {
+        return function (params) {
+            var urlParams = ["tab=phenotypes",
+            "phenotypes.quality_type=entailing-absence",
+            "phenotypes.entity=" + $window.encodeURIComponent(params.entity['@id'])];
+            return "#/taxon/" + $window.encodeURIComponent(params.taxon['@id']) + "?" + urlParams.join("&");
+        };
+})
+.filter('linkToTaxonPhenotypeProfileDownload', function ($window, OMN) {
+    return function (params) {
+        var url = "http://kb.phenoscape.org/api/taxon/phenotypes?";
+        var urlParams = ["limit=0"];
+        if (params.entity) {
+            urlParams.push("entity=" + $window.encodeURIComponent(OMN.angled(params.entity['@id'])));
+        }
+        if (params.quality) {
+            urlParams.push("quality=" + $window.encodeURIComponent(OMN.angled(params.quality['@id'])));
+        }
+        if (params.taxon) {
+            urlParams.push("taxon=" + $window.encodeURIComponent(params.taxon['@id']));
+        }
+        return url + urlParams.join("&");
+    };
+})
+.filter('linkToTaxaWithPhenotypeDownload', function ($window, OMN) {
+    return function (params) {
+        var url = "http://kb.phenoscape.org/api/taxon/with_phenotype?";
+        var urlParams = ["limit=0"];
+        if (params.entity) {
+            urlParams.push("entity=" + $window.encodeURIComponent(OMN.angled(params.entity['@id'])));
+        }
+        if (params.quality) {
+            urlParams.push("quality=" + $window.encodeURIComponent(OMN.angled(params.quality['@id'])));
+        }
+        if (params.in_taxon) {
+            urlParams.push("in_taxon=" + $window.encodeURIComponent(params.in_taxon['@id']));
+        }
+        return url + urlParams.join("&");
+    };
+})
 .filter('modSourceLabel', function () {
     return function (uri) {
         if (uri.indexOf("http://www.informatics.jax.org/reference/summary?id=") > -1) {
