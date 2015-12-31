@@ -50,7 +50,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
       );
     };
 })
-.controller('EntityController', function ($scope, $routeParams, Term, TaxaWithPhenotype, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab, OMN) {
+.controller('EntityController', function ($scope, $routeParams, Term, TaxaWithPhenotype, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab, OMN, TaxonPhenotypesQuery) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
     
@@ -104,7 +104,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.taxaWithPhenotypesTotal = TaxaWithPhenotype.query(params);
         $scope.taxaWithPhenotypesPageChanged(1);
     };
-    $scope.$watchGroup(['filters.phenotypesTaxonFilter', 'filters.phenotypesQualityFilter'], function (value) {
+    $scope.$watchGroup(['filters.phenotypesTaxonFilter', 'filters.phenotypesQualityFilter'], function (newValues, oldValues) {
         $scope.resetTaxaWithPhenotypes();
     });
     
@@ -868,6 +868,26 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 })
 .controller('TermNameController', function ($scope, Label) {
     $scope.term = Label.query({iri: $scope.iri});
+})
+.controller('CountedPhenotypesForTaxonController', function ($scope, TaxonPhenotypesQuery, OMN) {
+    var params = {total: true};
+    params.taxon = $scope.taxon['@id'];
+    params.entity = OMN.angled($scope.entity['@id']);
+    if ($scope.quality) {
+        params.quality = OMN.angled($scope.quality['@id']);
+    }
+    $scope.count = TaxonPhenotypesQuery.query(params);
+})
+.controller('CountedPresenceOrAbsenceForTaxonController', function ($scope, EntityPresenceEvidence, EntityAbsenceEvidence, OMN) {
+    var params = {total: true,
+        taxon: $scope.taxon['@id'],
+        entity: $scope.entity['@id']};
+    if ($scope.kind == 'presence') {
+        $scope.count = EntityPresenceEvidence.query(params);
+    } else {
+        $scope.count = EntityAbsenceEvidence.query(params);
+    }
+    
 })
 .controller('CharacterDescriptionAnnotationController', function ($scope, CharacterDescriptionWithAnnotation) {
     $scope.description = CharacterDescriptionWithAnnotation.query({iri: $scope.iri});

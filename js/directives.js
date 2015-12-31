@@ -53,6 +53,32 @@ angular.module('pkb.directives', [])
         }
     }
 })
+.directive('countedPhenotypesForTaxon', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'CountedPhenotypesForTaxonController',
+        templateUrl: 'partials/count.html',
+        scope: {
+            taxon: '=',
+            entity: '=',
+            quality: '='
+        }
+    }
+})
+.directive('countedPresenceOrAbsenceForTaxon', function () {
+    return {
+        require: 'ngModel',
+        restrict: 'E',
+        controller: 'CountedPresenceOrAbsenceForTaxonController',
+        templateUrl: 'partials/count.html',
+        scope: {
+            taxon: '=',
+            entity: '=',
+            kind: '@'
+        }
+    }
+})
 .directive('termSearchList', function () {
     return {
         require: 'ngModel',
