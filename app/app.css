@@ -1,5 +1,9 @@
 /* app css stylesheet */
-
+html {
+  color: antiquewhite;
+  background-color: black;
+}
+/*classesclassesclassesclassesclassesclassesclasses*/
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
