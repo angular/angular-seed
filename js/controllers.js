@@ -271,10 +271,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             var url = "http://kb.phenoscape.org/api/taxon/phenotypes?";
             var urlParams = ["limit=0"];
             if (params.entity) {
-                urlParams.push("entity=" + $window.encodeURIComponent(OMN.angled(params.entity)));
+                urlParams.push("entity=" + $window.encodeURIComponent(params.entity));
             }
             if (params.quality) {
-                urlParams.push("quality=" + $window.encodeURIComponent(OMN.angled(params.quality)));
+                urlParams.push("quality=" + $window.encodeURIComponent(params.quality));
             }
             urlParams.push("taxon=" + $window.encodeURIComponent(params.taxon));
             $scope.linkToTaxonPhenotypeProfileDownload = url + urlParams.join("&");
