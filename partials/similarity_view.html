@@ -44,7 +44,7 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label">Matched taxon:</label>
                         <div class="col-sm-9">
-                            <p class="form-control-static">{{selectedMatch.match_profile.label}} <small><a href="{{selectedMatch.match_profile['@id'] | linkToTaxonVariationProfile}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
+                            <p class="form-control-static"><taxon-name iri="selectedMatch.match_profile['@id']"></taxon-name> <small><a href="{{selectedMatch.match_profile['@id'] | linkToTaxonVariationProfile}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
                         </div>
                     </div>
                     <div class="form-group">

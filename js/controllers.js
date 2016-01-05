@@ -864,7 +864,20 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.group = TaxonCommonGroup.query({iri: $scope.taxon});
 })
 .controller('TaxonNameController', function ($scope, Taxon) {
-    $scope.taxon = Taxon.query({iri: $scope.iri});
+    $scope.$watch('iri', function (value) {
+        if ($scope.iri) {
+            $scope.taxonInfo = Taxon.query({iri: $scope.iri});
+        }
+    });
+    $scope.isGenusOrSpecies = function (taxon) {
+        if (taxon) {
+            if (taxon.rank) {
+                return (taxon.rank['@id'] == "http://purl.obolibrary.org/obo/TAXRANK_0000005") || (taxon.rank['@id'] == "http://purl.obolibrary.org/obo/TAXRANK_0000006");
+            } else {
+                return false;
+            }
+        }
+    };
 })
 .controller('TermNameController', function ($scope, Label) {
     $scope.term = Label.query({iri: $scope.iri});
