@@ -167,4 +167,15 @@ angular.module('pkb.directives', [])
             linkFilter: '@'
         }
     }
+})
+.directive('taxonClassification', function () {
+    return {
+        restrict: 'E',
+        controller: 'ClassificationController',
+        templateUrl: 'partials/taxon_classification.html',
+        scope: {
+            iri: '=',
+            linkFilter: '@'
+        }
+    }
 });
