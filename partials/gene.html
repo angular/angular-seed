@@ -1,5 +1,5 @@
 
-<h2 cg-busy="gene.$promise"><span class="badge">Gene</span> {{gene.label}} <small>({{gene.taxon.label}})</small> <small>{{geneID}}</small></h2>
+<h2 cg-busy="gene.$promise"><span class="badge">Gene</span> {{gene.label}} <small>({{gene.taxon.label}})</small> <small><a href="{{geneID}}" target="_blank" class="link-no-color">{{geneID | prefixedURI}}</a></small></h2>
 <div class="row">
     <div class= "col-sm-12">
         <tabset>

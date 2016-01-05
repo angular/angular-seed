@@ -107,6 +107,8 @@ angular.module('pkb.filters', [])
             return uri.replace("http://www.informatics.jax.org/reference/summary?id=", "MGI:")
         } else if (uri.indexOf("http://zfin.org/") > -1) {
             return uri.replace("http://zfin.org/", "ZFIN:")
+        } else if (uri.indexOf("http://www.xenbase.org/common/ViewImageActionNonAdmin.do?imageId=") > -1) {
+            return uri.replace("http://www.xenbase.org/common/ViewImageActionNonAdmin.do?imageId=", "Xenbase:")
         } else {
             return uri;
         }
@@ -117,6 +119,10 @@ angular.module('pkb.filters', [])
           var prefixes = {
               "http://purl.obolibrary.org/obo/UBERON_": "UBERON:",
               "http://purl.obolibrary.org/obo/VTO_": "VTO:",
+              "http://zfin.org/": "ZFIN:",
+              "http://www.informatics.jax.org/marker/MGI:": "MGI:",
+              "http://xenbase.org/": "Xenbase:",
+              "http://www.ncbi.nlm.nih.gov/gene/": "NCBI:gene:",
               "http://purl.obolibrary.org/obo/": "obo:",
               "http://purl.org/phenoscape/uuid/": "uuid:"
           }
