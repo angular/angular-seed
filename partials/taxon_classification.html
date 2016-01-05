@@ -3,7 +3,7 @@
         <li ng-repeat="superclass in classification.subClassOf"><a href="{{linkMaker(superclass['@id'])}}"><taxon-name iri="superclass['@id']"></taxon-name></a></li>
     </ul>
     <div class="classification-level">
-        <p>{{classification.label}}<span ng-repeat="equiv in classification.equivalentTo"> = <a href="{{linkMaker(equiv['@id'])}}"><taxon-name iri="equiv['@id']"></taxon-name></a></span></p>
+        <p><taxon-name iri="classification['@id']"></taxon-name><span ng-repeat="equiv in classification.equivalentTo"> = <a href="{{linkMaker(equiv['@id'])}}"><taxon-name iri="equiv['@id']"></taxon-name></a></span></p>
         <div class="classification-level">
             <ul class="list-unstyled">
                 <li ng-repeat="subclass in classification.superClassOf"><a href="{{linkMaker(subclass['@id'])}}"><taxon-name iri="subclass['@id']"></taxon-name></a></li>
