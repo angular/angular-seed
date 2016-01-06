@@ -109,6 +109,13 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+	.factory('Study', function ($resource) {
+		return $resource('http://kb.phenoscape.org/kb/study', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+	})
 	.factory('TaxonCommonGroup', function ($resource) {
 		return $resource('http://kb.phenoscape.org/kb/taxon/group', {}, {
 			query: {
@@ -270,6 +277,20 @@ angular.module('pkb.services', ['ngResource'])
                 headers: {'Accept': 'application/json'},
                 isArray: true
         }})
+    })
+    .factory('StudyTaxa', function ($resource) {
+        return $resource('http://kb.phenoscape.org/api/study/taxa', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
+    })
+    .factory('StudyPhenotypes', function ($resource) {
+        return $resource('http://kb.phenoscape.org/api/study/phenotypes', {}, {
+			query: {
+				method: 'GET',
+				headers: {'Accept': 'application/json'}
+		}})
     })
     .factory('Vocab', function () {
         return {

@@ -1,4 +1,4 @@
-<inspector-gadget data-placement="auto bottom" data-container="body">
+<inspector-gadget data-placement="bottom">
     <div><a href="#"><span class="term-name" title="{{description['@id']}}">{{description.description}}</span></a></div>
     <inspector-title>Taxon Annotation Detail</inspector-title>
     <inspector-content>
@@ -9,7 +9,7 @@
             </div>
             <div class="form-group">
                 <label for="source">Source</label>
-                <p name="source" class="form-control-static"><span title="{{description.matrix['@id']}}">{{description.matrix.label}}</span></p>
+                <p name="source" class="form-control-static"><a href="{{description.matrix['@id'] | linkToStudy}}">{{description.matrix.label}}</a></p>
             </div>
             <div class="form-group">
                 <label for="eq">Ontology Annotation</label>

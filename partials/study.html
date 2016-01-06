@@ -1,0 +1,59 @@
+<h2 cg-busy="study.$promise"><span class="badge">Study</span> {{study.label}}</h2>
+<h4><a href="{{studyID}}" target="_blank" class="link-no-color">{{study.citation}}</a></h4>
+<p><label>Download study as annotated character matrix:</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="{{studyID | linkToStudyNexmlDownload}}" role="button">NeXML</a></p>
+<div class="row">
+    <div class= "col-sm-12">
+        <tabset>
+            <tab>
+                <tab-heading>Taxa <span class="badge">{{taxaTotal.total}}</span></tab-heading>
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-heading">
+                        <h4>Taxa annotated from this study</h4>
+                    </div>
+                    <div class="panel-body">
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="taxa.$promise">
+                        <thead>
+                            <tr>
+                                <th>Taxon</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="taxon in taxa.results">
+                                <td><a href="{{taxon['@id'] | linkToTaxon}}"><taxon-name iri="taxon['@id']"></taxon-name></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pagination total-items="taxaTotal.total" ng-model="taxaPage" max-size="taxaMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="taxaLimit" cg-busy="taxaTotal.$promise" ng-change="taxaPageChanged(taxaPage)"></pagination>
+                <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="{{studyID | linkToStudyTaxaDownload}}" role="button">Text</a></p>
+            </tab>
+            <tab>
+                <tab-heading>Phenotypes <span class="badge">{{phenotypesTotal.total}}</span></tab-heading>
+                <div class="panel panel-default top-buffer">
+                    <div class="panel-heading">
+                        <h4>Phenotypes annotated from this study</h4>
+                    </div>
+                    <div class="panel-body">
+                    </div>
+                    <table class="table table-condensed table-striped" cg-busy="phenotypes.$promise">
+                        <thead>
+                            <tr>
+                                <th>Ontology Annotation</th>
+                                <th>Character Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="annotation in phenotypes.results">
+                                <td><span title="{{annotation.phenotype['@id']}}">{{annotation.phenotype.label}}</span></td>
+                                <td><span title="{{annotation['@id']}}">{{annotation.description}}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pagination total-items="phenotypesTotal.total" ng-model="phenotypesPage" max-size="phenotypesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypesLimit" cg-busy="phenotypesTotal.$promise" ng-change="phenotypesPageChanged(phenotypesPage)"></pagination>
+                <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="{{studyID | linkToStudyPhenotypesDownload}}" role="button">Text</a></p>
+            </tab>
+        </tabset>
+    </div>
+</div>

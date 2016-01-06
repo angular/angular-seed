@@ -355,6 +355,48 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.tabs[$routeParams.tab].active = true;
     }
 })
+.controller('StudyController', function ($scope, $routeParams, $location, $log, $window, Study, StudyTaxa, StudyPhenotypes, Vocab, Label) {
+    $scope.studyID = $routeParams.study;
+    $scope.study = Study.query({'iri': $scope.studyID});
+    
+    $scope.phenotypesPage = 1;
+    $scope.phenotypesLimit = 20;
+    $scope.phenotypesMaxSize = 3;
+    $scope.phenotypesPageChanged = function (newPage) {
+        $scope.phenotypesPage = newPage;
+        var params = {
+            iri: $scope.studyID, 
+            limit: $scope.phenotypesLimit, 
+            offset: ($scope.phenotypesPage - 1) * $scope.phenotypesLimit
+        };
+        $scope.phenotypes = StudyPhenotypes.query(params);
+    };
+    $scope.resetPhenotypes = function () {
+        var params = {iri: $scope.studyID, total: true};
+        $scope.phenotypesTotal = StudyPhenotypes.query(params);
+        $scope.phenotypesPageChanged(1);
+    }
+    $scope.resetPhenotypes();
+    
+    $scope.taxaPage = 1;
+    $scope.taxaLimit = 20;
+    $scope.taxaMaxSize = 3;
+    $scope.taxaPageChanged = function (newPage) {
+        $scope.taxaPage = newPage;
+        var params = {
+            iri: $scope.studyID, 
+            limit: $scope.taxaLimit, 
+            offset: ($scope.taxaPage - 1) * $scope.taxaLimit
+        };
+        $scope.taxa = StudyTaxa.query(params);
+    };
+    $scope.resetTaxa = function () {
+        var params = {iri: $scope.studyID, total: true};
+        $scope.taxaTotal = StudyTaxa.query(params);
+        $scope.taxaPageChanged(1);
+    }
+    $scope.resetTaxa();
+})
 .controller('GeneController', function ($scope, $routeParams, $location, Gene, GenePhenotypes, GeneExpression) {
     $scope.geneID = $routeParams.gene;
     $scope.gene = Gene.query({iri: $scope.geneID});

@@ -31,6 +31,26 @@ angular.module('pkb.filters', [])
           return "#/gene/" + $window.encodeURIComponent(uri) + "?tab=phenotypes";
       };
 })
+.filter('linkToStudy', function ($window) {
+    return function (uri) {
+        return "#/study/" + $window.encodeURIComponent(uri);
+    };
+})
+.filter('linkToStudyTaxaDownload', function ($window) {
+    return function (uri) {
+        return "http://kb.phenoscape.org/api/study/taxa?limit=0&iri=" + $window.encodeURIComponent(uri);
+    };
+})
+.filter('linkToStudyPhenotypesDownload', function ($window) {
+    return function (uri) {
+        return "http://kb.phenoscape.org/api/study/phenotypes?limit=0&iri=" + $window.encodeURIComponent(uri);
+    };
+})
+.filter('linkToStudyNexmlDownload', function ($window) {
+    return function (uri) {
+        return "http://kb.phenoscape.org/api/study/matrix?iri=" + $window.encodeURIComponent(uri);
+    };
+})
 .filter('linkToTaxon', function ($window) {
       return function (uri) {
           return "#/taxon/" + $window.encodeURIComponent(uri);
