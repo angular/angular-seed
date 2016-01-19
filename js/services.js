@@ -3,274 +3,274 @@
 /* Services */
 
 angular.module('pkb.services', ['ngResource'])
-	.value('version', '0.1')
-	.factory('EntityPresence', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/entity/presence', {}, {
+	.constant('APIroot', 'http://kb.phenoscape.org/api')
+	.factory('EntityPresence', function ($resource, APIroot) {
+		return $resource(APIroot + '/entity/presence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('EntityAbsence', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/entity/absence', {}, {
+	.factory('EntityAbsence', function ($resource, APIroot) {
+		return $resource(APIroot + '/entity/absence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('EntityPresenceEvidence', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/entity/presence/evidence', {}, {
+	.factory('EntityPresenceEvidence', function ($resource, APIroot) {
+		return $resource(APIroot + '/entity/presence/evidence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('EntityAbsenceEvidence', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/entity/absence/evidence', {}, {
+	.factory('EntityAbsenceEvidence', function ($resource, APIroot) {
+		return $resource(APIroot + '/entity/absence/evidence', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('TaxaWithPhenotype', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon/with_phenotype', {}, {
+	.factory('TaxaWithPhenotype', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon/with_phenotype', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('AnatomicalTermSearch', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/entity/search', {}, {
+	.factory('AnatomicalTermSearch', function ($resource, APIroot) {
+		return $resource(APIroot + '/entity/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('TermSearch', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/search', {}, {
+	.factory('TermSearch', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('OntologyTermSearch', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/search_classes', {}, {
+	.factory('OntologyTermSearch', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/search_classes', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('GeneSearch', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/search', {}, {
+	.factory('GeneSearch', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('CharacterStateSearch', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/characterstate/search', {}, {
+	.factory('CharacterStateSearch', function ($resource, APIroot) {
+		return $resource(APIroot + '/characterstate/search', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('CharacterDescriptionWithAnnotation', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/characterstate/with_annotation', {}, {
+	.factory('CharacterDescriptionWithAnnotation', function ($resource, APIroot) {
+		return $resource(APIroot + '/characterstate/with_annotation', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Label', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/label', {}, {
+	.factory('Label', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/label', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Labels', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/labels', {}, {
+	.factory('Labels', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/labels', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Term', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term', {}, {
+	.factory('Term', function ($resource, APIroot) {
+		return $resource(APIroot + '/term', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Taxon', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon', {}, {
+	.factory('Taxon', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Study', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/study', {}, {
+	.factory('Study', function ($resource, APIroot) {
+		return $resource(APIroot + '/study', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('TaxonCommonGroup', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon/group', {}, {
+	.factory('TaxonCommonGroup', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon/group', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Gene', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene', {}, {
+	.factory('Gene', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('GenePhenotypes', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/phenotypic_profile', {}, {
+	.factory('GenePhenotypes', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/phenotypic_profile', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('GeneExpression', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/expression_profile', {}, {
+	.factory('GeneExpression', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/expression_profile', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('EntityPhenotypeGenes', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/affecting_entity_phenotype', {}, {
+	.factory('EntityPhenotypeGenes', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/affecting_entity_phenotype', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('EntityExpressionGenes', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/expressed_within_entity', {}, {
+	.factory('EntityExpressionGenes', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/expressed_within_entity', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('CharacterStateQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/characterstate/query', {}, {
+	.factory('CharacterStateQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/characterstate/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('TaxonQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon/query', {}, {
+	.factory('TaxonQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('GeneQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/gene/query', {}, {
+	.factory('GeneQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/gene/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('OntoTraceQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/ontotrace', {}, {
+	.factory('OntoTraceQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/ontotrace', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SimilarityMatches', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/query', {}, {
+	.factory('SimilarityMatches', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/query', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SimilaritySubsumers', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/best_subsumers', {}, {
+	.factory('SimilaritySubsumers', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/best_subsumers', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SimilarityAnnotationMatches', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/best_matches', {}, {
+	.factory('SimilarityAnnotationMatches', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/best_matches', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SubsumedAnnotations', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/subsumed_annotations', {}, {
+	.factory('SubsumedAnnotations', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/subsumed_annotations', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SimilarityCorpusSize', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/corpus_size', {}, {
+	.factory('SimilarityCorpusSize', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/corpus_size', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('ProfileSize', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/profile_size', {}, {
+	.factory('ProfileSize', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/profile_size', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('ICDisparity', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/similarity/ic_disparity', {}, {
+	.factory('ICDisparity', function ($resource, APIroot) {
+		return $resource(APIroot + '/similarity/ic_disparity', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('TaxonPhenotypesQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/api/taxon/phenotypes', {}, {
+	.factory('TaxonPhenotypesQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon/phenotypes', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('VariationProfileQuery', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/taxon/variation_profile', {}, {
+	.factory('VariationProfileQuery', function ($resource, APIroot) {
+		return $resource(APIroot + '/taxon/variation_profile', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('Classification', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/classification', {}, {
+	.factory('Classification', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/classification', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('ResolveLabelExpression', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/term/resolve_label_expression', {}, {
+	.factory('ResolveLabelExpression', function ($resource, APIroot) {
+		return $resource(APIroot + '/term/resolve_label_expression', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('AnnotationSummary', function ($resource) {
-		return $resource('http://kb.phenoscape.org/kb/kb/annotation_summary', {}, {
+	.factory('AnnotationSummary', function ($resource, APIroot) {
+		return $resource(APIroot + '/kb/annotation_summary', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-    .factory('ScigraphAnnotator', function ($resource) {
+    .factory('ScigraphAnnotator', function ($resource, APIroot) {
         return $resource('http://kb.phenoscape.org/scigraph/annotations/entities', {}, {
             query: {
                 method: 'GET',
@@ -278,15 +278,15 @@ angular.module('pkb.services', ['ngResource'])
                 isArray: true
         }})
     })
-    .factory('StudyTaxa', function ($resource) {
-        return $resource('http://kb.phenoscape.org/api/study/taxa', {}, {
+    .factory('StudyTaxa', function ($resource, APIroot) {
+        return $resource(APIroot + '/study/taxa', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
 		}})
     })
-    .factory('StudyPhenotypes', function ($resource) {
-        return $resource('http://kb.phenoscape.org/api/study/phenotypes', {}, {
+    .factory('StudyPhenotypes', function ($resource, APIroot) {
+        return $resource(APIroot + '/study/phenotypes', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}

@@ -186,7 +186,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.resetPhenotypeGenes();
     $scope.resetExpressionGenes();
 })
-.controller('TaxonController', function ($scope, $routeParams, $location, $log, $window, Taxon, TaxonPhenotypesQuery, VariationProfileQuery, EntityPresenceEvidence, EntityAbsenceEvidence, OntologyTermSearch, OMN, Vocab, Label) {
+.controller('TaxonController', function ($scope, $routeParams, $location, $log, $window, Taxon, TaxonPhenotypesQuery, VariationProfileQuery, EntityPresenceEvidence, EntityAbsenceEvidence, OntologyTermSearch, OMN, Vocab, Label, APIroot) {
     $scope.taxonID = $routeParams.taxon;
     $scope.taxon = Taxon.query({'iri': $scope.taxonID});
     $scope.filters = {
@@ -268,7 +268,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
                 params.quality = OMN.angled($scope.filters.phenotypesQualityFilter['@id']);
             }
             $scope.phenotypeProfileTotal = TaxonPhenotypesQuery.query(params);
-            var url = "http://kb.phenoscape.org/api/taxon/phenotypes?";
+            var url = APIroot + "/taxon/phenotypes?";
             var urlParams = ["limit=0"];
             if (params.entity) {
                 urlParams.push("entity=" + $window.encodeURIComponent(params.entity));
@@ -283,10 +283,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             var url = null;
             if ($scope.filters.quality_type == 'entailing-presence') {
                 service = EntityPresenceEvidence;
-                url = "http://kb.phenoscape.org/api/entity/presence/evidence?";
+                url = APIroot + "/entity/presence/evidence?";
             } else {
                 service = EntityAbsenceEvidence;
-                url = "http://kb.phenoscape.org/api/entity/absence/evidence?";
+                url = APIroot + "/entity/absence/evidence?";
             }
             if ($scope.filters.phenotypesEntityFilter) {
                 params.entity = $scope.filters.phenotypesEntityFilter['@id'];
@@ -715,7 +715,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryGenes();
     $scope.queryTotal();
 })
-.controller('OntoTraceController', function ($scope, OntologyTermSearch, $http, Vocab, $filter) {
+.controller('OntoTraceController', function ($scope, OntologyTermSearch, $http, Vocab, $filter, APIroot) {
     $scope.ontotraceURL = null;
     $scope.inputType = 'simple';
     $scope.ontotraceSettings = {
@@ -726,7 +726,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTaxonExpression = null;
     $scope.$watch('queryEntityLabelExpression', function (value) {
         if (value) {
-            $http.get('http://kb.phenoscape.org/api/term/resolve_label_expression', {params: {expression: value}}).then(
+            $http.get(APIroot + '/term/resolve_label_expression', {params: {expression: value}}).then(
             function (response) { 
                 $scope.entityExpressionErrorMessage = null;
                 $scope.queryEntityExpression = response.data;
@@ -740,9 +740,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             $scope.queryEntityExpression = null;
         }
     });
-    $scope.$watch('queryTaxonLabelExpression', function (value) {
+    $scope.$watch('queryTaxonLabelExpression', function (value, APIroot) {
         if (value) {
-            $http.get('http://kb.phenoscape.org/api/term/resolve_label_expression', {params: {expression: value}}).then(
+            $http.get(APIroot + '/term/resolve_label_expression', {params: {expression: value}}).then(
             function (response) { 
                 $scope.taxonExpressionErrorMessage = null;
                 $scope.queryTaxonExpression = response.data;
@@ -779,9 +779,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     }
     $scope.$watchGroup(['queryEntity', 'queryTaxon', 'queryEntityExpression', 'queryTaxonExpression', 'inputType', 'ontotraceSettings.includeAllCharacters', 'ontotraceSettings.includeParts'], function (value) {
         if ($scope.inputType == 'simple' && $scope.queryEntity && $scope.queryTaxon) {
-            $scope.ontotraceURL = "http://kb.phenoscape.org/kb/ontotrace?entity=" + prepareTerm($scope.queryEntity) + "&taxon=" + prepareTerm($scope.queryTaxon) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=" + $scope.ontotraceSettings.includeParts;
+            $scope.ontotraceURL = APIroot + "/ontotrace?entity=" + prepareTerm($scope.queryEntity) + "&taxon=" + prepareTerm($scope.queryTaxon) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=" + $scope.ontotraceSettings.includeParts;
         } else if ($scope.inputType == 'expression' && $scope.queryEntityExpression && $scope.queryTaxonExpression) {
-            $scope.ontotraceURL = "http://kb.phenoscape.org/kb/ontotrace?entity=" + $filter('encodeURI')($scope.queryEntityExpression) + "&taxon=" + $filter('encodeURI')($scope.queryTaxonExpression) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=false";
+            $scope.ontotraceURL = APIroot + "/ontotrace?entity=" + $filter('encodeURI')($scope.queryEntityExpression) + "&taxon=" + $filter('encodeURI')($scope.queryTaxonExpression) + "&variable_only=" + !$scope.ontotraceSettings.includeAllCharacters + "&parts=false";
         } else {
             $scope.ontotraceURL = null;
         }
