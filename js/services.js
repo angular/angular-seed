@@ -193,22 +193,8 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
-	.factory('SimilaritySubsumers', function ($resource, APIroot) {
-		return $resource(APIroot + '/similarity/best_subsumers', {}, {
-			query: {
-				method: 'GET',
-				headers: {'Accept': 'application/json'}
-		}})
-	})
 	.factory('SimilarityAnnotationMatches', function ($resource, APIroot) {
 		return $resource(APIroot + '/similarity/best_matches', {}, {
-			query: {
-				method: 'GET',
-				headers: {'Accept': 'application/json'}
-		}})
-	})
-	.factory('SubsumedAnnotations', function ($resource, APIroot) {
-		return $resource(APIroot + '/similarity/subsumed_annotations', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}
@@ -223,13 +209,6 @@ angular.module('pkb.services', ['ngResource'])
 	})
 	.factory('ProfileSize', function ($resource, APIroot) {
 		return $resource(APIroot + '/similarity/profile_size', {}, {
-			query: {
-				method: 'GET',
-				headers: {'Accept': 'application/json'}
-		}})
-	})
-	.factory('ICDisparity', function ($resource, APIroot) {
-		return $resource(APIroot + '/similarity/ic_disparity', {}, {
 			query: {
 				method: 'GET',
 				headers: {'Accept': 'application/json'}

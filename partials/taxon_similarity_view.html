@@ -1,6 +1,6 @@
 <div class="panel-body">
     <div class="row" ng-show="subject">
-        <h4>Evolutionary profiles matching gene <b>{{subject.label}}</b> ({{subject.taxon.label}})</h4>
+        <h4>Gene phenotype profiles matching variation within taxon <b>{{subject.label}}</b></h4>
         <div class="col-sm-4" cg-busy="topMatches.$promise">
             <div ng-show="topMatches.results.length &lt; 1">
                 <i>No matches</i>
@@ -9,16 +9,14 @@
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th>Group</th>
-                            <th>Taxon</th>
+                            <th>Gene</th>
                             <th popover="The Expect score is the number of matches one should expect to see at this level of similarity given the size of the database. The lower the Expect score, the more significant the match is." popover-trigger="mouseenter" popover-placement="bottom">Expect Score&nbsp;<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
-                            <td><common-group taxon="match.match_profile['@id']"></common-group></td>
-                            <td><taxon-name iri="match.match_profile['@id']"></taxon-name></td>
+                            <td><term-name iri="match.match_profile['@id']"></term-name></td>
                             <td class="text-center"><a>{{match.expect_score > 0.0 &amp;&amp; match.expect_score &lt; 0.01 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 2) }}</a></td>
                             <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
                         </tr>
@@ -36,15 +34,15 @@
             <div class="panel-body">
                 <form class="form-horizontal kb-form-condensed">
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">Searched gene:</label>
+                        <label class="col-sm-3 control-label">Searched taxon:</label>
                         <div class="col-sm-9">
-                            <p class="form-control-static">{{subject.label}} ({{subject.taxon.label}}) <small><a href="{{subject['@id'] | linkToGenePhenotypes}}">{{queryProfileSize.total}} phenotypes</a></small></p>
+                            <p class="form-control-static">{{subject.label}} <small><a href="{{subject['@id'] | linkToTaxonVariationProfile}}">{{queryProfileSize.total}} phenotypes</a></small></p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">Matched taxon:</label>
+                        <label class="col-sm-3 control-label">Matched gene:</label>
                         <div class="col-sm-9">
-                            <p class="form-control-static"><taxon-name iri="selectedMatch.match_profile['@id']"></taxon-name> <small><a href="{{selectedMatch.match_profile['@id'] | linkToTaxonVariationProfile}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
+                            <p class="form-control-static"><term-name iri="selectedMatch.match_profile['@id']"></term-name> <small><a href="{{selectedMatch.match_profile['@id'] | linkToGenePhenotypes}}">{{selectedMatchProfileSize.total}} phenotypes</a></small></p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -76,8 +74,8 @@
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
                     <tr>
-                        <th>Gene Phenotype</th>
                         <th>Taxon Phenotype</th>
+                        <th>Gene Phenotype</th>
                         <th popover="The Match Information Content (IC) describes the specificity of the match between two compared phenotypes. The IC is normalized such that a match with value of 0.0 subsumes all items in the search corpus, while a match with value of 1.0 is annotated to only one item." popover-trigger="mouseenter" popover-placement="left">Match Information Content&nbsp;<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></th>
                     </tr>
                 </thead>
@@ -87,10 +85,10 @@
                             <term-name iri="match.query_annotation['@id']"></term-name>
                         </td>
                         <td>
-                            <character-description-annotation iri="match.corpus_annotation['@id']"></character-description-annotation>
+                            <term-name iri="match.corpus_annotation['@id']"></term-name>
                         </td>
                         <td class="text-center">
-                            <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>&nbsp;<span ng-show="match.best_subsumer.disparity > 0.25" class="text-danger glyphicon glyphicon-flag" popover="This match was found to be informative among taxa; however, it is relatively common among gene annotations." popover-trigger="mouseenter" popover-placement="left"></span>
+                            <a title="Click to see match details" popover-template="'micaPopover'" popover-title="Match Details" popover-placement="left" popover-trigger="click">{{match.best_subsumer.ic | number : 2}}</a>&nbsp;<span ng-show="match.best_subsumer.disparity > 0.25" class="text-danger glyphicon glyphicon-flag" popover="This match was found to be informative among genes; however, it is relatively common among taxon annotations." popover-trigger="mouseenter" popover-placement="left"></span>
                         </td>
                    </tr>
                 </tbody>

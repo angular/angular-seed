@@ -102,6 +102,9 @@
                 </div>
                 <pagination total-items="variationProfileTotal.total" ng-model="variationProfilePage" max-size="variationProfileMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="variationProfileLimit" cg-busy="variationProfileTotal.$promise" ng-change="variationProfilePageChanged(variationProfilePage)"></pagination>
             </tab>
+            <tab heading="Similar gene phenotypes" active="tabs.similarity.active" select="activateTab('similarity')">
+                <taxon-similarity-view subject="taxon" corpus-graph="http://kb.phenoscape.org/sim/genes" query-graph="http://kb.phenoscape.org/sim/taxa"></taxon-similarity-view>
+            </tab>
             <tab heading="Misc" active="tabs.misc.active" select="activateTab('misc')">
                 <div class="panel panel-default top-buffer">
                     <div class="panel-body">

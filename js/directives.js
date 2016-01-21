@@ -104,13 +104,27 @@ angular.module('pkb.directives', [])
         }
     }
 })
-.directive('similarityView', function () {
+.directive('geneSimilarityView', function () {
     return {
         restrict: 'E',
         controller: 'SimilarityViewController',
         templateUrl: 'partials/similarity_view.html',
         scope: {
-            gene: '='
+            subject: '=',
+            corpusGraph: '@',
+            queryGraph: '@'
+        }
+    }
+})
+.directive('taxonSimilarityView', function () {
+    return {
+        restrict: 'E',
+        controller: 'SimilarityViewController',
+        templateUrl: 'partials/taxon_similarity_view.html',
+        scope: {
+            subject: '=',
+            corpusGraph: '@',
+            queryGraph: '@'
         }
     }
 })

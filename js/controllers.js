@@ -340,6 +340,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         classification: {active: true},
         phenotypes: {active: false},
         variation: {active: false},
+        similarity: {active: false},
         misc: {active: false}
     }
     $scope.activateTab = function (tabname) {
@@ -922,7 +923,11 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     };
 })
 .controller('TermNameController', function ($scope, Label) {
-    $scope.term = Label.query({iri: $scope.iri});
+    $scope.$watch('iri', function (value) {
+        if ($scope.iri) {
+            $scope.term = Label.query({iri: $scope.iri});
+        }
+    });
 })
 .controller('CountedPhenotypesForTaxonController', function ($scope, TaxonPhenotypesQuery, OMN) {
     var params = {total: true};
@@ -958,13 +963,14 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.pageChanged = function () {
         $scope.queryTopMatches();
     }
-    //$scope.matchesTotal = SimilarityCorpusSize.query(); //FIXME this query is too slow!
-    $scope.matchesTotal = {total: 1000};
+    $scope.matchesTotal = SimilarityCorpusSize.query({corpus_graph: $scope.corpusGraph}); //FIXME this query is too slow!
+    //$scope.matchesTotal = {total: 1000};
     $scope.queryTopMatches = function () {
-        $scope.queryProfileSize = ProfileSize.query({iri: $scope.gene['@id']});
+        $scope.queryProfileSize = ProfileSize.query({iri: $scope.subject['@id']});
         $scope.selectedMatch = null;
         $scope.topMatches = SimilarityMatches.query({
-            iri: $scope.gene['@id'],
+            corpus_graph: $scope.corpusGraph,
+            iri: $scope.subject['@id'],
             limit: $scope.matchesLimit,
             offset: ($scope.matchesPage - 1) * $scope.matchesLimit
         });
@@ -974,7 +980,9 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         $scope.annotationMatches = null;
         $scope.selectedMatchProfileSize = ProfileSize.query({iri: match.match_profile['@id']});
         $scope.annotationMatches = SimilarityAnnotationMatches.query({
-            query_iri: $scope.gene['@id'], 
+            corpus_graph: $scope.corpusGraph,
+            query_graph: $scope.queryGraph,
+            query_iri: $scope.subject['@id'], 
             corpus_iri: match.match_profile['@id']}
         );
     };
@@ -984,7 +992,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
 //    $scope.matchesPage = 1;
 //    $scope.selectedMatchProfileSize = null;
     
-    $scope.$watch("gene['@id']", function (value) {
+    $scope.$watch("subject['@id']", function (value) {
         if (value) {
             $scope.queryTopMatches();
         }
