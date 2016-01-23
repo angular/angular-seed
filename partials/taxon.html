@@ -1,4 +1,4 @@
-<h2><span class="badge">Taxon</span> <taxon-name iri="taxonID"></taxon-name> <small><a href="{{taxonID}}" target="_blank" class="link-no-color">{{taxonID | prefixedURI}}</a></small></h2>
+<h2><span class="badge">Taxon</span> <taxon-name iri="taxonID"></taxon-name> <span ng-show="taxon.common_name">({{taxon.common_name}})</span> <small><a href="{{taxonID}}" target="_blank" class="link-no-color">{{taxonID | prefixedURI}}</a></small></h2>
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
