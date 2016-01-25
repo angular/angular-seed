@@ -741,7 +741,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             $scope.queryEntityExpression = null;
         }
     });
-    $scope.$watch('queryTaxonLabelExpression', function (value, APIroot) {
+    $scope.$watch('queryTaxonLabelExpression', function (value) {
         if (value) {
             $http.get(APIroot + '/term/resolve_label_expression', {params: {expression: value}}).then(
             function (response) { 
