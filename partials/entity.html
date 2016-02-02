@@ -6,7 +6,16 @@
             <tab heading="Classification">
                 <div class="panel panel-default top-buffer">
                     <div class="panel-body">
-                        <classification iri="termID" link-filter="linkToEntity"></classification>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <classification iri="termID" link-filter="linkToEntity"></classification>
+                            </div>
+                            <div class="col-sm-8" style="border-left: 1px solid #ddd" ng-show="term.relationships.length > 0">
+                                <ul class="list-unstyled">
+                                    <li ng-repeat="rel in term.relationships" ng-show="rel.value['@id'] | isEntity"><em>{{rel.property.label}}</em>: <a href="{{rel.value['@id'] | linkToEntity}}">{{rel.value.label}}</a></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </tab>

@@ -16,6 +16,11 @@ angular.module('pkb.filters', [])
           return "#/entity/" + $window.encodeURIComponent(uri);
       };
 })
+.filter('isEntity', function ($window) {
+      return function (uri) {
+          return uri.indexOf("http://purl.obolibrary.org/obo/UBERON_") > -1;
+      };
+})
 .filter('linkToGene', function ($window) {
       return function (uri) {
           return "#/gene/" + $window.encodeURIComponent(uri);
