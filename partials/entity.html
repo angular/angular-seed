@@ -167,7 +167,7 @@
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="gene in phenotypeGenes.results">
-                                        <td><a href="{{gene['@id'] | linkToGene}}"><term-name iri="gene.label"></term-name></a></td>
+                                        <td><a href="{{gene['@id'] | linkToGene}}"><span>{{gene.label}}</span></a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -192,7 +192,7 @@
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="gene in expressionGenes.results">
-                                        <td><a href="{{gene['@id'] | linkToGene}}"><term-name iri="gene.label"></term-name></a></td>
+                                        <td><a href="{{gene['@id'] | linkToGene}}"><span>{{gene.label}}</span></term-name></a></td>
                                     </tr>
                                 </tbody>
                             </table>
