@@ -50,9 +50,56 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
       );
     };
 })
-.controller('EntityController', function ($scope, $routeParams, Term, TaxaWithPhenotype, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab, OMN, TaxonPhenotypesQuery) {
+.controller('EntityController', function ($scope, $routeParams, $location, Term, TaxaWithPhenotype, EntityPresence, EntityAbsence, EntityPhenotypeGenes, EntityExpressionGenes, OntologyTermSearch, Vocab, OMN, TaxonPhenotypesQuery) {
     $scope.termID = $routeParams.term;
     $scope.term = Term.query({'iri': $scope.termID});
+    
+    $scope.tabs = {
+        classification: {active: true},
+        taxa: {active: false},
+        genes: {active: false},
+    }
+    $scope.taxaTabs = {
+        phenotypes: {active: true},
+        presence: {active: false},
+        absence: {active: false}
+    }
+    $scope.genesTabs = {
+        phenotypes: {active: true},
+        expression: {active: false}
+    }
+    $scope.activateTab = function (tabname) {
+        if (_.has($scope.tabs, tabname)) {
+            $scope.tabs[tabname].active = true;
+            $location.search('tab', tabname);
+        }
+    }
+    $scope.activateTaxaTab = function (tabname) {
+        if (_.has($scope.taxaTabs, tabname)) {
+            $scope.taxaTabs[tabname].active = true;
+            $location.search('taxatab', tabname);
+        }
+    }
+    $scope.activateGenesTab = function (tabname) {
+        if (_.has($scope.genesTabs, tabname)) {
+            $scope.genesTabs[tabname].active = true;
+            $location.search('genestab', tabname);
+        }
+    }
+    // $scope.$on('$routeUpdate', function() {
+//         $scope.activateTab($location.search().tab);
+//         $scope.activateTaxaTab($location.search().taxatab);
+//         $scope.activateGenesTab($location.search().genestab);
+//     });
+    if ($routeParams.tab && _.has($scope.tabs, $routeParams.tab)) {
+        $scope.tabs[$routeParams.tab].active = true;
+    }
+    if ($routeParams.taxatab && _.has($scope.taxaTabs, $routeParams.taxatab)) {
+        $scope.taxaTabs[$routeParams.taxatab].active = true;
+    }
+    if ($routeParams.genestab && _.has($scope.genesTabs, $routeParams.genestab)) {
+        $scope.genesTabs[$routeParams.genestab].active = true;
+    }
     
     $scope.autocompleteTaxa = function (text) {
         return OntologyTermSearch.query({

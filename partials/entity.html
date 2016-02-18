@@ -3,7 +3,7 @@
 <div class="row">
     <div class= "col-sm-12">
         <tabset>
-            <tab heading="Classification">
+            <tab heading="Classification" active="tabs.classification.active" select="activateTab('classification')">
                 <div class="panel panel-default top-buffer">
                     <div class="panel-body">
                         <div class="row">
@@ -19,9 +19,9 @@
                     </div>
                 </div>
             </tab>
-            <tab heading="Taxa">
+            <tab heading="Taxa" active="tabs.taxa.active" select="activateTab('taxa')">
                 <tabset type="pills" class="top-buffer">
-                    <tab>
+                    <tab active="taxaTabs.phenotypes.active" select="activateTaxaTab('phenotypes')">
                         <tab-heading>Phenotypes <span class="badge">{{taxaWithPhenotypesTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting phenotypes for {{term.label}}</h4></div>
@@ -65,7 +65,7 @@
                         </div>
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="{{ {entity: {'@id': termID}, quality: filters.phenotypesQualityFilter, in_taxon: filters.phenotypesTaxonFilter} | linkToTaxaWithPhenotypeDownload}}" role="button">Text</a></p>
                     </tab>
-                    <tab>
+                    <tab active="taxaTabs.presence.active" select="activateTaxaTab('presence')">
                         <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting presence of {{term.label}}</h4></div>
@@ -103,7 +103,7 @@
                         </div>
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/presence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
                     </tab>
-                    <tab>
+                    <tab active="taxaTabs.absence.active" select="activateTaxaTab('absence')">
                         <tab-heading>Absence <span class="badge">{{taxaWithAbsenceTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting absence of {{term.label}}</h4></div>
@@ -143,13 +143,13 @@
                     </tab>
                 </tabset>
             </tab>
-            <tab heading="Genes">
+            <tab heading="Genes" active="tabs.genes.active" select="activateTab('genes')">
                 <tabset type="pills" class="top-buffer">
-                    <tab>
-                        <tab-heading>Phenotype <span class="badge">{{phenotypeGenesTotal.total}}</span></tab-heading>
+                    <tab active="genesTabs.phenotypes.active" select="activateGenesTab('phenotypes')">
+                        <tab-heading>Phenotypes <span class="badge">{{phenotypeGenesTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading">
-                                <h4>Genes affecting phenotype of this structure</h4>
+                                <h4>Genes affecting phenotypes for this structure</h4>
                             </div>
                             <div class="panel-body">
                                 <p>These genes have been annotated with phenotypes affecting <mark>{{term.label}}</mark> (directly or via inference).</p>
@@ -175,7 +175,7 @@
                         <pagination total-items="phenotypeGenesTotal.total" ng-model="phenotypeGenesPage" max-size="phenotypeGenesMaxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="phenotypeGenesLimit" cg-busy="phenotypeGenesTotal.$promise" ng-change="phenotypeGenesPageChanged(phenotypeGenesPage)"></pagination>
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/gene/affecting_entity_phenotype?limit=0&amp;iri={{termID | encodeURI}}&amp;parts={{phenotypeGenesSettings.includeParts}}" role="button">Text</a></p>
                     </tab>
-                    <tab>
+                    <tab active="genesTabs.expression.active" select="activateGenesTab('expression')">
                         <tab-heading>Expression <span class="badge">{{expressionGenesTotal.total}}</span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading">
