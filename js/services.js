@@ -81,6 +81,14 @@ angular.module('pkb.services', ['ngResource'])
 				headers: {'Accept': 'application/json'}
 		}})
 	})
+    .factory('PhenotypeAnnotations', function ($resource, APIroot) {
+        return $resource(APIroot + '/phenotype/direct_annotations', {}, {
+            query: {
+                method: 'GET',
+                headers: {'Accept': 'application/json'}
+            }
+        })
+    })
 	.factory('Label', function ($resource, APIroot) {
 		return $resource(APIroot + '/term/label', {}, {
 			query: {

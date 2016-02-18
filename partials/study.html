@@ -39,14 +39,14 @@
                     <table class="table table-condensed table-striped" cg-busy="phenotypes.$promise">
                         <thead>
                             <tr>
-                                <th>Ontology Annotation</th>
-                                <th>Character Description</th>
+                                <th>Phenotype</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="annotation in phenotypes.results">
-                                <td><span title="{{annotation.phenotype['@id']}}">{{annotation.phenotype.label}}</span></td>
-                                <td><span title="{{annotation['@id']}}">{{annotation.description}}</span></td>
+                                <td>
+                                    <character-description-annotation iri="annotation.phenotype['@id']"></character-description-annotation>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

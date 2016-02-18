@@ -57,15 +57,13 @@
                     <table class="table table-condensed table-striped" cg-busy="phenotypeProfile.$promise">
                         <thead>
                             <tr>
-                                <th>Ontology Annotation</th>
-                                <th>Character Description</th>
+                                <th>Phenotype</th>
                                 <th>Source</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="annotation in phenotypeProfile.results">
                                 <td><span title="{{annotation.phenotype['@id']}}">{{annotation.phenotype.label}}</span></td>
-                                <td><span title="{{annotation['@id']}}">{{annotation.description}}</span></td>
                                 <td><a href="{{annotation.matrix['@id'] | linkToStudy}}">{{annotation.matrix.label}}</a></td>
                             </tr>
                         </tbody>
@@ -86,15 +84,13 @@
                     <table class="table table-condensed table-striped" cg-busy="variationProfile.$promise">
                         <thead>
                             <tr>
-                                <th>Ontology Annotation</th>
-                                <th>Character Description</th>
+                                <th>Phenotype</th>
                                 <th>Source</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="annotation in variationProfile.results">
-                                <td><span title="annotation.phenotype['@id']">{{annotation.phenotype.label}}</span></td>
-                                <td><span title="annotation['@id']">{{annotation.description}}</span></td>
+                                <td><span title="{{annotation.phenotype['@id']}}">{{annotation.phenotype.label}}</span></td>
                                 <td><a href="{{annotation.matrix['@id'] | linkToStudy}}">{{annotation.matrix.label}}</a></td>
                             </tr>
                         </tbody>

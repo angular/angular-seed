@@ -4,7 +4,7 @@
     <inspector-content>
         <form>
             <div class="form-group">
-                <label for="phenotype">Character Description</label>
+                <label for="phenotype">Phenotype</label>
                 <p name="phenotype" class="form-control-static">{{description.description}}</p>
             </div>
             <div class="form-group">
@@ -12,8 +12,8 @@
                 <p name="source" class="form-control-static"><a href="{{description.matrix['@id'] | linkToStudy}}">{{description.matrix.label}}</a></p>
             </div>
             <div class="form-group">
-                <label for="eq">Ontology Annotation</label>
-                <p name="eq" class="form-control-static"><span title="{{description.phenotype['@id']}}">{{description.phenotype.label}}</span></p>
+                <label for="eq">Ontology Annotations</label>
+                <p ng-repeat="eq in eqs.results" name="eq" class="form-control-static"><span title="{{eq['@id']}}">{{eq.label}}</span></p>
             </div>
         </form>
     </inspector-content>

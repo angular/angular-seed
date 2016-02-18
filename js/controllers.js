@@ -996,8 +996,10 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     }
     
 })
-.controller('CharacterDescriptionAnnotationController', function ($scope, CharacterDescriptionWithAnnotation) {
+.controller('CharacterDescriptionAnnotationController', function ($scope, Label, PhenotypeAnnotations, CharacterDescriptionWithAnnotation) {
     $scope.description = CharacterDescriptionWithAnnotation.query({iri: $scope.iri});
+//    $scope.phenotype = Label.query({iri: $scope.iri});
+    $scope.eqs = PhenotypeAnnotations.query({iri: $scope.iri});
 })
 .controller('ClassificationController', function ($scope, $filter, Classification) {
     $scope.classification = Classification.query({iri: $scope.iri})
