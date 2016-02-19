@@ -20,7 +20,7 @@
                         <div class="well">
                             <form class="form-inline">
                                 <div class="form-group" ng-class="{'has-success': filters.phenotypesEntityFilter, 'has-feedback': filters.phenotypesEntityFilter}">
-                                    <label for="entityInputPhenotypes">Entity</label>
+                                    <label for="entityInputPhenotypes">Anatomy</label>
                                     <input id="entityInputPhenotypes" type="text" ng-model="filters.phenotypesEntityFilter" placeholder="any anatomical entity" typeahead="entity as entity.label for entity in autocompleteEntity($viewValue)" typeahead-loading="loadingEntityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                     <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesEntityFilter"></span>
                                     <i ng-show="loadingEntityPhenotypes" class="glyphicon glyphicon-refresh"></i>
