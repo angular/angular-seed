@@ -2,8 +2,8 @@
   <img src="images/me"/>
 </div>
 
-<div class="todo-wrapper" ng-controller="View1Ctrl">
-  <h2>Things to do before the onsite:</h2>
+<div id="todo-wrapper" ng-controller="View1Ctrl">
+  <h3>Things to do before the onsite:</h3>
   <ul>
     <li ng-repeat="todo in todos">
       <input type="checkbox" ng-model="todo.done"/>
@@ -11,8 +11,8 @@
     </li>
   </ul>
   <form>
-    <input class="add-input" placeholder="I need to..." type="text" ng-model="formTodoText" ng-model-instant />
-    <button class="add-btn" ng-click="addTodo()"><h2>Add</h2></button>
+    <input class="add-input" placeholder="Task" type="text" ng-model="formTodoText" ng-model-instant />
+    <button class="add-btn" ng-click="addTodo()">Add</button>
   </form>
 
   <button class="clear-btn" ng-click="clearCompleted()">Clear completed</button>

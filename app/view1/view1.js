@@ -11,14 +11,14 @@ angular.module('myApp.view1', ['ngRoute'])
 
 .controller('View1Ctrl', ['$scope',function($scope) {
   $scope.todos = [
-      {text:'Learn AngularJS', done:false},
-      {text: 'Build an app', done:false}
+      {text:'Practice Algorithms', done:true},
+      {text:'Study System Design', done:true},
+      {text:'Learn More about CH',done:true},
+      {text:'Look through my projects',done:true},
+      {text:'Learn AngularJS',done:false},
+      {text:'Create an App',done:false},
+      {text:'Get Hired!',done:false}
     ];
-
-    $scope.getTotalTodos = function () {
-      return $scope.todos.length;
-    };
-
 
     $scope.addTodo = function () {
       $scope.todos.push({text:$scope.formTodoText, done:false});

@@ -6,24 +6,23 @@ body {
 .menu {
   list-style: none;
   float:top;
-  /*border-bottom: 0.1em solid black;*/
-  /*margin-bottom: 2em;*/
-  /*padding: 0 0 0.5em;*/
   margin:0px;
 } ul {
   display: inline-block;
+  font-size: 20px;
 }
 
-.menu:before {
-  content: "[";
-}
-
-.menu:after {
-  content: "]";
-}
 
 .menu > li {
   display: inline;
+} a:link {
+  text-decoration: none;
+  color:white;
+} a:visited {
+    text-decoration: none;
+    color:white;
+} a:hover {
+    color:white;
 }
 
 .menu > li:before {
@@ -53,5 +52,36 @@ body {
 #view-1 {
   background-color:#f1f1f1;
   height: 50em;
-  margin-top:0px;
+}
+#about-me{
+  position: relative;
+  padding-top:5%;
+  margin-left:10%;
+}
+#todo-wrapper{
+  margin-left:10%;
+  width:20em;
+  height:75%;
+  border-right: 2px solid #ff911a;
+  background-color: white;
+  padding:3px;
+  color:#3d3d3d;
+} h3 {
+  color:#06476b;
+}
+
+.add-btn, .clear-btn {
+  border-radius:5px;
+  color:white;
+  font-weight:600;
+  background:#0aaae7;
+  -webkit-box-shadow: inset 0 -3px 0 #088fc4;
+  box-shadow: inset 0 -3px 0 #088fc4;
+  text-align: center;
+  border: 0 solid transparent;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 8px;
+  padding-bottom: 10px;
+  height: 42px;
 }
