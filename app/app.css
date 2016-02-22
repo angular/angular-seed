@@ -1,10 +1,17 @@
 /* app css stylesheet */
 
+body {
+  font-family: "Roboto Slab"
+}
 .menu {
   list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+  float:top;
+  /*border-bottom: 0.1em solid black;*/
+  /*margin-bottom: 2em;*/
+  /*padding: 0 0 0.5em;*/
+  margin:0px;
+} ul {
+  display: inline-block;
 }
 
 .menu:before {
@@ -27,4 +34,24 @@
 .menu > li:nth-child(1):before {
   content: "";
   padding: 0;
+}
+#menu {
+  background-color: #0aaae7;
+
+} img{
+  width:5em;
+  height: 5em;
+  display:inline-block;
+}
+
+#mini-bar {
+  background-color: #06476b;
+  height:3em;
+  margin-bottom:0px;
+}
+
+#view-1 {
+  background-color:#f1f1f1;
+  height: 50em;
+  margin-top:0px;
 }
