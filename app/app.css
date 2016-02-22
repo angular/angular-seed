@@ -46,12 +46,14 @@ body {
 #mini-bar {
   background-color: #06476b;
   height:3em;
-  margin-bottom:0px;
+  margin:0;
 }
 
-#view-1 {
+#why-course-hero{
+/*  background-image: url("https://static.pexels.com/photos/232/apple-iphone-books-desk.jpg");*/
+  height:40em;
+  padding-top:5%;
   background-color:#f1f1f1;
-  height: 50em;
 }
 #about-me{
   position: relative;
@@ -62,9 +64,10 @@ body {
   margin-left:10%;
   width:20em;
   height:75%;
-  border-right: 2px solid #ff911a;
+  border-top: 2px solid #ff911a;
   background-color: white;
   padding:3px;
+  padding-left:20px;
   color:#3d3d3d;
 } h3 {
   color:#06476b;
