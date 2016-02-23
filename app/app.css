@@ -61,6 +61,7 @@ body {
   margin-left:10%;
 }
 #todo-wrapper{
+  display:inline-block;
   margin-left:10%;
   width:20em;
   height:75%;
@@ -87,4 +88,9 @@ body {
   padding-top: 8px;
   padding-bottom: 10px;
   height: 42px;
+}
+
+#why {
+  display:inline-block;
+  background-color: white;
 }

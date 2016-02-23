@@ -18,4 +18,14 @@
 
     <button class="clear-btn" ng-click="clearCompleted()">Clear completed</button>
   </div>
+  <div id="why" ng-controller="View1Ctrl">
+    <h2>Why I love Course Hero</h2>
+    <ul>
+      <li ng-repeat="reason in reasonsWhyCourseHero">
+        <i class="{{reason.icon}}"></i>
+        <span>{{reason.text}}</span>
+      </li>
+    </ul>
+
+  </div>
 </div>
