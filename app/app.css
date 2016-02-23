@@ -7,6 +7,7 @@ body {
 
 h1,h2,h3 {
   font-family: "Roboto Slab";
+  color:#06476b;
 }
 .menu {
   list-style: none;
@@ -71,7 +72,7 @@ h1,h2,h3 {
 }
 #why-course-hero{
 /*  background-image: url("https://static.pexels.com/photos/232/apple-iphone-books-desk.jpg");*/
-  height:40em;
+  height:70em;
   padding-top:3%;
   background-color:#f1f1f1;
  /*  background-image: url("https://static.pexels.com/photos/5377/books-bookshop-magazines.jpg");
@@ -91,12 +92,12 @@ h1,h2,h3 {
   margin-left:10%;
   width:20em;
   height:30em;
-  border-top: 2px solid #ff911a;
+  border-top: 2px solid #40d579;
   background-color: white;
   padding:10px;
   color:#3d3d3d;
+  border-radius: 5px;
 } h3 {
-  color:#06476b;
   text-align: center;
 }
 
@@ -126,8 +127,8 @@ h1,h2,h3 {
   border-top:2px solid #ff911a;
   padding:10px;
   vertical-align: top;
+  border-radius: 5px;
 } h2{
-  color:#06476b;
   text-align: center;
 }
 
@@ -159,3 +160,13 @@ color:#0aaae7;
     font-size:20px;
   }
 
+#why-me {
+  background-color: white;
+  margin-left:10%;
+  margin-right:10%;
+  margin-top:3%;
+  border-top:2px solid #ff911a;
+  padding:10px;
+  border-radius: 5px;
+  height:20em;
+}
