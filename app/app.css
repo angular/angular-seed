@@ -131,7 +131,7 @@ h1,h2,h3 {
 
 #why-ch-table {
   width:100%;
-} td {
+} #why-ch-table td {
   padding:10px;
   padding-bottom:15px;
 }
@@ -167,7 +167,22 @@ color:#0aaae7;
   border-radius: 5px;
   height:20em;
 }
+#why-me-table {
+  width:90%;
+  margin:0 auto;
+} #why-me-table td {
+  margin:10%;
+  padding:5px;
+}
 
-.mini-bar > .fa {
-  color:red;
+
+.add-input {
+  width:80%;
+} #todo-form {
+  width:90%;
+  text-align: center;
+} #buttons {
+  text-align: center;
+  width:90%;
+  padding-top:5%;
 }

@@ -14,12 +14,14 @@
         <span class="done-{{todo.done}}">{{todo.text}}</span>
       </li>
     </ul>
-    <form>
+    <form id="todo-form">
       <input class="add-input" placeholder="Task" type="text" ng-model="formTodoText" ng-model-instant />
-      <button class="add-btn" ng-click="addTodo()">Add</button>
+      <!-- <button class="add-btn" ng-click="addTodo()">Add</button> -->
     </form>
-
-    <button class="clear-btn" ng-click="clearCompleted()">Clear completed</button>
+    <section id="buttons">
+      <button class="add-btn" ng-click="addTodo()">Add</button>
+      <button class="clear-btn" ng-click="clearCompleted()">Clear completed</button>
+    </section>
   </div>
   <div id="why" ng-controller="View1Ctrl">
     <h2>Why I love Course Hero</h2>
@@ -32,6 +34,12 @@
   </div>
   <div id="why-me" ng-controller="View1Ctrl">
     <h2>Why I Belong at Course Hero</h2>
+      <table id="why-me-table">
+        <tr ng-repeat="reason in reasonsWhyMe">
+          <td><i class="{{reason.icon}}"></i></td>
+          <td>{{reason.text}}</td>
+        </tr>
+      </table>
   </div>
 </div>
 

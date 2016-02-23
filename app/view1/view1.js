@@ -30,12 +30,10 @@ angular.module('myApp.view1', ['ngRoute'])
   ];
 
   $scope.reasonsWhyMe = [
-      {text:'',icon:"fa fa-users fa-lg"},
-      {text:"",icon:"fa fa fa-laptop fa-lg"},
-      {text:'I love the power of knowledge sharing!',icon:"fa fa-share-alt fa-lg."},
-      {text:'Working at Course Hero provides the opportunity to help build great products in an energetic and collaborative environment.',icon:"fa fa-smile-o fa-lg"},
-      {text:'The Course Hero Knowledge Drive has donated 249,254 books through Books for Africa and continues to help out students abroad.',icon:"fa fa-book fa-lg"},
-      {text:'Course Hero has been named as a 2015 top workplace in Bay Area.',icon:"fa fa-hand-peace-o fa-lg"}
+      {text:'As a recent college grad, I am freshly familiar with best study practices and materials. I have had to stand in lines for practice exams and have previously initiated shared study guides on Google Drive. I am all about knowledge sharing!',icon:"fa fa-graduation-cap fa-2x fa-border"},
+      {text:'What sets me apart as a full stack developer is my eye for detail and design, which comes from my art hobbies.',icon:"fa fa-eye fa-2x fa-border"},
+      {text:'I can adapt easily between working independently and collaborating with others. I believe in self-growth via learning and hands on experience!',icon:"fa fa-hand-paper-o fa-2x fa-border"},
+      {text:'I am always curious and excited to solve any kind of puzzles: whether it be zombie games, Settlers of Catan, or debugging!',icon:"fa fa-lightbulb-o fa-2x fa-border"}
   ];
 
     $scope.addTodo = function () {
