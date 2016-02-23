@@ -10,12 +10,13 @@
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
   <link rel="stylesheet" href="app.css">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 <body>
   <div id="menu">
-      <img src="images/coursehero_logo.png"/>
+      <img class="ch-logo" src="images/coursehero_logo.png"/>
     <ul class="menu">
       <li><a href="#/view1">About Me</a></li>
       <li><a href="#/view2">view2</a></li>
@@ -31,7 +32,7 @@
   </div>
 
   <div id="menu">
-    <img src="images/coursehero_logo.png"/>
+    <img class="ch-logo" src="images/coursehero_logo.png"/>
   </div>
 
   <!-- In production use:
@@ -39,6 +40,8 @@
   -->
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.js"></script>
   <script src="app.js"></script>
   <script src="view1/view1.js"></script>
   <script src="view2/view2.js"></script>
