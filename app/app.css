@@ -58,14 +58,14 @@ h1,h2,h3 {
 #why-course-hero{
 /*  background-image: url("https://static.pexels.com/photos/232/apple-iphone-books-desk.jpg");*/
   height:40em;
-  padding-top:5%;
+  padding-top:3%;
   background-color:#f1f1f1;
  /*  background-image: url("https://static.pexels.com/photos/5377/books-bookshop-magazines.jpg");
    background-size: 100%;*/
 }
 #about-me{
   position: relative;
-  padding:2%;
+  padding:3%;
   background-color:#f1f1f1;
   padding-bottom:0px;
 } img{
@@ -78,8 +78,7 @@ h1,h2,h3 {
   height:30em;
   border-top: 2px solid #ff911a;
   background-color: white;
-  padding:3px;
-  padding-left:20px;
+  padding:10px;
   color:#3d3d3d;
 } h3 {
   color:#06476b;
