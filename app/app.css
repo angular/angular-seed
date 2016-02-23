@@ -1,7 +1,12 @@
 /* app css stylesheet */
 
 body {
-  font-family: "Roboto Slab"
+  font-family: "Open Sans",sans-serif;
+  font-weight:lighter;
+}
+
+h1,h2,h3 {
+  font-family: "Roboto Slab";
 }
 .menu {
   list-style: none;
@@ -43,10 +48,11 @@ body {
   display:inline-block;
 }
 
-#mini-bar {
+.mini-bar {
   background-color: #06476b;
   height:3em;
   margin:0;
+  color:#d8f0fd;
 }
 
 #why-course-hero{
@@ -61,6 +67,7 @@ body {
   position: relative;
   padding:2%;
   background-color:#f1f1f1;
+  padding-bottom:0px;
 } img{
   margin-left:10%;
 }
@@ -120,4 +127,21 @@ body {
 .fa {
 color:#0aaae7;
 }
+
+#profile-pic {
+  display:inline-block;
+}
+#intro {
+  display:inline-block;
+  margin-left: 5%;
+  vertical-align: top;
+}
+  #intro > h1 {
+    font-size: 36px;
+    color:#06476b;
+  }
+  #intro > p {
+    font-size:20px;
+  }
+
 
