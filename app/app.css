@@ -23,6 +23,7 @@ h1,h2,h3 {
 } a:link {
   text-decoration: none;
   color:white;
+  font-weight:lighter;
 } a:visited {
     text-decoration: none;
     color:white;
@@ -53,8 +54,21 @@ h1,h2,h3 {
   height:3em;
   margin:0;
   color:#d8f0fd;
+  text-align: center;
+  padding-bottom:1em;
 }
 
+.mini-bar-contact > li {
+  display: inline;
+}
+.mini-bar-contact> li:before {
+  content: "|";
+  padding-right: 0.3em;
+}
+.mini-bar-contact > li:nth-child(1):before {
+  content: "";
+  padding: 0;
+}
 #why-course-hero{
 /*  background-image: url("https://static.pexels.com/photos/232/apple-iphone-books-desk.jpg");*/
   height:40em;
@@ -68,6 +82,7 @@ h1,h2,h3 {
   padding:3%;
   background-color:#f1f1f1;
   padding-bottom:0px;
+
 } img{
   margin-left:10%;
 }
@@ -134,6 +149,7 @@ color:#0aaae7;
   display:inline-block;
   margin-left: 5%;
   vertical-align: top;
+  width:45%;
 }
   #intro > h1 {
     font-size: 36px;
@@ -142,5 +158,4 @@ color:#0aaae7;
   #intro > p {
     font-size:20px;
   }
-
 
