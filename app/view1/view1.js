@@ -31,7 +31,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
   $scope.reasonsWhyMe = [
       {text:'As a recent college grad, I am freshly familiar with best study practices and materials. I have had to stand in lines for practice exams and have previously initiated shared study guides on Google Drive. I am all about knowledge sharing!',icon:"fa fa-graduation-cap fa-2x fa-border"},
-      {text:'What sets me apart as a full stack developer is my eye for detail and design, which comes from my art hobbies.',icon:"fa fa-eye fa-2x fa-border"},
+      {text:'What sets me apart as a full stack developer is my eye for detail, which comes from my love for painting and design.',icon:"fa fa-eye fa-2x fa-border"},
       {text:'I can adapt easily between working independently and collaborating with others. I believe in self-growth via learning and hands on experience!',icon:"fa fa-hand-paper-o fa-2x fa-border"},
       {text:'I am always curious and excited to solve any kind of puzzles: whether it be zombie games, Settlers of Catan, or debugging!',icon:"fa fa-lightbulb-o fa-2x fa-border"}
   ];
