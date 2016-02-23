@@ -29,6 +29,15 @@ angular.module('myApp.view1', ['ngRoute'])
       {text:'Course Hero has been named as a 2015 top workplace in Bay Area.',icon:"fa fa-hand-peace-o fa-lg"}
   ];
 
+  $scope.reasonsWhyMe = [
+      {text:'',icon:"fa fa-users fa-lg"},
+      {text:"",icon:"fa fa fa-laptop fa-lg"},
+      {text:'I love the power of knowledge sharing!',icon:"fa fa-share-alt fa-lg."},
+      {text:'Working at Course Hero provides the opportunity to help build great products in an energetic and collaborative environment.',icon:"fa fa-smile-o fa-lg"},
+      {text:'The Course Hero Knowledge Drive has donated 249,254 books through Books for Africa and continues to help out students abroad.',icon:"fa fa-book fa-lg"},
+      {text:'Course Hero has been named as a 2015 top workplace in Bay Area.',icon:"fa fa-hand-peace-o fa-lg"}
+  ];
+
     $scope.addTodo = function () {
       $scope.todos.push({text:$scope.formTodoText, done:false});
       $scope.formTodoText = '';
