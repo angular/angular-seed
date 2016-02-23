@@ -20,12 +20,11 @@
   </div>
   <div id="why" ng-controller="View1Ctrl">
     <h2>Why I love Course Hero</h2>
-    <ul>
-      <li ng-repeat="reason in reasonsWhyCourseHero">
-        <i class="{{reason.icon}}"></i>
-        <span>{{reason.text}}</span>
-      </li>
-    </ul>
-
+      <table id="why-ch-table">
+        <tr ng-repeat="reason in reasonsWhyCourseHero">
+          <td><i class="{{reason.icon}}"></i></td>
+          <td>{{reason.text}}</td>
+        </tr>
+      </table>
   </div>
 </div>

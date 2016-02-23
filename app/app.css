@@ -64,7 +64,7 @@ body {
   display:inline-block;
   margin-left:10%;
   width:20em;
-  height:75%;
+  height:30em;
   border-top: 2px solid #ff911a;
   background-color: white;
   padding:3px;
@@ -72,6 +72,7 @@ body {
   color:#3d3d3d;
 } h3 {
   color:#06476b;
+  text-align: center;
 }
 
 .add-btn, .clear-btn {
@@ -91,6 +92,27 @@ body {
 }
 
 #why {
+  float:right;
   display:inline-block;
   background-color: white;
+  width:45em;
+  height:30em;
+  margin-right:10%;
+  border-top:2px solid #ff911a;
+  padding:10px;
+  vertical-align: top;
+} h2{
+  color:#06476b;
+  text-align: center;
+}
+
+#why-ch-table {
+  width:100%;
+} td {
+  padding:10px;
+  padding-bottom:15px;
+}
+
+.fa {
+color:#0aaae7;
 }
