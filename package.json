@@ -6,7 +6,7 @@
   "repository": "https://github.com/angular/angular-seed",
   "license": "MIT",
   "devDependencies": {
-    "bower": "^1.3.1",
+    "bower": "^1.7.7",
     "http-server": "^0.6.1",
     "jasmine-core": "^2.3.4",
     "karma": "~0.12",
@@ -18,7 +18,7 @@
     "shelljs": "^0.2.6"
   },
   "scripts": {
-    "postinstall": "./node_modules/bower/bin/bower install",
+    "postinstall": "node ./node_modules/bower/bin/bower install",
     "prestart": "npm install",
     "start":  "start": "node scripts/web-server.js",
     "pretest": "npm install",
@@ -31,7 +31,8 @@
     "update-index-async": "node -e \"require('shelljs/global'); sed('-i', /\\/\\/@@NG_LOADER_START@@[\\s\\S]*\\/\\/@@NG_LOADER_END@@/, '//@@NG_LOADER_START@@\\n' + sed(/sourceMappingURL=angular-loader.min.js.map/,'sourceMappingURL=bower_components/angular-loader/angular-loader.min.js.map','app/bower_components/angular-loader/angular-loader.min.js') + '\\n//@@NG_LOADER_END@@', 'app/index-async.html');\""
   },
   "dependencies": {
-    "bower": "^1.3.1",
+    "bower": "^1.7.7",
+    "http-server": "^0.6.1",
     "express": "^4.13.4"
   }
 }
