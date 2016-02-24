@@ -89,7 +89,7 @@ h1,h2,h3 {
   margin-left:10%;
   width:20em;
   height:30em;
-  border-top: 2px solid #40d579;
+  border-top: 3px solid #40d579;
   background-color: white;
   padding:10px;
   color:#3d3d3d;
@@ -121,7 +121,7 @@ h1,h2,h3 {
   width:45em;
   height:30em;
   margin-right:10%;
-  border-top:2px solid #ff911a;
+  border-top:3px solid #ff911a;
   padding:10px;
   vertical-align: top;
   border-radius: 5px;
@@ -162,7 +162,7 @@ color:#0aaae7;
   margin-left:10%;
   margin-right:10%;
   margin-top:3%;
-  border-top:2px solid #ff911a;
+  border-top:3px solid #40d579;
   padding:10px;
   border-radius: 5px;
   height:20em;
@@ -185,4 +185,37 @@ color:#0aaae7;
   text-align: center;
   width:90%;
   padding-top:5%;
+}
+
+#courses-header {
+  height:12em;
+  background-image: linear-gradient(to bottom, #f7fcfe 0%, #e6f6fd 100%);
+  border-bottom: 1px solid #bbe8f9;
+  text-align: center;
+} #courses-header h1{
+  color:#0aaae7;
+  margin-top: 0;
+  padding-top:15px;
+} #courses-header p {
+  padding-right:22%;
+  padding-left:22%;
+  font-weight: bolder;
+  color:#3a3a3a;
+  font-size:18px;
+}
+#list-of-courses {
+  height:50em;
+}
+#scrollable-div {
+  height:40em;
+  margin:0 auto;
+  width:60%;
+  border-radius:5px;
+  border:1px solid #bbe8f9;
+  margin-top:5%;
+}
+#search-bar {
+  height:10%;
+  background-image: linear-gradient(to bottom, #f7fcfe 0%, #e6f6fd 100%);
+  border-bottom:1px solid #bbe8f9;
 }
