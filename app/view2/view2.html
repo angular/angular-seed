@@ -3,8 +3,17 @@
    <p>To explore AngularJS filters, I decided to imitate Course Hero's schools' courses display and implement a search bar. Here is a list of resources that I have found useful or plan on using to learn more theories, languages, and frameworks.</p>
 </div>
 <div id="list-of-courses">
-  <div id="scrollable-div">
+  <div id="courses-div">
     <div id="search-bar">
+      <h2 style="margin-top:0; padding-top:2%; text-align:left; padding-left:10%">Find a Course</h2>
+    </div>
+    <div id="scrollable-div" ng-controller="View2Ctrl">
+      <table id="courses-table">
+        <tr ng-repeat="course in courses">
+          <td style="width:25%"><a href="{{course.link}}"><p>{{course.title}}</p></a></td>
+          <td><a href="{{course.link}}"><p>{{course.title}}</p></a></td>
+        </tr>
+      </table>
     </div>
   </div>
 </div>
