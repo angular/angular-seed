@@ -1,38 +1,51 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<html lang="en" ng-app="myApp" class="no-js">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>My AngularJS App</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Slab' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 <body>
-  <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
-  </ul>
+  <div id="menu">
+      <img class="ch-logo" src="images/coursehero_logo.png"/>
+    <ul class="menu">
+      <li><a href="#/view1">About Me</a></li>
+      <li><a href="#/view2">Computer Science Courses</a></li>
+    </ul>
+  </div>
 
-  <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-  <![endif]-->
+  <div class="mini-bar">
+    <ul class="mini-bar-contact">
+      <li> <i class="fa fa-envelope-o" style="color:#ff911a"></i> <a href="mailto:euniceschoi93@gmail.com">Email</a>  </li>
+      <li> <i class="fa fa-linkedin-square" style="color:#ff911a"></i> <a href="https://www.linkedin.com/in/euniceschoi">LinkedIn</a>  </li>
+      <li> <i class="fa fa-medium" style="color:#ff911a"></i> <a href="https://medium.com/@euniceschoi">Blog</a>  </li>
+      <li> <i class="fa fa-github-alt" style="color:#ff911a"></i> <a href="https://github.com/euniceschoi">GitHub</a>  </li>
+    </ul>
+  </div>
 
-  <div ng-view></div>
+  <div ng-view id="view-1"></div>
 
-  <div>Angular seed app: v<span app-version></span></div>
+  <div class="mini-bar">
+    <span><p>Thanks for visiting!<p></span>
+  </div>
 
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
-  -->
+  <div id="bottom-menu">
+    <span><p>Created by Eunice Choi with the help of angular-seed <i class="fa fa-moon-o fa-lg"></i></p></span>
+  </div>
+
+
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.js"></script>
   <script src="app.js"></script>
   <script src="view1/view1.js"></script>
   <script src="view2/view2.js"></script>

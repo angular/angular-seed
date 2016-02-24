@@ -1,1 +1,44 @@
-<p>This is the partial for view 1.</p>
+<div id="about-me">
+  <img id="profile-pic" style="margin-top:2.5%"src="images/mee.jpg"/>
+  <span id="intro">
+    <h1>Hello, I'm Eunice!</h1>
+    <p>You may be wondering, "Why did you do this?" I moved to San Francisco with the hopes of becoming a full stack engineer at a meaningful, cultural company like Course Hero. As a fairly new developer, I knew I was up against some very experienced candidates and thought of how I can show my potential as a Hero. I decided to learn AngularJS, which is a part of CH's tech stack, and apply it to this site. Please look around!</p>
+  <span>
+</div>
+<div id="why-course-hero">
+  <div id="todo-wrapper" ng-controller="View1Ctrl">
+    <h2>Things to do before onsite:</h2>
+    <ul>
+      <li ng-repeat="todo in todos">
+        <input type="checkbox" ng-model="todo.done"/>
+        <span class="done-{{todo.done}}">{{todo.text}}</span>
+      </li>
+    </ul>
+    <form id="todo-form">
+      <input class="add-input" placeholder="Task" type="text" ng-model="formTodoText" ng-model-instant />
+    </form>
+    <section id="buttons">
+      <button class="add-btn" ng-click="addTodo()">Add</button>
+      <button class="clear-btn" ng-click="clearCompleted()">Clear completed</button>
+    </section>
+  </div>
+  <div id="why" ng-controller="View1Ctrl">
+    <h2>Why I love Course Hero</h2>
+      <table id="why-ch-table">
+        <tr ng-repeat="reason in reasonsWhyCourseHero">
+          <td><i class="{{reason.icon}}"></i></td>
+          <td>{{reason.text}}</td>
+        </tr>
+      </table>
+  </div>
+  <div id="why-me" ng-controller="View1Ctrl">
+    <h2>Why I Belong at Course Hero</h2>
+      <table id="why-me-table">
+        <tr ng-repeat="reason in reasonsWhyMe">
+          <td><i class="{{reason.icon}}"></i></td>
+          <td>{{reason.text}}</td>
+        </tr>
+      </table>
+  </div>
+</div>
+

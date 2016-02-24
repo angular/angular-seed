@@ -1,5 +1,20 @@
-<p>This is the partial for view 2.</p>
-<p>
-  Showing of 'interpolate' filter:
-  {{ 'Current version is v%VERSION%.' | interpolate }}
-</p>
+<div id="courses-header">
+  <h1>Computer Science Courses</h1>
+   <p>To explore AngularJS filters, I decided to imitate Course Hero's school courses display and implement a search bar. Here is a list of some resources that I have found useful or plan on using to learn more theories, languages, and frameworks.</p>
+</div>
+<div id="list-of-courses">
+  <div id="courses-div">
+    <div id="search-bar">
+      <h2 style="margin-top:0; padding-top:2%; text-align:left; padding-left:10%">Find a Course</h2>
+      <input type="text" placeholder="Search" ng-model="searchBox">
+    </div>
+    <div id="scrollable-div" ng-controller="View2Ctrl">
+      <table id="courses-table">
+        <tr ng-repeat="course in courses | filter:searchBox |  orderBy:'title'">
+          <td style="width:25%"><a href="{{course.link}}"><p>{{course.title}}</p></a></td>
+          <td><p>{{course.description}}</p></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
