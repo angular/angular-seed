@@ -1,0 +1,16 @@
+<div class="flex-container-outer {{cardData.version}}">
+	  		<div class="flex-item flex-item1">
+	  			<img ng-src="{{cardData.src}}"/>
+	  		</div>
+	  		<div class="flex-container">
+	    		<div class="flex-item flex-item2 upper">
+			    	<div class="cardTextDivV2">
+				    	<span class="cardTxtHeading">{{cardData.cardTxtHeading}}</span>
+						<span class="cardTxtSub">{{cardData.cardTxtSub}}</span>
+					</div>
+				</div>
+			    <div class="flex-item flex-item2 lower">
+					<ng-include src="'components/partials/widgets/destination-card/btnPanel.html'"></ng-include>
+				</div>  
+	  		</div>
+		</div>    

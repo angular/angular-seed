@@ -1,0 +1,10 @@
+<div ng-hide="custom" class="menuMobile" >
+	<a ng-repeat="menuItem in header.listOfBooks" class="menuItemsMobile" ng-href="'{{menuItem.url}}'">
+	{{menuItem.label}}
+	</a>
+</div>
+<div id="menu"  class="menuDesktop" >
+	<a ng-repeat="menuItem in header.listOfBooks" class="menuItemsDesktop" ng-href="'{{menuItem.url}}'">
+	{{menuItem.label}}
+	</a>
+</div>
