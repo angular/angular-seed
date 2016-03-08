@@ -1,30 +1,196 @@
-/* app css stylesheet */
 
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+/*common code*/
+body{
+  background-color:#d3d3d3;
+  padding-bottom: 50px;
+}
+#header{
+  background-color: red;
+  width:100%;
+  padding: 0px;
+  font-size: 20px;
+  line-height: 2em;
+}
+#header>div{
+  font-size: 15px;
+  line-height: 2em;  
+}
+.headerText{
+  display: inline-block;
+  padding: 0px 0px 0px 10px;
+  color: white;
+}
+section{
+  border:1px solid #dfdfdf;
+  background-color: white;
+  margin:5px;
+  font-size: 15px;
 }
 
-.menu:before {
-  content: "[";
+.cardTextDiv{
+  padding:10px;
+}
+.cardTextDiv.version1 h1{
+  font-size:22px;
+  color:#ff1493;
+}
+.cardButtonPanel{
+  border-top:solid 1px #dfdfdf;
+}
+.cardButtonPanel>span{
+    display: table-cell;
+    padding: 10px 10px;
+    word-break: break-word;
+    vertical-align: middle;
+    font-weight: bold;
+  }
+.cardSecondBtnLbl{
+      color:orange;
+    }
+.flex-container{
+   display: initial;
+   /* 
+ display: -webkit-flex;
+    display: flex;
+   flex-direction:column; 
+     justify-content: center;*/
+    width: 60%;   
+}
+.flex-container-outer{
+    display: -webkit-flex;
+    display: flex;
+}
+.flex-item{
+    margin: 1px;
+}
+.flex-item.flex-item1{
+    height: 100%;
+    width: 40%;
+}
+.flex-item.flex-item1 img{  
+    width: 100%;
+    height: 190px;
+}
+.flex-item.flex-item2>.cardTextDivV2{  
+  padding: 0px 0px 0px 10px;
+}  
+.flex-item.flex-item2.upper{  
+  height:138px; 
+}  
+.flex-item.flex-item2.lower{  
+  height:50px; 
+}  
+.cardTxtHeading{
+  font-size:20px;
+  display: block;
+}
+.cardTxtSub{
+    color: gray;
+    font-size: small;
+}
+.cardDataImgVersion3{
+  position: relative;
+}
+ .bottomleft {
+    position: absolute;
+    bottom: 0;
+    left: 0.5em;
+    width: 400px;
+    font-weight: bold;
+    color: #fff;
+  }
+.xyz{
+    height: 190px;
+    width: 100%;
+}
+.xyzText{
+    position: absolute;
+    text-align: center;
+    font-size: 20px;
+    bottom: 0;
+    width: 100%;
+    font-weight: bold;
+    color: #fff;
 }
 
-.menu:after {
-  content: "]";
+  
+@media (max-width: 600px){
+  
+  .hamburger{
+    display: inline-block;
+    padding: 0px 10px 0px 10px;
+    height: 24px;
+    width: 24px;
+    background-image:url('assets/ic_menu_24px.svg');
+    background-repeat: no-repeat;
+    background-size: 24px 24px;
+  }
+  .hamburgerCross{
+    display: inline-block;
+    padding: 0px 10px 0px 10px;
+    height: 24px;
+    width: 24px;
+    background-image:url('assets/ic_close_24px.svg');
+        background-repeat: no-repeat;
+    background-size: 24px 24px;
+
+  }
+  .menuItemsMobile{
+     border-top:1px solid #dfdfdf;
+     padding: 10px;
+   text-decoration: none;
+   color: black;
+  }
+  .menuMobile{
+    display: flex;
+    background-color: white;
+    font-size: 15px;
+    font-weight: bold;
+    flex-direction: column;
+  }
+.menuDesktop, .menuItemsDesktop{
+  display: none;
+}
+}
+@media (min-width:601px){
+  .parentDisable{
+    position:fixed;
+    top:0;
+    left:0;
+    background:#000;
+    opacity:0.8;
+    z-index:998;
+    height:100%;
+    width:100%;
+  }
+  .menuMobile, .menuItemsMobile{
+  display: none;
+}
+  .menuDesktop{
+    display: flex;
+    background-color: white;
+    font-size: 15px;
+    font-weight: bold;
+  }
+  .menuItemsDesktop{
+   padding: 10px;
+   text-decoration: none;
+   color: black;
+  }
+  .hamburger{
+    display: none;
+  }
+  
+  .col1{
+    float: left;
+    max-width:50%;
+  }
+  .col2{
+    float: right;
+    max-width: 50%;
+  }
+
+  
 }
 
-.menu > li {
-  display: inline;
-}
 
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
-
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
-}

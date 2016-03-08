@@ -1,0 +1,30 @@
+<div id="destinationCard">
+	<div class="col1">
+	<section ng-repeat="cardData in dataCardList" class="{{cardData.version}}">
+		<div ng-switch on="cardData.version" >
+		    <div ng-switch-when="version1">
+				<ng-include src="'components/partials/widgets/destination-card/template1.html'"></ng-include>
+			</div>
+		    <div ng-switch-when="version2">
+				<ng-include src="'components/partials/widgets/destination-card/template2.html'"></ng-include>
+			</div>
+		    <div ng-switch-default>
+		    Error in data: Template version did not match.
+		    </div>
+		</div>
+	</section>
+	</div>
+	<div class="col2">
+		<section ng-repeat="cardData in dataCardListCol2" class="{{cardData.version}}">
+			<div ng-switch on="cardData.version" >
+			    <div ng-switch-when="version3">
+			        <ng-include src="'components/partials/widgets/destination-card/template3.html'"></ng-include>
+			    </div>
+			    <div ng-switch-default>
+			    Error in data: Template version did not match.
+			    </div>
+			</div>
+		</section>
+	</div>
+
+</div>
