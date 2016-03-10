@@ -25,7 +25,7 @@
                     </tbody>
                 </table>
                 <pagination total-items="matchesTotal.total" ng-model="matchesPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false"  items-per-page="matchesLimit" cg-busy="matchesTotal.$promise" ng-change="pageChanged()"></pagination>
-                <p><label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{subject['@id'] | encodeURI}}" role="button">Text</a></p>
+                <p><label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{subject['@id'] | encodeURI}}&amp;corpus_graph={{'http://kb.phenoscape.org/sim/genes' | encodeURI}}" role="button">Text</a></p>
             </div>
         </div>
         <script type="text/ng-template" id="micaPopover">
