@@ -162,11 +162,13 @@
                             <table class="table table-condensed table-striped" cg-busy="phenotypeGenes.$promise">
                                 <thead>
                                     <tr>
+                                        <th>Organism</th>
                                         <th>Gene</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="gene in phenotypeGenes.results">
+                                        <td><span class="common-taxon-group"><img ng-src="{{gene['@id'] | geneIDToImage}}"></span></td>
                                         <td><a href="{{gene['@id'] | linkToGene}}"><span>{{gene.label}}</span></a></td>
                                     </tr>
                                 </tbody>
@@ -187,11 +189,13 @@
                             <table class="table table-condensed table-striped" cg-busy="expressionGenes.$promise">
                                 <thead>
                                     <tr>
+                                        <th>Organism</th>
                                         <th>Gene</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="gene in expressionGenes.results">
+                                        <td><span class="common-taxon-group"><img ng-src="{{gene['@id'] | geneIDToImage}}"></span></td>
                                         <td><a href="{{gene['@id'] | linkToGene}}"><span>{{gene.label}}</span></term-name></a></td>
                                     </tr>
                                 </tbody>
