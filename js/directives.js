@@ -178,6 +178,7 @@ angular.module('pkb.directives', [])
         templateUrl: 'partials/classification.html',
         scope: {
             iri: '=',
+            definedBy: '@',
             linkFilter: '@'
         }
     }
@@ -189,6 +190,7 @@ angular.module('pkb.directives', [])
         templateUrl: 'partials/taxon_classification.html',
         scope: {
             iri: '=',
+            definedBy: '@',
             linkFilter: '@'
         }
     }

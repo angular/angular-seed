@@ -1002,7 +1002,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.eqs = PhenotypeAnnotations.query({iri: $scope.iri});
 })
 .controller('ClassificationController', function ($scope, $filter, Classification) {
-    $scope.classification = Classification.query({iri: $scope.iri})
+    $scope.classification = Classification.query({iri: $scope.iri, definedBy: $scope.definedBy});
     $scope.linkMaker = $filter($scope.linkFilter);
 })
 .controller('SimilarityViewController', function ($scope, SimilarityMatches, SimilarityAnnotationMatches, ProfileSize, SimilarityCorpusSize) {
