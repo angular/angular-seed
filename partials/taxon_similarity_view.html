@@ -9,6 +9,7 @@
                 <table class="table table-condensed">
                     <thead>
                         <tr>
+                            <th>Organism</th>
                             <th>Gene</th>
                             <th popover="The Expect score is the number of matches one should expect to see at this level of similarity given the size of the database. The lower the Expect score, the more significant the match is." popover-trigger="mouseenter" popover-placement="bottom">Expect Score&nbsp;<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></th>
                             <th></th>
@@ -16,6 +17,7 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="match in topMatches.results" ng-click="selectMatch(match);" ng-class="{'info': (match === selectedMatch), 'active': hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+                            <td><span class="common-taxon-group"><img ng-src="{{match.match_profile['@id'] | geneIDToImage}}"></span></td>
                             <td><term-name iri="match.match_profile['@id']"></term-name></td>
                             <td class="text-center"><a>{{match.expect_score > 0.0 &amp;&amp; match.expect_score &lt; 0.01 ? (match.expect_score | scientificNotation : {decimals: 1, fraction: 1}) : (match.expect_score | number: 2) }}</a></td>
                             <td><span ng-show="hover || (match === selectedMatch)">➠</span></td>
@@ -26,6 +28,18 @@
                 <p><label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{subject['@id'] | encodeURI}}" role="button">Text</a></p>
             </div>
         </div>
+        <script type="text/ng-template" id="micaPopover">
+            <form>
+                <div class="form-group">
+                    <label for="mica">Most Informative Common Ancestor</label>
+                    <p name="mica" class="form-control-static"><a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a></p>
+                  </div>
+                  <div class="form-group">
+                      <label for="ic">Information Content</label>
+                      <p name="ic" class="form-control-static"><span>{{match.best_subsumer.ic | number : 2}}</span></p>
+                  </div>
+              </form>
+        </script>
         <div class="col-sm-8">
           <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2>
           </div>
@@ -59,18 +73,6 @@
                     </div>
                 </form>
             </div>
-            <script type="text/ng-template" id="micaPopover">
-                <form>
-                    <div class="form-group">
-                        <label for="mica">Most Informative Common Ancestor</label>
-                        <p name="mica" class="form-control-static"><a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a></p>
-                      </div>
-                      <div class="form-group">
-                          <label for="ic">Information Content</label>
-                          <p name="ic" class="form-control-static"><span>{{match.best_subsumer.ic | number : 2}}</span></p>
-                      </div>
-                  </form>
-            </script>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
                     <tr>

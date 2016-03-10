@@ -28,6 +28,18 @@
                 <p><label>Download all matches:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/similarity/query?limit=0&amp;iri={{subject['@id'] | encodeURI}}" role="button">Text</a></p>
             </div>
         </div>
+        <script type="text/ng-template" id="micaPopover">
+            <form>
+                <div class="form-group">
+                    <label for="mica">Most Informative Common Ancestor</label>
+                    <p name="mica" class="form-control-static"><a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a></p>
+                  </div>
+                  <div class="form-group">
+                      <label for="ic">Information Content</label>
+                      <p name="ic" class="form-control-static"><span>{{match.best_subsumer.ic | number : 2}}</span></p>
+                  </div>
+              </form>
+        </script>
         <div class="col-sm-8">
           <div ng-hide="selectedMatch" class="well"><h2 class="text-center"><i class="small">Click on any row to the left to view detailed results</i></h2>
           </div>
@@ -61,18 +73,6 @@
                     </div>
                 </form>
             </div>
-            <script type="text/ng-template" id="micaPopover">
-                <form>
-                    <div class="form-group">
-                        <label for="mica">Most Informative Common Ancestor</label>
-                        <p name="mica" class="form-control-static"><a title="{{match.best_subsumer.term['@id']}}">{{match.best_subsumer.term.label}}</a></p>
-                      </div>
-                      <div class="form-group">
-                          <label for="ic">Information Content</label>
-                          <p name="ic" class="form-control-static"><span>{{match.best_subsumer.ic | number : 2}}</span></p>
-                      </div>
-                  </form>
-            </script>
             <table class="table table-condensed table-striped" cg-busy="annotationMatches.$promise">
                 <thead>
                     <tr>
