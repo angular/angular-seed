@@ -620,7 +620,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.queryTotal();
     
     
-    // if (angular.isDefined(taxa)) {
+// if (angular.isDefined(taxa)) {
 //         urlQueryParams.taxa = taxa.map(function (item) {
 //             return Label.query({iri: item});
 //         });
@@ -1047,99 +1047,127 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         }
     });
 })
-.controller('VisualizationController', function ($scope) {
-    $scope.spec = {
-        "width": 400,
-        "height": 200,
-        "padding": {"top": 10, "left": 30, "bottom": 20, "right": 10},
+.controller('VisualizationController', function ($scope, $q, TaxaWithPhenotype, OMN) {
+    $scope.$watch('structures', function (newValue, oldValue) {
+        queryNewData();
+    });
+    $scope.$watch('values', function (newValue, oldValue) {
+        console.log($scope.values);
+        updateSpec();
+    });
+    $scope.structures = [
+        {'@id': "http://purl.obolibrary.org/obo/UBERON_0003097", label: "dorsal fin"},
+        {'@id': "http://purl.obolibrary.org/obo/UBERON_4000164", label: "caudal fin"},
+        {'@id': "http://purl.obolibrary.org/obo/UBERON_2000251", label: "adipose fin"},
+        {'@id': "http://purl.obolibrary.org/obo/UBERON_4000163", label: "anal fin"}
+    ];
+    function queryNewData() {
+        var allTaxonCounts = $scope.structures.map(function (item) {
+            return {
+                structure: item,
+                result: TaxaWithPhenotype.query({
+                    entity: OMN.angled(item['@id']), 
+                    total: true})};
+            });
+            var allTaxonCountPromises = allTaxonCounts.map(function (item) {
+                return item.result.$promise;
+            });
+            $q.all(allTaxonCountPromises).then(function (data) {
+                $scope.values = allTaxonCounts.map(function (item) {
+                    console.log(item.result);
+                    return {
+                        category: item.structure.label,
+                        amount: item.result.total
+                    };
+                });
+            });
+        }
+        
+        function updateSpec() {
+            $scope.spec = {
+            "width": 400,
+            "height": 200,
+            "padding": {"top": 10, "left": 50, "bottom": 20, "right": 10},
 
-        "data": [
-            {
-                "name": "table",
-                "values": [
-                    {"category":"A", "amount":28},
-                    {"category":"B", "amount":55},
-                    {"category":"C", "amount":43},
-                    {"category":"D", "amount":91},
-                    {"category":"E", "amount":81},
-                    {"category":"F", "amount":53},
-                    {"category":"G", "amount":19},
-                    {"category":"H", "amount":87},
-                    {"category":"I", "amount":52}
-                ]
-            }
-        ],
-
-        "signals": [
-            {
-                "name": "tooltip",
-                "init": {},
-                "streams": [
-                    {"type": "rect:mouseover", "expr": "datum"},
-                    {"type": "rect:mouseout", "expr": "{}"}
-                ]
-            }
-        ],
-
-        "predicates": [
-            {
-                "name": "tooltip", "type": "==", 
-                "operands": [{"signal": "tooltip._id"}, {"arg": "id"}]
-            }
-        ],
-
-        "scales": [
-            { "name": "xscale", "type": "ordinal", "range": "width",
-            "domain": {"data": "table", "field": "category"} },
-            { "name": "yscale", "range": "height", "nice": true,
-            "domain": {"data": "table", "field": "amount"} }
-        ],
-
-        "axes": [
-            { "type": "x", "scale": "xscale" },
-            { "type": "y", "scale": "yscale" }
-        ],
-
-        "marks": [
-            {
-                "type": "rect",
-                "from": {"data":"table"},
-                "properties": {
-                    "enter": {
-                        "x": {"scale": "xscale", "field": "category"},
-                        "width": {"scale": "xscale", "band": true, "offset": -1},
-                        "y": {"scale": "yscale", "field": "amount"},
-                        "y2": {"scale": "yscale", "value":0}
-                    },
-                    "update": { "fill": {"value": "steelblue"} },
-                    "hover": { "fill": {"value": "red"} }
+            "data": [
+                {
+                    "name": "table",
+                    "values": $scope.values
                 }
-            },
-            {
-                "type": "text",
-                "properties": {
-                    "enter": {
-                        "align": {"value": "center"},
-                        "fill": {"value": "#333"}
-                    },
-                    "update": {
-                        "x": {"scale": "xscale", "signal": "tooltip.category"},
-                        "dx": {"scale": "xscale", "band": true, "mult": 0.5},
-                        "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -5},
-                        "text": {"signal": "tooltip.amount"},
-                        "fillOpacity": {
-                            "rule": [
-                                {
-                                    "predicate": {"name": "tooltip", "id": {"value": null}},
-                                    "value": 0
-                                },
-                                {"value": 1}
-                            ]
+            ],
+
+            "signals": [
+                {
+                    "name": "tooltip",
+                    "init": {},
+                    "streams": [
+                        {"type": "rect:mouseover", "expr": "datum"},
+                        {"type": "rect:mouseout", "expr": "{}"}
+                    ]
+                }
+            ],
+
+            "predicates": [
+                {
+                    "name": "tooltip", "type": "==", 
+                    "operands": [{"signal": "tooltip._id"}, {"arg": "id"}]
+                }
+            ],
+
+            "scales": [
+                { "name": "xscale", "type": "ordinal", "range": "width",
+                "domain": {"data": "table", "field": "category"} },
+                { "name": "yscale", "range": "height", "nice": true,
+                "domain": {"data": "table", "field": "amount"} }
+            ],
+
+            "axes": [
+                { "type": "x", "scale": "xscale" },
+                { "type": "y", "scale": "yscale" }
+            ],
+
+            "marks": [
+                {
+                    "type": "rect",
+                    "from": {"data":"table"},
+                    "properties": {
+                        "enter": {
+                            "x": {"scale": "xscale", "field": "category"},
+                            "width": {"scale": "xscale", "band": true, "offset": -1},
+                            "y": {"scale": "yscale", "field": "amount"},
+                            "y2": {"scale": "yscale", "value":0}
+                        },
+                        "update": { "fill": {"value": "steelblue"} },
+                        "hover": { "fill": {"value": "red"} }
+                    }
+                },
+                {
+                    "type": "text",
+                    "properties": {
+                        "enter": {
+                            "align": {"value": "center"},
+                            "fill": {"value": "#333"}
+                        },
+                        "update": {
+                            "x": {"scale": "xscale", "signal": "tooltip.category"},
+                            "dx": {"scale": "xscale", "band": true, "mult": 0.5},
+                            "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -5},
+                            "text": {"signal": "tooltip.amount"},
+                            "fillOpacity": {
+                                "rule": [
+                                    {
+                                        "predicate": {"name": "tooltip", "id": {"value": null}},
+                                        "value": 0
+                                    },
+                                    {"value": 1}
+                                ]
+                            }
                         }
                     }
                 }
-            }
-        ]
-    };
+            ]
+        };
+    
+    }
 })
 ;

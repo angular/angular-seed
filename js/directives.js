@@ -194,15 +194,4 @@ angular.module('pkb.directives', [])
             linkFilter: '@'
         }
     }
-})
-.directive('taxaWithPhenotypesByStructure', function () {
-    return {
-        restrict: 'E',
-        scope: {
-            structures: '='
-        },
-        link: function (scope, element, attrs) {
-            
-        }
-    }
 });
