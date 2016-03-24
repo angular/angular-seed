@@ -1052,7 +1052,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         queryNewData();
     });
     $scope.$watch('values', function (newValue, oldValue) {
-        console.log($scope.values);
         updateSpec();
     });
     $scope.structures = [
@@ -1074,7 +1073,6 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
             });
             $q.all(allTaxonCountPromises).then(function (data) {
                 $scope.values = allTaxonCounts.map(function (item) {
-                    console.log(item.result);
                     return {
                         category: item.structure.label,
                         amount: item.result.total
