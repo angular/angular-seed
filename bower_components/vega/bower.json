@@ -1,0 +1,40 @@
+{
+  "name": "vega",
+  "main": "vega.js",
+  "homepage": "http://vega.github.io/vega/",
+  "description": "The Vega visualization grammar.",
+  "keywords": [
+    "vega",
+    "visualization",
+    "interaction",
+    "dataflow",
+    "grammar",
+    "data",
+    "d3"
+  ],
+  "authors": [
+    "Arvind Satyanarayan (http://arvindsatya.com)",
+    "Jeffrey Heer (http://idl.cs.washington.edu)"
+  ],
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "d3": "^3.5.6"
+  },
+  "ignore": [
+    ".DS_Store",
+    ".git",
+    ".gitignore",
+    ".npmignore",
+    ".jshintrc",
+    ".travis.yml",
+    "bin",
+    "coverage",
+    "examples",
+    "index.js",
+    "node_modules",
+    "output",
+    "scripts",
+    "src",
+    "test"
+  ]
+}

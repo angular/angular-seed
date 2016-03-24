@@ -1,0 +1,42 @@
+{
+  "name": "ng-vega",
+  "main": "dist/ng-vega.min.js",
+  "homepage": "https://github.com/kristw/ng-vega",
+  "authors": [
+    "Krist Wongsuphasawat <krist.wongz@gmail.com>",
+    "eptify"
+  ],
+  "description": "Angular directive for rendering vega specs",
+  "keywords": [
+    "d3",
+    "chart",
+    "angular",
+    "angularjs",
+    "vega",
+    "ng-vega",
+    "angular-vega"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "src",
+    "examples",
+    "docs",
+    "gruntFile.js",
+    "grunt/*.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "d3": "~3.5.5",
+    "vega": "~2.4.2",
+    "angular": "~1.3.15"
+  },
+  "devDependencies": {
+    "bootstrap": "~3.3.4",
+    "angular-ui-ace": "~0.2.3"
+  }
+}

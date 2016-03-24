@@ -7,6 +7,7 @@ angular.module('pkb', [
 'cgBusy',
 'ngScientificNotation',
 'swd.inspector-gadget',
+'ngVega',
 'pkb.filters',
 'pkb.services',
 'pkb.directives',
@@ -30,5 +31,6 @@ config(['$routeProvider', function($routeProvider) {
     $routeProvider.when('/ontotrace', {templateUrl: 'partials/ontotrace.html', controller: 'OntoTraceController'});
     $routeProvider.when('/similarity', {templateUrl: 'partials/similarity.html', controller: 'SimilarityController'});
     $routeProvider.when('/annotate_text', {templateUrl: 'partials/annotate_text.html', controller: 'AnnotateTextController'});
+    $routeProvider.when('/visualization', {templateUrl: 'partials/visualization.html', controller: 'VisualizationController'});
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);

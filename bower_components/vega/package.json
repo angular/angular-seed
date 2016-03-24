@@ -1,0 +1,102 @@
+{
+  "name": "vega",
+  "version": "2.4.2",
+  "description": "The Vega visualization grammar.",
+  "keywords": [
+    "vega",
+    "visualization",
+    "interaction",
+    "dataflow",
+    "grammar",
+    "data",
+    "d3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/vega/vega.git"
+  },
+  "author": {
+    "name": "Arvind Satyanarayan",
+    "url": "http://arvindsatya.com"
+  },
+  "contributors": [
+    {
+      "name": "Jeffrey Heer",
+      "url": "http://idl.cs.washington.edu"
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "main": "index.js",
+  "bin": {
+    "vg2png": "./bin/vg2png",
+    "vg2svg": "./bin/vg2svg"
+  },
+  "dependencies": {
+    "d3": "^3.5.9",
+    "d3-geo-projection": "^0.2.15",
+    "d3-cloud": "^1.2.1",
+    "datalib": "^1.5.8",
+    "topojson": "^1.6.19",
+    "vega-dataflow": "^1.3.2",
+    "vega-expression": "^1.0.3",
+    "vega-logging": "^1.0.1",
+    "vega-scenegraph": "^1.0.16",
+    "yargs": "^3.30.0"
+  },
+  "optionalDependencies": {
+    "canvas": "^1.3.4"
+  },
+  "devDependencies": {
+    "browserify": "^10.2.6",
+    "browserify-shim": "^3.8.9",
+    "browserify-versionify": "^1.0.4",
+    "chai": "^3.0.0",
+    "chai-spies": "^0.6.0",
+    "exorcist": "^0.4.0",
+    "istanbul": "latest",
+    "jsdom": "^3.0.0",
+    "jshint": "^2.8.0",
+    "jstransform": "^11.0.2",
+    "mocha": "^2.2.5",
+    "pegjs": "~0.8.0",
+    "through": "^2.3.8",
+    "tv4": "^1.1.12",
+    "uglify-js": "^2.4.24",
+    "watchify": "^3.2.3",
+    "xmldom": "^0.1.19",
+    "xpath": "^0.0.9"
+  },
+  "scripts": {
+    "deploy": "npm run lint && npm run test && scripts/deploy.sh",
+    "lint": "jshint src/",
+    "test": "mocha --timeout 30000 --recursive test/",
+    "cover": "istanbul cover _mocha -- --timeout 30000 --recursive test/",
+    "pegjs": "pegjs src/parse/events.pegjs",
+    "build": "npm run pegjs && browserify index.js -d -s vg | exorcist vega.js.map > vega.js",
+    "postbuild": "uglifyjs vega.js -cm > vega.min.js",
+    "schema": "node scripts/schema.js > vega-schema.json",
+    "watch": "watchify index.js -v -d -s vg -o 'exorcist vega.js.map > vega.js'"
+  },
+  "browser": {
+    "buffer": false,
+    "canvas": false,
+    "fs": false,
+    "http": false,
+    "request": false,
+    "sync-request": false,
+    "url": false
+  },
+  "browserify": {
+    "transform": [
+      "./scripts/strip-schema",
+      "browserify-shim",
+      "browserify-versionify"
+    ]
+  },
+  "browserify-shim": {
+    "d3": "global:d3",
+    "d3-cloud": "global:d3.layout.cloud",
+    "canvas": "global:canvas",
+    "topojson": "global:topojson"
+  }
+}
