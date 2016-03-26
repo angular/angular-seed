@@ -1,0 +1,20 @@
+{
+  "name": "angular-loader",
+  "version": "1.4.10",
+  "license": "MIT",
+  "main": "./angular-loader.js",
+  "ignore": [],
+  "dependencies": {
+    "angular": "1.4.10"
+  },
+  "homepage": "https://github.com/angular/bower-angular-loader",
+  "_release": "1.4.10",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.4.10",
+    "commit": "a1594fa4fe4f504e9628c37626f6a1b4b19a8810"
+  },
+  "_source": "git://github.com/angular/bower-angular-loader.git",
+  "_target": "~1.4.0",
+  "_originalSource": "angular-loader"
+}

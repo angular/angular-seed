@@ -1,0 +1,82 @@
+[
+    {
+        "_id": 1,
+        "name": "Teleios Code Jam",
+        "logoUrl": "http://static1.squarespace.com/static/54ec84d5e4b0feaa477cd257/t/54f084b3e4b0805275061e1b/1453466904853/?format=1500w",
+        "web": "http://www.teleioscodejam.com/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/TeleiosCodeJam/"},
+                {"name": "Twitter", "url":"https://www.twitter.com/TeleiosCodeJam/"},
+                {"name": "Instagram", "url":"https://www.instagram.com/TeleiosCodeJam/"},
+                {"name": "YouTube", "url":"https://www.youtube.com/user/TeleiosCodeJam"}
+            ],
+        "description": "Teleios Code Jam (TCJ) seeks to inspire and motivate students to recognize their talent and capacity to write software.",
+        "categories": ["software development", "advocacy"]
+    },
+    {
+        "_id": 2,
+        "name": "Game Developers Trinidad and Tobago",
+        "logoUrl": "img/tech_community.png",
+        "web": "https://www.facebook.com/groups/GameDevsTT/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/groups/GameDevsTT/"},
+                {"name": "IRC", "url":"http://irc.gamesurge.net/#GDTT"},
+                {"name": "DiscordApp", "url":"https://discordapp.com/channels/145965581500153856/145965581500153856"}
+                
+            ],
+        "description": "Group for Hobbyist, Pros, Modders, Designers and Artists in the field of Game Design/Development.",
+        "categories": ["game development"]
+    },
+    {
+        "_id": 3,
+        "name": "Trinidad and Tobago Computer Society",
+        "logoUrl": "http://ttcsweb.pbworks.com/f/1236559057/ttcsweb_logo.png",
+        "web": "http://www.cs.tt/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/ttcsweb"},
+                {"name": "Twitter", "url":"https://twitter.com/ttcs"}
+            ],
+        "description": "The Trinidad and Tobago Computer Society (TTCS) is a computer user group based in Trinidad.",
+        "categories": ["computing", "information technology", "telecommunications", "advocacy"]
+    },
+    {
+        "_id": 4,
+        "name": "Trinidad and Tobago Android Community",
+        "logoUrl": "img/tech_community.png",
+        "web": "https://www.facebook.com/groups/145888575510444/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/groups/145888575510444/"}
+            ],
+        "description": "T&T Android Users and Enthusiast Community",
+        "categories": ["mobile", "android"]
+    },
+    {
+        "_id": 5,
+        "name": "Linux Users Trinidad and Tobago (Linux Group)",
+        "logoUrl": "https://scontent-mia1-1.xx.fbcdn.net/hphotos-frc1/v/t1.0-9/10445526_10154313469140403_2500794793352099157_n.jpg?oh=e0de6f2c570f95b6df98876a04128b15&oe=5788C8E6",
+        "web": "https://www.facebook.com/groups/ttlug/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/groups/ttlug/"},
+                {"name": "Twitter", "url":"https://twitter.com/ttlug"}
+            ],
+        "description": "We are a group of Linux users *mostly* physically located in Trinidad and Tobago, or with ties to Trinidad and Tobago. We are ALL about Linux, GNU/Linux and discussions featuring Linux and other operating systems, and the utilities that work in it. Discussions about the Linux kernel, KDE, GNOME, LXDE, Ubuntu, technical issues are all fine. Using your devices with Linux: fine!",
+        "categories": ["linux"]
+    },
+    {
+        "_id": 6,
+        "name": "TTAN Trinidad and Tobago Animation Network",
+        "logoUrl": "img/tech_community.png",
+        "web": "https://www.facebook.com/groups/TTANmail/",
+        "social": 
+            [ 
+                {"name": "Facebook", "url":"https://www.facebook.com/groups/TTANmail/"}
+            ],
+        "description": "The Trinidad and Tobago Animation Network is a group of Trinbagonian animators (and people servicing the animation industry) both locally and internationally.",
+        "categories": ["animation"]
+    }
+]
