@@ -1,41 +1,69 @@
-<!DOCTYPE html>
+<!DOCTYPE html ng-app="TechTTApp">
 <!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="TechTTApp" class="no-js"> <!--<![endif]-->
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>My AngularJS App</title>
-  <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
-  <link rel="stylesheet" href="app.css">
-  <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+  <title>Tech-TT: Trinidad &amp; Tobago Technology Directory</title>
+  <meta name="description" content="">
+  <link href="components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="components/bootstrap-select/dist/css/bootstrap-select.min.css">
+
+  <link rel="stylesheet" href="css/app.css">
+  
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
 </head>
 <body>
-  <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
-  </ul>
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation" class="active"><a href="#">Home</a></li>
+           <!-- <li role="presentation"><a href="#/view1">About</a></li>
+            <li role="presentation"><a href="#/view2">Get Involved</a></li>-->
+          </ul>
+        </nav>
+        <h3 class="text-muted"><div>Tech-TT: v<span app-version></span></div></h3>
+      </div>
+
+      <div class="jumbotron">
+        <h1>Trinidad and Tobago Technology Directory</h1>
+        <p class="lead">The directory lists the various groups and communities operating in and about Trinidad and Tobago that focus on Technology.  
+            These groups may include software developers, gamers, creators, designers, advocates and entrepreneurs.  
+            At the directory, view contact information and statistics on their activity, including meetups, memberships and happenings in the news.</p>
+        <p><a class="btn btn-lg btn-success" href="#/view2" role="button">Get listed</a></p>
+      </div>
+      <div ng-view></div>
+      
+    </div>
+      
 
   <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
   <![endif]-->
 
-  <div ng-view></div>
+  
 
-  <div>Angular seed app: v<span app-version></span></div>
-
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
-  -->
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
-  <script src="app.js"></script>
-  <script src="view1/view1.js"></script>
-  <script src="view2/view2.js"></script>
+  
+  
+  <script src="components/jquery/dist/jquery.min.js"></script>  
+  <script src="components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="components/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+  <script src="components/angular/angular.js"></script>
+  <script src="components/angular-route/angular-route.js"></script>
+  <script src="components/angular-resource/angular-resource.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/controllers.js"></script>
+  <script src="js/services.js"></script>
   <script src="components/version/version.js"></script>
   <script src="components/version/version-directive.js"></script>
   <script src="components/version/interpolate-filter.js"></script>

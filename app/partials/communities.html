@@ -1,0 +1,50 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+      <!--Sidebar content-->
+      
+      <input type="text" class="form-control" placeholder="Search" ng-model="query">
+    </div>
+      <div class="col-md-4">
+          <div class="form-group">
+        <label class="control-label">Sort by</label>
+        <select class="form-control" style="display:inline-block; width: 75%" ng-model="orderProp">
+            <option value="name">Alphabetical</option>
+            <option value="category">Category</option>
+        </select>
+          </div>
+      </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <!--Body content-->
+
+      <ul class="communities">
+        <li ng-repeat="community in communities | filter:query | orderBy:orderProp"
+            class="col-md-3 community-listing" >
+            <div style="height:14em;text-overflow:ellipsis;margin:2px;">
+                <div class="row">
+                    <a href="{{community.web}}" target="_blank" class="thumb">
+                        <img style="height:40px" ng-src="{{community.logoUrl}}" alt="{{community.name}}">
+                    </a>
+                </div>
+                <div class="row">
+                    <h4><a href="{{community.web}}" target="_blank" >{{community.name}}</a></h4>
+                </div>
+                <div class="row " >
+                    <p>{{community.description}}</p>
+                </div>
+                <div class="row">
+                    <ul  class="list-inline">
+                        <li ng-repeat="social in community.social">
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span> <a href="{{social.url}}" target="_blank" >{{social.name}}</a>    
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</div>
