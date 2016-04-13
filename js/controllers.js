@@ -387,8 +387,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
         classification: {active: true},
         phenotypes: {active: false},
         variation: {active: false},
-        similarity: {active: false},
-        misc: {active: false}
+        similarity: {active: false}
     }
     $scope.activateTab = function (tabname) {
         if (_.has($scope.tabs, tabname)) {

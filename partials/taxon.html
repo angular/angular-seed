@@ -8,6 +8,7 @@
                         <taxon-classification iri="taxonID" defined-by="http://purl.obolibrary.org/obo/vto.owl" link-filter="linkToTaxon"></taxon-classification>
                     </div>
                 </div>
+                <p><label>Get Newick tree for this taxon (based on the VTO classification):</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="http://kb.phenoscape.org/kb/taxon/newick?iri={{taxonID | encodeURI}}" role="button">Text</a></p>
             </tab>
             <tab active="tabs.phenotypes.active" select="activateTab('phenotypes')">
                 <tab-heading>Phenotypes <span class="badge">{{phenotypeProfileTotal.total}}</span></tab-heading>
@@ -100,13 +101,6 @@
             </tab>
             <tab heading="Similar gene phenotypes" active="tabs.similarity.active" select="activateTab('similarity')">
                 <taxon-similarity-view subject="taxon" corpus-graph="http://kb.phenoscape.org/sim/genes" query-graph="http://kb.phenoscape.org/sim/taxa"></taxon-similarity-view>
-            </tab>
-            <tab heading="Misc" active="tabs.misc.active" select="activateTab('misc')">
-                <div class="panel panel-default top-buffer">
-                    <div class="panel-body">
-                        <a href="http://kb.phenoscape.org/kb/taxon/newick?iri={{taxonID | encodeURI}}">Get Newick tree for this taxon (based on the VTO classification)</a>
-                    </div>
-                </div>
             </tab>
         </tabset>
     </div>
