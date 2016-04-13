@@ -47,12 +47,14 @@
                             <table class="table table-condensed table-striped" cg-busy="taxaWithPhenotypes.$promise">
                                 <thead>
                                     <tr>
+                                        <th>Group</th>
                                         <th>Taxon</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithPhenotypes.results">
+                                        <td><common-group taxon="taxon['@id']"></common-group></td>
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}"><taxon-name iri="taxon['@id']"></taxon-name></a></td>
                                         <td><a href="{{ {taxon: taxon, entity: {'@id': termID}, quality: filters.phenotypesQualityFilter} | linkToTaxonPhenotypeProfile}}">View phenotypes <counted-phenotypes-for-taxon taxon="taxon" entity="{'@id': termID}" quality="filters.phenotypesQualityFilter"/></a></td>
                                     </tr>
@@ -85,12 +87,14 @@
                             <table class="table table-condensed table-striped" cg-busy="taxaWithPresence.$promise">
                                 <thead>
                                     <tr>
+                                        <th>Group</th>
                                         <th>Taxon</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithPresence.results">
+                                        <td><common-group taxon="taxon['@id']"></common-group></td>
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}"><taxon-name iri="taxon['@id']"></taxon-name></a></td>
                                         <td><a href="{{ {entity: {'@id': termID}, taxon: taxon} | linkToTaxonPresencePhenotypeProfile}}">View phenotypes <counted-presence-or-absence-for-taxon taxon="taxon" entity="{'@id': termID}" kind="presence"/></a></td>
                                     </tr>
@@ -123,12 +127,14 @@
                             <table class="table table-condensed table-striped" cg-busy="taxaWithAbsence.$promise">
                                 <thead>
                                     <tr>
+                                        <th>Group</th>
                                         <th>Taxon</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="taxon in taxaWithAbsence.results">
+                                        <td><common-group taxon="taxon['@id']"></common-group></td>
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}"><taxon-name iri="taxon['@id']"></taxon-name></a></td>
                                         <td><a href="{{ {entity: {'@id': termID}, taxon: taxon} | linkToTaxonAbsencePhenotypeProfile}}">View phenotypes <counted-presence-or-absence-for-taxon taxon="taxon" entity="{'@id': termID}" kind="absence"/></a></td>
                                     </tr>
