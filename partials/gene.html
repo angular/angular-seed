@@ -32,7 +32,6 @@
             </tab>
             <tab active="tabs.expression.active" select="activateTab('expression')">
                 <tab-heading>Expression <span class="badge">{{expression.results.length}}</span></tab-heading>
-                <div class="alert alert-warning top-buffer" role="alert" ng-show="{{geneID.indexOf('www.informatics.jax.org') > -1}}">Due to a data glitch, labels are not currently available for mouse gene expression location terms. They are coming soon.</div>
                 <div class="panel panel-default top-buffer">
                     <div class="panel-heading">
                         <h4>Expression locations associated with {{gene.label}}</h4>
