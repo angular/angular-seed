@@ -43,17 +43,17 @@
                             <accordion close-others="true" class="search-accordion">
                                 <accordion-group heading="Anatomical structures" is-disabled="!anatomyResults.results.length > 0" cg-busy="anatomyResults.$promise" class="search-accordion-group">
                                     <ul class="list-inline">
-                                        <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}">{{anatomyTerm.label}}</a></li>
+                                        <li ng-repeat="anatomyTerm in anatomyResults.results"><a href="#/entity/{{anatomyTerm['@id'] | encodeURI }}"  ng-click="clickLink()">{{anatomyTerm.label}}</a></li>
                                     </ul>
                                 </accordion-group>
                                 <accordion-group heading="Taxa" is-disabled="!taxaResults.results.length > 0" cg-busy="taxaResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
                                   <ul class="list-inline">
-                                      <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}">{{taxon.label}}</a></li>
+                                      <li ng-repeat="taxon in taxaResults.results"><a href="#/taxon/{{taxon['@id'] | encodeURI }}" ng-click="clickLink()">{{taxon.label}}</a></li>
                                   </ul>
                                 </accordion-group>
                                 <accordion-group heading="Genes" is-disabled="!geneResults.results.length > 0" cg-busy="geneResults.$promise" style="box-shadow: 10px 10px 5px #888888;">
                                     <ul class="list-inline">
-                                        <li ng-repeat="gene in geneResults.results"><a href="#/gene/{{gene['@id'] | encodeURI}}">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
+                                        <li ng-repeat="gene in geneResults.results"><a href="#/gene/{{gene['@id'] | encodeURI}}" ng-click="clickLink()">{{gene.label}} <small>({{gene.taxon.label}})</small></a></li>
                                     </ul>
                                 </accordion-group>
                             </accordion>

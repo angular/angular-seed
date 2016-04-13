@@ -4,6 +4,10 @@
 
 angular.module('pkb.controllers', ['ui.bootstrap'])
 .controller('AppController', function ($scope, AnatomicalTermSearch, OntologyTermSearch, GeneSearch, Vocab) {
+    $scope.clickLink = function () {
+        $scope.clearSearch();
+    };
+    
     $scope.clearSearch = function () {
         $scope.searchText = null;
         $scope.clearResults();
