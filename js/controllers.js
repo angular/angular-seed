@@ -59,7 +59,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.term = Term.query({'iri': $scope.termID});
     
     $scope.tabs = {
-        classification: {active: true},
+        properties: {active: true},
         taxa: {active: false},
         genes: {active: false},
     }
@@ -388,7 +388,7 @@ angular.module('pkb.controllers', ['ui.bootstrap'])
     $scope.variationProfilePageChanged(1);
     
     $scope.tabs = {
-        classification: {active: true},
+        properties: {active: true},
         phenotypes: {active: false},
         variation: {active: false},
         similarity: {active: false}
