@@ -22,7 +22,7 @@
             <tab heading="Taxa" active="tabs.taxa.active" select="activateTab('taxa')">
                 <tabset type="pills" class="top-buffer">
                     <tab active="taxaTabs.phenotypes.active" select="activateTaxaTab('phenotypes')">
-                        <tab-heading>Phenotypes <span class="badge">{{taxaWithPhenotypesTotal.total}}</span></tab-heading>
+                        <tab-heading>Phenotypes <span class="badge">{{taxaWithPhenotypesTotal.total}} </span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting phenotypes for {{term.label}}</h4></div>
                             <div class="panel-body">
@@ -40,6 +40,13 @@
                                             <input id="qualityInputPhenotypes" type="text" ng-model="filters.phenotypesQualityFilter" placeholder="any phenotypic quality" typeahead="quality as quality.label for quality in autocompleteQuality($viewValue)" typeahead-loading="loadingQualityPhenotypes" typeahead-wait-ms="300" typeahead-editable="false" class="form-control">
                                             <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesQualityFilter"></span>
                                             <i ng-show="loadingQualityPhenotypes" class="glyphicon glyphicon-refresh"></i>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" ng-model="filters.phenotypesTaxaIncludeParts"> Include parts of {{term.label}}
+                                                </label>
+                                            </div>
                                         </div>
                                     </form>
                                 </div>
@@ -68,7 +75,7 @@
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="{{ {entity: {'@id': termID}, quality: filters.phenotypesQualityFilter, in_taxon: filters.phenotypesTaxonFilter} | linkToTaxaWithPhenotypeDownload}}" role="button">Text</a></p>
                     </tab>
                     <tab active="taxaTabs.presence.active" select="activateTaxaTab('presence')">
-                        <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}}</span></tab-heading>
+                        <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}} </span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting presence of {{term.label}}</h4></div>
                             <div class="panel-body">
@@ -108,7 +115,7 @@
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/entity/presence?limit=0&amp;entity={{termID | encodeURI}}" role="button">Text</a></p>
                     </tab>
                     <tab active="taxaTabs.absence.active" select="activateTaxaTab('absence')">
-                        <tab-heading>Absence <span class="badge">{{taxaWithAbsenceTotal.total}}</span></tab-heading>
+                        <tab-heading>Absence <span class="badge">{{taxaWithAbsenceTotal.total}} </span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading"><h4>Taxa exhibiting absence of {{term.label}}</h4></div>
                             <div class="panel-body">
@@ -152,7 +159,7 @@
             <tab heading="Genes" active="tabs.genes.active" select="activateTab('genes')">
                 <tabset type="pills" class="top-buffer">
                     <tab active="genesTabs.phenotypes.active" select="activateGenesTab('phenotypes')">
-                        <tab-heading>Phenotypes <span class="badge">{{phenotypeGenesTotal.total}}</span></tab-heading>
+                        <tab-heading>Phenotypes <span class="badge">{{phenotypeGenesTotal.total}} </span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading">
                                 <h4>Genes affecting phenotypes for this structure</h4>
@@ -184,7 +191,7 @@
                         <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="http://kb.phenoscape.org/kb/gene/affecting_entity_phenotype?limit=0&amp;iri={{termID | encodeURI}}&amp;parts={{phenotypeGenesSettings.includeParts}}" role="button">Text</a></p>
                     </tab>
                     <tab active="genesTabs.expression.active" select="activateGenesTab('expression')">
-                        <tab-heading>Expression <span class="badge">{{expressionGenesTotal.total}}</span></tab-heading>
+                        <tab-heading>Expression <span class="badge">{{expressionGenesTotal.total}} </span></tab-heading>
                         <div class="panel panel-default top-buffer">
                             <div class="panel-heading">
                                 <h4>Genes expressed within this structure</h4>
