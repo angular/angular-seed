@@ -26,6 +26,14 @@
                                     <span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true" ng-show="filters.phenotypesEntityFilter"></span>
                                     <i ng-show="loadingEntityPhenotypes" class="glyphicon glyphicon-refresh"></i>
                                 </div>
+                               <div class="checkbox">
+                                       <label>
+                                           <input type="checkbox" ng-model="filters.phenotypesEntityIncludeParts" ng-disabled="filters.quality_type != 'quality-phenotype'"> Include parts
+                                       </label>
+                               </div>
+                           </form>
+                           <p></p>
+                           <form class="form-inline">
                                 <div class="form-group">
                                     <label style="width: 100%"> Quality
                                         <div class="radio">

@@ -63,7 +63,7 @@
                                     <tr ng-repeat="taxon in taxaWithPhenotypes.results">
                                         <td><common-group taxon="taxon['@id']"></common-group></td>
                                         <td><a href="{{taxon['@id'] | linkToTaxon}}"><taxon-name iri="taxon['@id']"></taxon-name></a></td>
-                                        <td><a href="{{ {taxon: taxon, entity: {'@id': termID}, quality: filters.phenotypesQualityFilter} | linkToTaxonPhenotypeProfile}}">View phenotypes <counted-phenotypes-for-taxon taxon="taxon" entity="{'@id': termID}" quality="filters.phenotypesQualityFilter"/></a></td>
+                                        <td><a href="{{ {taxon: taxon, entity: {'@id': termID}, quality: filters.phenotypesQualityFilter, entity_parts: filters.phenotypesTaxaIncludeParts} | linkToTaxonPhenotypeProfile}}">View phenotypes <counted-phenotypes-for-taxon taxon="taxon" entity="{'@id': termID}" quality="filters.phenotypesQualityFilter" parts="filters.phenotypesTaxaIncludeParts"/></a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -72,7 +72,7 @@
                         <div class="form-group form-inline">
                             <label for="taxaWithPhenotypesPageInput">Jump to page: </label> <input type="number" class="form-control input-sm" id="taxaWithPhenotypesPageInput" ng-model="taxaWithPhenotypesPage" ng-change="taxaWithPhenotypesPageChanged(taxaWithPresencePage)">
                         </div>
-                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" href="{{ {entity: {'@id': termID}, quality: filters.phenotypesQualityFilter, in_taxon: filters.phenotypesTaxonFilter} | linkToTaxaWithPhenotypeDownload}}" role="button">Text</a></p>
+                        <p><label>Download all results:</label> <a class="btn btn-info btn-xs" target="_blank" ng-href="{{linkToTaxaWithPhenotypeDownload}}" role="button">Text</a></p>
                     </tab>
                     <tab active="taxaTabs.presence.active" select="activateTaxaTab('presence')">
                         <tab-heading>Presence <span class="badge">{{taxaWithPresenceTotal.total}} </span></tab-heading>

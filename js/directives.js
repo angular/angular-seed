@@ -62,7 +62,8 @@ angular.module('pkb.directives', [])
         scope: {
             taxon: '=',
             entity: '=',
-            quality: '='
+            quality: '=',
+            parts: '='
         }
     }
 })

@@ -70,6 +70,9 @@ angular.module('pkb.filters', [])
           if (params.quality) {
               urlParams.push("phenotypes.quality=" + $window.encodeURIComponent(params.quality['@id']));
           }
+          if (params.entity_parts) {
+              urlParams.push("phenotypes.entity_parts=" + params.entity_parts)
+          }
           return "#/taxon/" + $window.encodeURIComponent(params.taxon['@id']) + "?" + urlParams.join("&");
       };
 })
@@ -102,6 +105,9 @@ angular.module('pkb.filters', [])
         if (params.taxon) {
             urlParams.push("taxon=" + $window.encodeURIComponent(params.taxon['@id']));
         }
+        if (params.entity_parts) {
+            urlParams.push("parts=" + params.entity_parts)
+        }
         return url + urlParams.join("&");
     };
 })
@@ -117,6 +123,9 @@ angular.module('pkb.filters', [])
         }
         if (params.in_taxon) {
             urlParams.push("in_taxon=" + $window.encodeURIComponent(params.in_taxon['@id']));
+        }
+        if (params.entity_parts) {
+            urlParams.push("parts=" + params.entity_parts)
         }
         return url + urlParams.join("&");
     };
