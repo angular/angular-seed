@@ -1,21 +1,20 @@
 <!doctype html>
-<html xmlns:ng="http://angularjs.org/">
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
   <style>
-    [ng\\:cloak] {
+    [ng-cloak] {
       display: none;
     }
   </style>
+  <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
   <script>
     // include angular loader, which allows the files to load in any order
-    /*
-     AngularJS v0.10.6-5cdfe45a
-     (c) 2010-2012 AngularJS http://angularjs.org
-     License: MIT
-    */
-    'use strict';(function(i){function d(a,b,c){return a[b]||(a[b]=c())}return d(d(i,"angular",Object),"module",function(){var a={};return function(b,c,e){c&&a.hasOwnProperty(b)&&(a[b]=null);return d(a,b,function(){function a(b,c){return function(){d.push([b,c,arguments]);return f}}if(!c)throw Error("No module: "+b);var d=[],g=[],h=a("$injector","invoke"),f={_invokeQueue:d,_runBlocks:g,requires:c,name:b,service:a("$provide","service"),factory:a("$provide","factory"),value:a("$provide","value"),filter:a("$filterProvider",
-    "register"),config:h,run:function(a){g.push(a);return this}};e&&h(e);return f})}})})(window);
+    //@@NG_LOADER_START@@
+    // You need to run `npm run update-index-async` to inject the angular async code here
+    //@@NG_LOADER_END@@
 
     // include a third-party async loader library
     /*!
@@ -29,30 +28,31 @@
 
     // load all of the dependencies asynchronously.
     $script([
-      'lib/angular/angular.js',
-      'js/app.js',
-      'js/services.js',
-      'js/controllers.js',
-      'js/filters.js',
-      'js/widgets.js'
+      'bower_components/angular/angular.js',
+      'bower_components/angular-route/angular-route.js',
+      'app.js',
+      'view1/view1.js',
+      'view2/view2.js',
+      'components/version/version.js',
+      'components/version/version-directive.js',
+      'components/version/interpolate-filter.js'
     ], function() {
       // when all is done, execute bootstrap angular application
       angular.bootstrap(document, ['myApp']);
     });
   </script>
-  <title>my angular app</title>
-  <link rel="stylesheet" href="css/app.css"/>
+  <title>My AngularJS App</title>
+  <link rel="stylesheet" href="app.css">
 </head>
-<body>
+<body ng-cloak>
   <ul class="menu">
-    <li><a href="#/view1">view1</a></li>
-    <li><a href="#/view2">view2</a></li>
+    <li><a href="#!/view1">view1</a></li>
+    <li><a href="#!/view2">view2</a></li>
   </ul>
 
-  <ng:view></ng:view>
+  <div ng-view></div>
 
   <div>Angular seed app: v<span app-version></span></div>
 
-</head>
 </body>
 </html>
