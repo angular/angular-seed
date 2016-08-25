@@ -1,14 +1,21 @@
+sudo: required
+dist: trusty
+
 language: node_js
 node_js:
-  - '4.4'
+  - '4.5'
 
-before_script:
+install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
-  - npm start > /dev/null &
-  - npm run update-webdriver
-  - sleep 1 # give server time to start
+  - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+  - sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+  - sudo apt-get update -q
+  - sudo apt-get install -q google-chrome-stable
+
+before_script:
+  - npm install
 
 script:
-  - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
-  - node_modules/.bin/protractor e2e-tests/protractor.conf.js --browser=firefox
+  - npm run test-single-run
+  - (npm start > /dev/null &) && (npm run protractor)
