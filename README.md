@@ -79,9 +79,9 @@ Now browse to the app at [`localhost:8000/index.html`][local-app-url].
 ## Directory Layout
 
 ```
-app/                    --> all of the source files for the application
+app/                  --> all of the source files for the application
   app.css               --> default stylesheet
-  components/           --> all app specific modules
+  core/                 --> all app specific modules
     version/              --> version related components
       version.js                 --> version module declaration and basic "version" value service
       version_test.js            --> "version" value service tests
@@ -117,8 +117,8 @@ The `angular-seed` app comes preconfigured with unit tests. These are written in
 which we run with the [Karma][karma] test runner. We provide a Karma configuration file to run them.
 
 * The configuration is found at `karma.conf.js`.
-* The unit tests are found next to the code they are testing and have an `_test.js` suffix (e.g.
-  `view1_test.js`).
+* The unit tests are found next to the code they are testing and have a `.spec.js` suffix (e.g.
+  `view1.spec.js`).
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
