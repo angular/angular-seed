@@ -79,9 +79,9 @@ Now browse to the app at `http://localhost:8000/index.html`.
 ## Directory Layout
 
 ```
-app/                    --> all of the source files for the application
+app/                  --> all of the source files for the application
   app.css               --> default stylesheet
-  components/           --> all app specific modules
+  core/                 --> all app specific modules
     version/              --> version related components
       version.js                 --> version module declaration and basic "version" value service
       version_test.js            --> "version" value service tests
