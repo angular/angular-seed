@@ -175,7 +175,12 @@ npm run protractor
 This script will execute the end-to-end tests against the application being hosted on the
 development server.
 
-Note that protractor uses selenium which is written in Java, so you need to have the latest JDK installed on your system.
+**Note:**
+Under the hood, Protractor uses the [Selenium Stadalone Server][selenium], which in turn requires 
+the [Java Development Kit (JDK)][jdk] to be installed on your local machine. Check this by running 
+`java -version` from the command line.
+
+If JDK is not already installed, you can download it [here][jdk-download].
 
 
 ## Updating Angular
@@ -288,12 +293,15 @@ along with a CI service (in Jenkins) hosted that will run unit and end to end te
 
 For more information on AngularJS please check out http://angularjs.org/
 
-[git]: http://git-scm.com/
 [bower]: http://bower.io
-[npm]: https://www.npmjs.org/
-[node]: http://nodejs.org
-[protractor]: https://github.com/angular/protractor
-[jasmine]: http://jasmine.github.io
-[karma]: http://karma-runner.github.io
-[travis]: https://travis-ci.org/
+[git]: http://git-scm.com/
 [http-server]: https://github.com/nodeapps/http-server
+[jasmine]: https://jasmine.github.io
+[jdk]: https://en.wikipedia.org/wiki/Java_Development_Kit
+[jdk-download]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+[karma]: https://karma-runner.github.io
+[node]: https://nodejs.org
+[npm]: https://www.npmjs.org/
+[protractor]: https://github.com/angular/protractor
+[selenium]: http://docs.seleniumhq.org/
+[travis]: https://travis-ci.org/
