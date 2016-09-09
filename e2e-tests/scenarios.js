@@ -2,6 +2,8 @@
 
 /* https://github.com/angular/protractor/blob/master/docs/toc.md */
 
+var AxeBuilder = require('axe-webdriverjs');
+
 describe('my app', function() {
 
 
@@ -39,4 +41,23 @@ describe('my app', function() {
     });
 
   });
+});
+
+describe('accessibility', function() {
+
+  it('should have no violations', function(done) {
+    browser.get('index.html').then(function(){
+      AxeBuilder(browser).analyze(function(results) {
+        if (results.violations.length > 0) {
+          console.log(results.violations);
+        }
+        else {
+          console.log('No accessibility violations!');
+        }
+        expect(results.violations.length).toBe(0);
+        done();
+      })
+    });
+  });
+
 });

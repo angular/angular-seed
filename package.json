@@ -6,6 +6,7 @@
   "repository": "https://github.com/angular/angular-seed",
   "license": "MIT",
   "devDependencies": {
+    "axe-webdriverjs": "^0.3.0",
     "bower": "^1.7.7",
     "http-server": "^0.9.0",
     "jasmine-core": "^2.4.1",
