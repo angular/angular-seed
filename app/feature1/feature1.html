@@ -1,1 +1,24 @@
-<p>This is the partial for feature 1.</p>
+<div ng-controller="Feature1Ctrl">
+  <p> invoke remote restful services.</p>
+  <form novalidate class="simple-form">
+     <div class="form-group">
+       <label for="connStr">connStr (dropdown list by mocked string array):</label>
+       <input name="connStr" id="connStr" type="text" placeholder="enter connStr" ng-model="testconfig.connStr" typeahead="connStr for connStr in connStrList | filter:$viewValue | limitTo:8">
+       <br>
+    
+     </div>
+
+     <div class="form-group" ng-controller="GetListByHttpCallCtrl">
+           <label>connstr1 (directly get value by call http request):</label>
+           <input name="connStr1" type="text" id="connStr1" placeholder="enter connStr" ng-model="testconfig.connStr1" typeahead="connStr1 for connStr1 in connStrList1 | filter:$viewValue | limitTo:8">
+
+     </div>
+
+
+     <div class="form-group">
+     <input type="button" ng-click="reset()" value="Reset" class="btn btn-reset" />
+     <input type="submit" ng-click="update(testconfig)" value="Save" class="btn btn-success" />
+   </div>
+ </form>
+ <pre>testconfig = {{testconfig | json}}</pre>
+</div>
