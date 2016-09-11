@@ -5,13 +5,16 @@
        <label for="connStr">connStr (dropdown list by mocked string array):</label>
        <input name="connStr" id="connStr" type="text" placeholder="enter connStr" ng-model="testconfig.connStr" typeahead="connStr for connStr in connStrList | filter:$viewValue | limitTo:8">
        <br>
-    
+
      </div>
 
      <div class="form-group" ng-controller="GetListByHttpCallCtrl">
            <label>connstr1 (directly get value by call http request):</label>
            <input name="connStr1" type="text" id="connStr1" placeholder="enter connStr" ng-model="testconfig.connStr1" typeahead="connStr1 for connStr1 in connStrList1 | filter:$viewValue | limitTo:8">
-
+     </div>
+     <div class="form-group" ng-controller="GetListByResourceCallCtrl">
+           <label>connstr2 ( get value by call resource and parse):</label>
+           <input name="connStr2" type="text" id="connStr1" placeholder="enter connStr" ng-model="testconfig.connStr2" typeahead="connStr2 for connStr2 in connStrList2 | filter:$viewValue | limitTo:8">
      </div>
 
 
