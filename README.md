@@ -1,3 +1,7 @@
+### Status
+[![Build Status](https://api.travis-ci.org/racheliurui/angular-seed.svg)](https://travis-ci.org/racheliurui/angular-seed.svg?branch=master)
+
+
 # angular-seed — the seed for AngularJS apps
 
 This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
