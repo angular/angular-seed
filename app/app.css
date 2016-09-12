@@ -28,3 +28,33 @@
   content: "";
   padding: 0;
 }
+
+
+body {
+  max-width: 128em;
+  margin: 2em auto 0;
+}
+
+
+.form label
+    {
+      margin-left: 10px;
+      width: 150px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+
+
+input
+    {
+      width: auto;
+      vertical-align: middle;
+    }
+
+
+.submit input
+ {
+      width: 120px;
+      vertical-align: middle;
+    }

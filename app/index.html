@@ -9,8 +9,16 @@
   <title>My AngularJS App</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--bower managed css, not using yet
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+  -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/fontawesome/4.5.0/css/font-awesome.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//mgcrea.github.io/angular-strap/styles/libs.min.css">
+  <link rel="stylesheet" href="//mgcrea.github.io/angular-strap/styles/docs.min.css">
+
+
   <link rel="stylesheet" href="app.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
@@ -18,6 +26,7 @@
   <ul class="menu">
     <li><a href="#!/view1">view1</a></li>
     <li><a href="#!/view2">view2</a></li>
+    <li><a href="#!/feature1">feature1 call restful api</a></li>
   </ul>
 
   <!--[if lt IE 7]>
@@ -33,9 +42,15 @@
   -->
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
-  <script src="app.js"></script>
+  <!--typeahead function need ui-bootstrap-->
+  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.0.js"></script>
+  <!--ngResource need seperate lib-->
+  <script src="https://code.angularjs.org/1.5.8/angular-resource.js"></script>
+  <script src="app.constants.js"></script>
+  <script src="app.js"></script>  
   <script src="view1/view1.js"></script>
   <script src="view2/view2.js"></script>
+  <script src="feature1/feature1.js"></script>
   <script src="components/version/version.js"></script>
   <script src="components/version/version-directive.js"></script>
   <script src="components/version/interpolate-filter.js"></script>
