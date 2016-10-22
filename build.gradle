@@ -1,0 +1,19 @@
+apply plugin : 'idea'
+
+task build << {
+
+    println('Excecutin npm install ')
+    exec {
+        executable 'npm'
+        args 'install'
+    }
+}
+
+task appRun << {
+
+    println('Excecutin npm start ')
+    exec {
+        executable 'npm'
+        args 'start'
+    }
+}
