@@ -185,25 +185,17 @@ If JDK is not already installed, you can download it [here][jdk-download].
 
 ## Updating Angular
 
-Previously we recommended that you merge in changes to angular-seed into your own fork of the project.
-Now that the angular framework library code and tools are acquired through package managers (npm and
-bower) you can use these tools instead to update the dependencies.
-
-You can update the tool dependencies by running:
+Since the Angular framework library code and tools are acquired through package managers (npm and
+bower) you can use these tools to easily update the dependencies. Simply run the preconfigured
+script:
 
 ```
-npm update
+npm run update-deps
 ```
 
-This will find the latest versions that match the version ranges specified in the `package.json` file.
-
-You can update the Angular dependencies by running:
-
-```
-bower update
-```
-
-This will find the latest versions that match the version ranges specified in the `bower.json` file.
+This will call `npm update` and `bower update`, which in turn will find and install the latest
+versions that match the version ranges specified in the `package.json` and `bower.json` files
+respectively.
 
 
 ## Loading Angular Asynchronously
