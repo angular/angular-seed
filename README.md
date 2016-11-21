@@ -46,6 +46,9 @@ us manage and test the application.
 
 * We get the tools we depend upon via `npm`, the [node package manager][npm].
 * We get the angular code via `bower`, a [client-side code package manager][bower].
+* In order to run the end-to-end tests, you will also need to have the
+  [Java Development Kit (JDK)][jdk] installed on your machine. Check out the section on
+  [end-to-end testing](#e2e-testing) for more info.
 
 We have preconfigured `npm` to automatically run `bower` so we can simply do:
 
@@ -139,7 +142,8 @@ npm run test-single-run
 ```
 
 
-### End to end testing
+<a name="e2e-testing"></a>
+### Running End-to-End Tests
 
 The angular-seed app comes with end-to-end tests, again written in [Jasmine][jasmine]. These tests
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
