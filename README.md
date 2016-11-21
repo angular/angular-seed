@@ -153,7 +153,9 @@ special features for Angular applications.
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor can
-interact with it. Before starting Protractor, open a separate terminal window and run:
+interact with it.
+
+**Before starting Protractor, open a separate terminal window and run:**
 
 ```
 npm start
