@@ -25,11 +25,11 @@ const shx = require('shelljs');
 // Copy lib files
 shx.rm('-rf', baseDstDir);
 
-files.forEach(relPath => {
+for (let relPath of files) {
   const srcPath = path.join(baseSrcDir, relPath);
   const dstPath = path.join(baseDstDir, relPath);
   const dstDir = path.dirname(dstPath);
 
   shx.mkdir('-p', dstDir);
   shx.cp(srcPath, dstDir);
-});
+}
