@@ -42,27 +42,26 @@ The `depth=1` tells git to only pull down one commit worth of historical data.
 We have two kinds of dependencies in this project: tools and Angular framework code. The tools help
 us manage and test the application.
 
-* We get the tools we depend upon via `npm`, the [Node package manager][npm].
-* We get the Angular code via `bower`, a [client-side code package manager][bower].
+* We get the tools we depend upon and the Angular code via `npm`, the [Node package manager][npm].
 * In order to run the end-to-end tests, you will also need to have the
   [Java Development Kit (JDK)][jdk] installed on your machine. Check out the section on
   [end-to-end testing](#e2e-testing) for more info.
 
-We have preconfigured `npm` to automatically run `bower` so we can simply do:
+We have preconfigured `npm` to automatically copy the downloaded Angular files to `app/lib` so we
+can simply do:
 
 ```
 npm install
 ```
 
-Behind the scenes this will also call `bower install`. After that, you should find out that you have
-two new folders in your project.
+Behind the scenes this will also call `npm run copy-libs`, which copies the AngularJS files and other
+front end dependencies. After that, you should find out that you have two new directories in your project.
 
 * `node_modules` - contains the npm packages for the tools we need
-* `app/bower_components` - contains the Angular framework files
+* `app/lib` - contains the Angular framework files and other front end dependencies
 
-*Note that the `bower_components` folder would normally be installed in the root folder but
-`angular-seed` changes this location through the `.bowerrc` file. Putting it in the `app` folder
-makes it easier to serve the files by a web server.*
+*Note copying the Angular files from `node_modules` to `app/lib` makes it easier to serve the files
+by a web server.*
 
 ### Run the Application
 
@@ -190,17 +189,15 @@ If JDK is not already installed, you can download it [here][jdk-download].
 
 ## Updating Angular
 
-Since the Angular framework library code and tools are acquired through package managers (npm and
-bower) you can use these tools to easily update the dependencies. Simply run the preconfigured
-script:
+Since the AngularJS framework library code and tools are acquired through package managers (e.g.
+npm) you can use these tools to easily update the dependencies. Simply run the preconfigured script:
 
 ```
 npm run update-deps
 ```
 
-This will call `npm update` and `bower update`, which in turn will find and install the latest
-versions that match the version ranges specified in the `package.json` and `bower.json` files
-respectively.
+This will call `npm update` and `npm run copy-libs`, which in turn will find and install the latest
+versions that match the version ranges specified in the `package.json` file.
 
 
 ## Loading Angular Asynchronously
@@ -236,7 +233,7 @@ choose to install the tool globally:
 sudo npm install -g http-server
 ```
 
-Then you can start your own development web server to serve static files from a folder by running:
+Then you can start your own development web server to serve static files from any folder by running:
 
 ```
 http-server -a localhost -p 8000
@@ -279,7 +276,6 @@ For more information on AngularJS please check out [angularjs.org][angularjs].
 
 
 [angularjs]: https://angularjs.org/
-[bower]: http://bower.io/
 [git]: https://git-scm.com/
 [http-server]: https://github.com/indexzero/http-server
 [jasmine]: https://jasmine.github.io/
