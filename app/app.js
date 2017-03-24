@@ -1,14 +1,26 @@
-'use strict';
+(function () {
 
-// Declare app level module which depends on views, and components
-angular.module('myApp', [
-  'ngRoute',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.version'
-]).
-config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-  $locationProvider.hashPrefix('!');
+    var app = angular.module("airnodaApp", ["ngRoute"]);
 
-  $routeProvider.otherwise({redirectTo: '/view1'});
-}]);
+    app.config(function ($routeProvider, $locationProvider) {
+        
+        $locationProvider.html5Mode(true).hashPrefix('!');
+        
+        $routeProvider
+            .when("/about", {
+                templateUrl: "components/about/About.html",
+                controller: "AboutController",
+                controllerAs: "aboutCtrl"
+            })
+            .when("/contact", {
+                templateUrl: "components/contact/ContactMe.html",
+                controller: "ContactController",
+                controllerAs: "contactCtrl"
+            })
+            .otherwise({
+                redirectTo: "/about"
+            });
+        
+    });
+
+}());
