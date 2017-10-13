@@ -1,10 +1,10 @@
 {
   "strict": "global",
   "globals": {
-    // Angular
+    // AngularJS
     "angular": false,
 
-    // Angular mocks
+    // AngularJS mocks
     "module": false,
     "inject": false,
 

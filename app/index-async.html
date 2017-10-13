@@ -11,9 +11,9 @@
   </style>
   <script src="lib/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
   <script>
-    // include angular loader, which allows the files to load in any order
+    // include AngularJS loader, which allows the files to load in any order
     //@@NG_LOADER_START@@
-    // You need to run `npm run update-index-async` to inject the angular async code here
+    // You need to run `npm run update-index-async` to inject the AngularJS async code here
     //@@NG_LOADER_END@@
 
     // include a third-party async loader library
@@ -37,7 +37,7 @@
       'core/version/version-directive.js',
       'core/version/interpolate-filter.js'
     ], function() {
-      // when all is done, execute bootstrap angular application
+      // when all is done, execute bootstrap AngularJS application
       angular.bootstrap(document, ['myApp']);
     });
   </script>
@@ -52,7 +52,7 @@
 
   <div ng-view></div>
 
-  <div>Angular seed app: v<span app-version></span></div>
+  <div>AngularJS seed app: v<span app-version></span></div>
 
 </body>
 </html>
