@@ -1,0 +1,34 @@
+<div  class="map-container">
+    <ng-map center="{{center}}">
+        <custom-marker
+                ng-repeat="car in cars"
+                position="{{[car.position.latitude, car.position.longitude]}}"
+                ng-if="!booked">
+            <div class="car-marker">
+                <span class="car-name">{{car.name}}</span>
+                <img class="car-icon" src="images/Aha-Soft-Travel-Taxi.ico" />
+            </div>
+        </custom-marker>
+        <custom-marker position="{{[selectedCar.position.latitude, selectedCar.position.longitude]}}"
+                       ng-if="booked">
+            <div class="selected car-marker">
+                <span class="car-name">{{selectedCar.name}}</span>
+                <img class="car-icon" src="images/Aha-Soft-Travel-Taxi.ico" />
+            </div>
+        </custom-marker>
+        <marker position="{{center}}" draggable="true" on-dragend="setPosition()"></marker>
+    </ng-map>
+    <div class="instructions outer">
+        <div class="middle">
+            <div class="inner">
+                <span ng-hide="failed || booked">
+                    <input ng-model="name" placeholder="Enter name" />
+                    Drag marker to pick-up &amp; click
+                    <button class="button" ng-disabled="!name" ng-click="go()">GO!</button>
+                </span>
+                <span class="error-msg" ng-show="failed">Sorry, all cars seem to be busy at the moment</span>
+                <span class="booked-msg" ng-show="booked">Congratulations, {{name}}, you are driving with {{selectedCar.name}} today!</span>
+            </div>
+        </div>
+    </div>
+</div>

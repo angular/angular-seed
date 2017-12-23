@@ -1,0 +1,21 @@
+<div  class="map-container">
+  <ng-map center="{{center}}" on-click="setPosition()">
+    <custom-marker
+            ng-repeat="car in cars"
+            position="{{[car.position.latitude, car.position.longitude]}}"
+    >
+      <div class="car-marker" ng-class="{'busy': car.customerName != null}">
+        <span class="car-name">{{car.name}}</span>
+        <img class="car-icon" src="images/Aha-Soft-Travel-Taxi.ico" />
+        <span ng-show="car.customerName != null" class="customer-name">{{car.customerName}}</span>
+      </div>
+    </custom-marker>
+  </ng-map>
+  <div class="instructions outer">
+    <div class="middle">
+      <div class="inner">
+        <span ng-hide=" failed">Click clear to free up all cars <button class="button clear" ng-click="clear()">CLEAR!</button></span>
+      </div>
+    </div>
+  </div>
+</div>

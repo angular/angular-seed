@@ -1,25 +1,126 @@
 /* app css stylesheet */
 
 .menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+    list-style: none;
+    border-bottom: 0.1em solid black;
+    margin-bottom: 2em;
+    padding: 0 0 0.5em;
 }
 
 .menu:before {
-  content: "[";
+    content: "[";
 }
 
 .menu:after {
-  content: "]";
+    content: "]";
 }
 
 .menu > li {
-  display: inline;
+    display: inline;
 }
 
 .menu > li + li:before {
-  content: "|";
-  padding-right: 0.3em;
+    content: "|";
+    padding-right: 0.3em;
+}
+
+.map-container ng-map {
+    height: 100vh;
+    width: 100vw;
+}
+
+.car-marker .car-icon {
+    height: 30px;
+    width: 30px;
+}
+
+.car-marker .car-name {
+    width: 25px;
+    display: block;
+    background-color: yellow;
+    text-align: center;
+    border-radius: 25px;
+}
+
+.car-marker.busy .car-name {
+    background-color: pink;
+}
+
+.customer-name {
+    width: 25px;
+    display: block;
+    background-color: dodgerblue;
+    text-align: center;
+    color: white;
+    border-radius: 25px;
+}
+
+
+.car-marker.selected .car-name {
+    background-color: lightgreen;
+    font-size: large;
+    border-radius: 50px;
+    width: 50px;
+}
+
+.car-marker.selected .car-icon {
+    height: 50px;
+    width: 50px;
+}
+
+.map-container .instructions {
+    position: fixed;
+    height: 10vh;
+    bottom: 0;
+    margin: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+}
+
+html, body {
+    overflow: hidden;
+}
+
+.outer {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.middle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.inner {
+    margin-left: auto;
+    margin-right: auto;
+    width: 500px; /*whatever width you want*/
+}
+
+.inner input{
+    width: 100px;
+    color: black;
+}
+
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.button[disabled] {
+    background-color: darkgray;
+}
+
+
+.inner .button.clear{
+    background-color: red;
 }
