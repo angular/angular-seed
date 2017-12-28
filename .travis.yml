@@ -16,6 +16,15 @@ install:
 before_script:
   - npm install
 
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: ${TRAVIS_BUILD_DIR}/app
+  on:
+    branch: master
+  target_branch: gh-pages
+
 script:
   - npm run test-single-run
   - (npm start > /dev/null &) && (npm run protractor)
