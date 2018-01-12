@@ -1,1 +1,18 @@
-<p>This is the partial for view 1.</p>
+<p>
+    Search:
+    <input id="fname" ng-model="$ctrl.username"
+           ng-keyup="$event.keyCode == 13 ? updateGitHubFollowers($ctrl.username) : null"
+           placeholder="Enter GitHub Username"/>
+</p>
+<table id="followers">
+    <tr>
+        <th>Username</th>
+        <th>Avatar</th>
+        <th>Type</th>
+    </tr>
+    <tr ng-repeat="user in users">
+        <td>{{user.login}}</td>
+        <td><img ng-src="{{user.avatar_url}}" alt="Description" height="42" width="42"/></td>
+        <td>{{user.type}}</td>
+    </tr>
+</table>
