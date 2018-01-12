@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.view1', ['ngRoute'])
+angular.module('myApp.view1', ['ngRoute', 'core.followers'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/view1', {
@@ -9,6 +9,8 @@ angular.module('myApp.view1', ['ngRoute'])
   });
 }])
 
-.controller('View1Ctrl', [function() {
-
-}]);
+.controller('View1Ctrl', ['$scope', 'Followers', function($scope, Followers) {
+            $scope.updateGitHubFollowers = function updateGitHubFollowers(username) {
+                $scope.users = Followers.query({githubId: username});
+            }
+         }]);
