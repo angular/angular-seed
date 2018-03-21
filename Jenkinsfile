@@ -2,7 +2,7 @@ pipeline {
     agent any
     stages {
         stage('Test') {
-            step {
+            steps {
                 echo "hello, world"
                sh 'docker --version'
             }
