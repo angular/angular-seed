@@ -15,7 +15,7 @@ pipeline {
                 }
                 sh 'docker push himself12794/angular-web-app:latest'
                 withCredentials([usernamePassword(credentialsId: 'ssh-host', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                    sh 'sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@himself12794.com "cd projects/cd-stack; docker-compose up --build -d jenkins"'
+                    sh 'sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no $USER@himself12794.com "cd projects/cd-stack; docker-compose up --build -d webapp"'
                 }
             }
         }
