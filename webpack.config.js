@@ -22,7 +22,9 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   devServer: {
+    public: 'himself12794.com',
     port: 8080,
+    host: '0.0.0.0',
     contentBase: path.join(__dirname, './dist'), // boolean | string | array, static file location
     compress: true, // enable gzip compression
     historyApiFallback: true, // true for index.html upon 404, object for multiple paths
