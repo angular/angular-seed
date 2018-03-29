@@ -1,0 +1,25 @@
+$rich-red: #96151d;
+
+.view1 {
+    background: chartreuse;
+}
+
+.viewLinks {
+    color: #8d4900;
+}
+
+.viewHeader {
+    color: $rich-red;
+    font-size: 28px;
+}
+
+.centeredColumn {
+    text-align: center;
+}
+
+.noBottomMargin {
+    margin-bottom: 0px;
+}
+.md-raised.md-primary{
+    background-color: $rich-red !important;
+}
