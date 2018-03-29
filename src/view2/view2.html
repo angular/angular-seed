@@ -1,1 +1,9 @@
-<h1 class="redHeader centered">{{$ctrl.title}}</h1>
+<div layout="column" layout-gt-sm="row" style="min-height:100%;">
+    <section layout="column" flex layout-padding layout-margin>
+        <div class="centeredColumn">
+            <h2 class="viewHeader">{{$ctrl.title}}</h2>
+            <p><span>{{$ctrl.message}}</span></p>
+            <md-button class="md-raised md-primary" ng-click="$ctrl.navigateToView1()">Go to View 1</md-button>
+        </div>
+    </section>
+</div>

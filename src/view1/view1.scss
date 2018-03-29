@@ -1,3 +1,5 @@
+$rich-red: #96151d;
+
 .view1 {
     background: chartreuse;
 }
@@ -7,7 +9,7 @@
 }
 
 .viewHeader {
-    color: #96151d;
+    color: $rich-red;
     font-size: 28px;
 }
 
@@ -17,4 +19,7 @@
 
 .noBottomMargin {
     margin-bottom: 0px;
+}
+.md-raised.md-primary{
+    background-color: $rich-red !important;
 }

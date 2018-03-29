@@ -1,7 +1,7 @@
 {
   "name": "hackathon",
   "version": "1.0.0",
-  "description": "Vanguard Hackathon",
+  "description": "Developers Only",
   "main": "server.js",
   "engines": {
     "node": "6.x.x"
