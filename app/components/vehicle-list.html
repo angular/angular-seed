@@ -6,9 +6,10 @@
       Search: <input ng-model="$ctrl.query" />
    </div>
     <div class="col-md-10">
+
       <!--Body content-->
       <ul class="vehicles">
-        <li ng-repeat="vehicle in $ctrl.vehicles | filter:$ctrl.query">
+        <li ng-repeat="vehicle in vehicles">
           <span> {{ vehicle.year }} </span>
           <span> {{ vehicle.make }} </span>
           <span> {{ vehicle.model }} </span>
