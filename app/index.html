@@ -14,15 +14,24 @@
   <!-- this code downloads the angular.js script which registers a callback that will be executed by the browser when the containing HTML page is fully downloaded -->
   <script src="bower_components/angular/angular.js"></script>
 
+  <script src="bower_components/angular-route/angular-route.js"></script>
+
   <!-- calls for all components and controllers -->
   <script src="app.module.js"></script>
 
+  <script src="app.config.js"></script>
+
   <script src="components/vehicle-list.module.js"></script>
   <script src="components/vehicle-list.component.js"></script>
+  <script src="components/vehicle-detail.module.js"></script>
+  <script src="components/vehicle-detail.component.js"></script>
 </head>
 
 <!-- Use a custom component to render a list of vehicles -->
-<vehicle-list></vehicle-list>
+
+<body>
+
+    <div ng-view></div>
 
 </body>
 
