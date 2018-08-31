@@ -1,7 +1,9 @@
 'use strict';
 
+// define the myApp module
 let myApp = angular.module('myApp', []);
 
+// define the vehicle controller on the myapp module
 myApp.controller('VehicleController', function VehicleController(
   $scope,
   $http
