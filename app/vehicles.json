@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": 0,
     "type": "bicycle",
     "make": "Gravity",
     "model": "FSX 1.0",
@@ -10,7 +10,7 @@
     "imageURL": "./images/gravity-fsx1.0.jpg"
   },
   {
-    "id": 2,
+    "id": 1,
     "type": "bicycle",
     "make": "US Best Bike's",
     "model": "BKW9914",
@@ -20,7 +20,7 @@
     "imageURL": "./images/usbb-9914.jpg"
   },
   {
-    "id": 3,
+    "id": 2,
     "type": "boat",
     "make": "Cobalt",
     "model": "R30",
@@ -30,7 +30,7 @@
     "imageURL": "./images/cobalt-r30.jpg"
   },
   {
-    "id": 4,
+    "id": 3,
     "type": "boat",
     "make": "Hydra-Sports",
     "model": "3300-vx",
@@ -40,7 +40,7 @@
     "imageURL": "./images/hydrasports.jpg"
   },
   {
-    "id": 5,
+    "id": 4,
     "type": "car",
     "make": "Honda",
     "model": "CRV",
@@ -50,7 +50,7 @@
     "imageURL": "./images/honda-crv.jpg"
   },
   {
-    "id": 6,
+    "id": 5,
     "type": "car",
     "make": "BMW",
     "model": "335i",
@@ -60,7 +60,7 @@
     "imageURL": "./images/bmw-335.JPG"
   },
   {
-    "id": 7,
+    "id": 6,
     "type": "motorcycle",
     "make": "Ducati",
     "model": "Monster S2R 800",
@@ -70,7 +70,7 @@
     "imageURL": "./images/ducati.jpg"
   },
   {
-    "id": 8,
+    "id": 7,
     "type": "motorcycle",
     "make": "Indian",
     "model": "Chief Vintage",
@@ -80,7 +80,7 @@
     "imageURL": "./images/indian-vintage.jpg"
   },
   {
-    "id": 9,
+    "id": 8,
     "type": "truck",
     "make": "Dodge",
     "model": "Ram",
@@ -90,7 +90,7 @@
     "imageURL": "./images/dodge-ram.jpg"
   },
   {
-    "id": 10,
+    "id": 9,
     "type": "truck",
     "make": "Toyota",
     "model": "Tacoma",
