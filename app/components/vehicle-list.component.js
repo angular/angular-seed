@@ -4,6 +4,7 @@
 angular.
     module('myApp').
     component('vehicleList',{
+        // Note: The URL is relative to our `index.html` file
         templateUrl: '/components/vehicle-list.html',
         controller: function VehicleController(
             $scope,
