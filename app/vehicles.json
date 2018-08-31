@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "type": "bicycle",
+    "make": "Gravity",
+    "model": "FSX 1.0",
+    "year": 2019,
+    "description": "This full suspension frame has some of the best quality and design for the money we have seen. Customers who own FSX's send friends and family to buy these excellent bikes all the time.",
+    "color": "Yellow"
+  },
+  {
+    "id": 2,
+    "type": "bicycle",
+    "make": "US Best Bike's",
+    "model": "BKW9914",
+    "year": 2010,
+    "description": "US Best Bike's 26 - inch wheel Women's all-terrain Mountain Bike provides you with a 21-speed friction gear system and 1.95-inch all-terrain tires & tubes.",
+    "color": "Red"
+  },
+  {
+    "id": 3,
+    "type": "boat",
+    "make": "Cobalt",
+    "model": "R30",
+    "year": 2015,
+    "description": "The R30 is a luxurious open-bow day boat designed with Free Space Reclamation, Cobalts exclusive technique for cockpit maximization.",
+    "color": "Off-white"
+  },
+  {
+    "id": 4,
+    "type": "boat",
+    "make": "Hydra-Sports",
+    "model": "3300-vx",
+    "year": 2007,
+    "description": "Part center console and part express, the versatile layout of this boat will appear to cruisers as well as anglers wanting some cruising amentities in their next fishing boat.",
+    "color": "White"
+  },
+  {
+    "id": 5,
+    "type": "car",
+    "make": "Honda",
+    "model": "CRV",
+    "year": 2008,
+    "description": "An oldie but a goodie. This 2008 Honda CRV is on it's second owner and although it has many miles, it runs like new!",
+    "color": "Black"
+  },
+  {
+    "id": 6,
+    "type": "car",
+    "make": "BMW",
+    "model": "335i",
+    "year": 2010,
+    "description": "This beautiful, luxury manual sports car makes you feel like you're flying with its 6 gears. Very ahead of its time! Only on its second owner, this beauty only has 97k miles on it.",
+    "color": "Black"
+  },
+  {
+    "id": 7,
+    "type": "motorcycle",
+    "make": "Ducati",
+    "model": "Monster S2R 800",
+    "year": 2006,
+    "description": "This bike is in MINT condition and just had $1,500 poured into a full maintenance package done by one of the best Ducati Mechanics in New York.",
+    "color": "Black"
+  },
+  {
+    "id": 8,
+    "type": "motorcycle",
+    "make": "Indian",
+    "model": "Chief Vintage",
+    "year": 2014,
+    "description": "This bike is in mint condition and is one beautiful Indian Motorcycle! This baby has many extras.",
+    "color": "Red"
+  },
+  {
+    "id": 9,
+    "type": "truck",
+    "make": "Dodge",
+    "model": "Ram",
+    "year": 2018,
+    "description": "A light-duty truck with a lot of power behind it! It's brand new!",
+    "color": "Gold"
+  },
+  {
+    "id": 10,
+    "type": "truck",
+    "make": "Toyota",
+    "model": "Tacoma",
+    "year": 2014,
+    "description": "With only 45k miles on it, this white Tacoma has had 2 owners and is in mint condition",
+    "color": "White"
+  }
+]
