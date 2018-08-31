@@ -23,15 +23,24 @@
 
   <script src="components/vehicle-list.module.js"></script>
   <script src="components/vehicle-list.component.js"></script>
+
   <script src="components/vehicle-detail.module.js"></script>
   <script src="components/vehicle-detail.component.js"></script>
+
+  <script src="components/navbar.module.js"></script>
+  <script src="components/navbar.component.js"></script>
+
 </head>
 
 <!-- Use a custom component to render a list of vehicles -->
 
 <body>
 
-    <div ng-view></div>
+  <nav class="navbar navbar-light bg-light justify-content-between">
+    <a href="#!/vehicles" class="navbar-brand">Silver-Share</a>
+  </nav>
+
+  <div ng-view></div>
 
 </body>
 
