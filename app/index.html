@@ -16,17 +16,11 @@
 
   <!-- calls for all components and controllers -->
   <script src="app.js"></script>
+  <script src="/components/vehicle-list.component.js"></script>
 </head>
 
-<body ng-controller="VehicleController">
-
-  <ul>
-    <li ng-repeat="vehicle in vehicles">
-      <span> {{ vehicle.year }} </span>
-      <span> {{ vehicle.make }} </span>
-      <span> {{ vehicle.model }} </span>
-    </li>
-  </ul>
+    <!-- Use a custom component to render a list of vehicles -->
+<vehicle-list></vehicle-list>
 
 </body>
 
