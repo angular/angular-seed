@@ -1,15 +1,27 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-2">
-      <!--Sidebar content--> 
+      <!--Sidebar content-->
 
-      Search: <input ng-model="$ctrl.query" />
-   </div>
+      <p>
+        Search:
+        <input ng-model="query" />
+      </p>
+
+      <p>
+        Sort by:
+        <select ng-model="orderProp">
+          <option value="make">Make</option>
+          <option value="year">Year</option>
+        </select>
+      </p>
+
+    </div>
     <div class="col-md-10">
-
       <!--Body content-->
+
       <ul class="vehicles">
-        <li ng-repeat="vehicle in vehicles">
+        <li ng-repeat="vehicle in vehicles | filter: query | orderBy: orderProp ">
           <span> {{ vehicle.year }} </span>
           <span> {{ vehicle.make }} </span>
           <span> {{ vehicle.model }} </span>
