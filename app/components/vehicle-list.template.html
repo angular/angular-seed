@@ -21,12 +21,16 @@
       <!--Body content-->
 
       <ul class="vehicles">
-        <li ng-repeat="vehicle in vehicles | filter: vm.query | orderBy: vm.orderProp ">
-          <span> {{ vehicle.year }} </span>
-          <span> {{ vehicle.make }} </span>
-          <span> {{ vehicle.model }} </span>
+        <li ng-repeat="vehicle in vehicles | filter: vm.query | orderBy: vm.orderProp " class="thumbnail">
+          <a href="#/vehicles/{{ vehicle.id }}" class="thumb">
+            <img ng-src="{{ vehicle.imageURL }}" alt="{{ vehicle.make }}" />
+          </a>
+
+          <a href="#/vehicles/{{ vehicle.id }}">{{ vehicle.make }} {{ vehicle.model }}</a>
+          <p> {{ vehicle.description }} </p>
         </li>
       </ul>
+
     </div>
   </div>
 </div>
