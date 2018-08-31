@@ -22,11 +22,11 @@
 
       <ul class="vehicles">
         <li ng-repeat="vehicle in vehicles | filter: vm.query | orderBy: vm.orderProp " class="thumbnail">
-          <a href="#/vehicles/{{ vehicle.id }}" class="thumb">
+          <a href="#!/vehicles/{{ vehicle.id }}" class="thumb">
             <img ng-src="{{ vehicle.imageURL }}" alt="{{ vehicle.make }}" />
           </a>
 
-          <a href="#/vehicles/{{ vehicle.id }}">{{ vehicle.make }} {{ vehicle.model }}</a>
+          <a href="#!/vehicles/{{ vehicle.id }}">{{ vehicle.make }} {{ vehicle.model }}</a>
           <p> {{ vehicle.description }} </p>
         </li>
       </ul>
