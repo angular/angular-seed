@@ -1,0 +1,118 @@
+<div>
+    <form name="cartForm" class="css-form">
+
+
+        <!-- USERNAME FORM & VALIDATION -->
+        <md-input-container>
+            <label>
+                Name:
+            </label>
+            <input aria-label="name" matInput type="text" ng-model="user.name" name="uName" required />
+        </md-input-container>
+
+        <span ng-hide="cartForm.uName.$pristine">
+            <div ng-messages="cartForm.uName.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your name.</div>
+            </div>
+        </span>
+
+
+        <!-- EMAIL FORM & VALIDATION -->
+        <md-input-container>
+            <label>
+                E-mail:
+            </label>
+            <input aria-label="email" type="email" ng-model="user.email" name="uEmail" required />
+
+            <span ng-hide="cartForm.uEmail.$pristine">
+                <div ng-messages="cartForm.uEmail.$error" style="color:red" role="alert">
+                    <div ng-message="required">Please enter your email.</div>
+                </div>
+            </span>
+        </md-input-container>
+
+
+        <!-- ADDRESS FORM & VALIDATION -->
+        <md-input-container>
+            <label>
+                Address:
+            </label>
+            <input aria-label="address" type="address" ng-model="user.address" name="uAddress" required />
+
+            <span ng-hide="cartForm.uAddress.$pristine">
+                <div ng-messages="cartForm.uAddress.$error" style="color:red" role="alert">
+                    <div ng-message="required">Please enter your address.</div>
+                </div>
+            </span>
+        </md-input-container>
+
+
+        <!-- ZIPCODE FORM & VALIDATION -->
+        <md-input-container>
+            <label>
+                Zipcode:
+            </label>
+            <input type="zipcode" ng-model="zipcode.email" name="uZipcode" required/>
+
+            <span ng-hide="cartForm.uZipcode.$pristine">
+                <div ng-messages="cartForm.uZipcode.$error" style="color:red" role="alert">
+                    <div ng-message="required">Please enter your zipcode.</div>
+                </div>
+            </span>
+        </md-input-container>
+
+
+        <!-- CITY FORM & VALIDATION -->
+        <md-input-container>
+            <label>
+                City:
+            </label>
+            <input type="city" ng-model="city.email" name="uCity" required />
+
+            <span ng-hide="cartForm.uCity.$pristine">
+                <div ng-messages="cartForm.uCity.$error" style="color:red" role="alert">
+                    <div ng-message="required">Please enter your city.</div>
+                </div>
+            </span>
+        </md-input-container>
+
+
+        <!-- STATE OPTIONS -->
+        <md-input-container>
+            <label>State:</label>
+            <md-select ng-model="user" placeholder="Select a state">
+                <md-option ng-value="user" ng-repeat="user in state">{{ user.state }}
+            </md-select>
+
+        </md-input-container>
+
+
+        <!-- GENDER FORM & VALIDATION -->
+        <md-input-container>
+            <label>Gender:</label>
+            <md-select ng-model="userGen" placeholder="Select your gender">
+                <md-option ng-value="userGen" ng-repeat="userGen in gender">
+                    {{userGen.gender}}
+            </md-select>
+        </md-input-container>
+
+        <!-- AGREE FORM & VALIDATION -->
+        <md-checkbox aria-label="agree">
+            I agree to all of the above.
+
+            <span ng-hide="cartForm.agree.$pristine">
+                <div ng-messages="cartForm.agree.$error" style="color:red" role="alert">
+                    <div ng-message="required">Must be selected to move on.</div>
+                </div>
+            </span>
+        </md-checkbox>
+
+
+        <!-- RESET AND SUBMIT BUTTONS -->
+        <!-- <input type="button" ng-click="reset(form)" value="Reset" /> -->
+
+        <button mat-raised-button>Submit</button>
+
+    </form>
+
+</div>
