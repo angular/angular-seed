@@ -8,11 +8,18 @@
   <!-- references bootstrap CDN -->
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
 
+  <!-- font awesome CDN -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <!-- references our app's stylesheet -->
   <link rel="stylesheet" href="app.css" />
 
   <!-- this code downloads the angular.js script which registers a callback that will be executed by the browser when the containing HTML page is fully downloaded -->
   <script src="bower_components/angular/angular.js"></script>
+
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.3/angular-messages.js"></script>
+
+  <script src="//code.angularjs.org/1.7.3/angular-messages.js"></script>
 
   <script src="bower_components/angular-route/angular-route.js"></script>
 
@@ -21,14 +28,16 @@
 
   <script src="app.config.js"></script>
 
+
+
   <script src="components/vehicle-list.module.js"></script>
   <script src="components/vehicle-list.component.js"></script>
 
   <script src="components/vehicle-detail.module.js"></script>
   <script src="components/vehicle-detail.component.js"></script>
 
-  <script src="components/form.module.js"></script>
-  <script src="components/form.component.js"></script>
+  <script src="components/cart-form.module.js"></script>
+  <script src="components/cart-form.component.js"></script>
 
 
 
@@ -38,10 +47,17 @@
 
 <body>
 
-  <nav class="navbar navbar-light bg-light justify-content-between">
-    <a href="#!/vehicles" class="navbar-brand">Silver-Share</a>
-    <!-- <button><img src="https://d30y9cdsu7xlg0.cloudfront.net/png/28468-200.png" alt="my image" className='cart-img' /></button> -->
-  </nav>
+  <div>
+    <nav class="navbar navbar-light bg-light justify-content-between">
+      <a href="#!/vehicles" class="navbar-brand">Silver-Share</a>
+      <a href="#!/cartform">
+        <i class="material-icons">
+          shopping_cart
+        </i>
+      </a>
+    </nav>
+  </div>
+
 
   <div ng-view></div>
 
