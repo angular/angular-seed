@@ -1,0 +1,25 @@
+<img ng-src="{{vm.vehicle.imageURL}}" class="vehicle" />
+
+<h1>{{vm.vehicle.make}} {{vm.vehicle.model}}</h1>
+
+<p>{{vm.vehicle.description}}</p>
+
+<ul class="specs">
+  <h4>Details</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Year</th>
+        <th scope="col">Color</th>
+        <th scope="col">Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td scope="row">{{vm.vehicle.year}}</td>
+        <td scope="row">{{vm.vehicle.color}}</td>
+        <td scope="row">{{vm.vehicle.type}}</td>
+      </tr>
+    </tbody>
+  </table>
+</ul>

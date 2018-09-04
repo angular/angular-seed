@@ -1,0 +1,39 @@
+<div class="container-fluid">
+  <mat-grid-list cols="2" rowHeight="2:1">
+    <!--Sidebar content-->
+    <p>
+      Search:
+      <input ng-model="vm.query" />
+    </p>
+
+    <p>
+      Sort by:
+      <select ng-model="vm.orderProp">
+        <option value="make">Make</option>
+        <option value="year">Year</option>
+      </select>
+    </p>
+</div>
+<md-content>
+  <div flex-xs flex-gt-xs="50" layout="row" >
+    <md-card>
+      <mat-grid-title ng-repeat="vehicle in vehicles | filter: vm.query | orderBy: vm.orderProp " class="thumbnail">
+        <a href="#!/vehicles/{{ vehicle.id }}" class="thumb">
+          <img ng-src="{{ vehicle.imageURL }}" class="md-card-image" alt="Washed Out">
+        </a>
+        <md-card-title>
+          <md-card-title-text>
+            <a href="#!/vehicles/{{ vehicle.id }}">{{ vehicle.make }} {{ vehicle.model }}</a>
+          </md-card-title-text>
+        </md-card-title>
+        <md-card-content>
+          <p> {{ vehicle.description }} </p>
+        </md-card-content>
+        <mat-grid-title/>
+    </md-card>
+    <div/>
+    <md-content/>
+    <div>
+    </div>
+    </mat-grid-list>
+  </div>
