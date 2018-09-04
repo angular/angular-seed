@@ -13,8 +13,8 @@ angular.module('myApp').config([
       .when('/vehicles/:vehicleId', {
         template: '<vehicle-detail></vehicle-detail>'
       })
-      .when('/form', {
-        template: '<form></form>'
+      .when('/cartform', {
+        template: '<cart-form></cart-form>'
       })
       .otherwise('/vehicles');
   }

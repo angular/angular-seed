@@ -9,14 +9,17 @@
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
 
   <!-- font awesome CDN -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
-    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- references our app's stylesheet -->
   <link rel="stylesheet" href="app.css" />
 
   <!-- this code downloads the angular.js script which registers a callback that will be executed by the browser when the containing HTML page is fully downloaded -->
   <script src="bower_components/angular/angular.js"></script>
+
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.3/angular-messages.js"></script>
+
+  <script src="//code.angularjs.org/1.7.3/angular-messages.js"></script>
 
   <script src="bower_components/angular-route/angular-route.js"></script>
 
@@ -25,14 +28,16 @@
 
   <script src="app.config.js"></script>
 
+
+
   <script src="components/vehicle-list.module.js"></script>
   <script src="components/vehicle-list.component.js"></script>
 
   <script src="components/vehicle-detail.module.js"></script>
   <script src="components/vehicle-detail.component.js"></script>
 
-  <script src="components/form.module.js"></script>
-  <script src="components/form.component.js"></script>
+  <script src="components/cart-form.module.js"></script>
+  <script src="components/cart-form.component.js"></script>
 
 
 
@@ -45,8 +50,10 @@
   <div>
     <nav class="navbar navbar-light bg-light justify-content-between">
       <a href="#!/vehicles" class="navbar-brand">Silver-Share</a>
-      <a href="#!/form">
-        <i class="fas fa-shopping-cart"></i>
+      <a href="#!/cartform">
+        <i class="material-icons">
+          shopping_cart
+        </i>
       </a>
     </nav>
   </div>

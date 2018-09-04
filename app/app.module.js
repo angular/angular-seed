@@ -1,10 +1,11 @@
-"use strict";
+'use strict';
 
 // define the myApp module
-let myApp = angular.module("myApp", [
+let myApp = angular.module('myApp', [
   // ...which depends on the `vehicleList` module
-  "ngRoute",
-  "vehicleDetail",
-  "vehicleList",
-  "form"
+  'ngRoute',
+  'ngMessages',
+  'vehicleDetail',
+  'vehicleList',
+  'cartForm'
 ]);

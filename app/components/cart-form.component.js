@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-angular.module("form").component("form", {
-  controllerAs: "vm",
+angular.module('cartForm').component('cartForm', {
+  controllerAs: 'vm',
 
-  templateUrl: "components/form.template.html",
+  templateUrl: 'components/cart-form.template.html',
 
   controller: function($scope) {
     let vm = $scope;

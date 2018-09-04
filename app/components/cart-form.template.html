@@ -1,0 +1,94 @@
+<div>
+    <form name="cartForm" class="css-form">
+
+        <!-- USERNAME FORM & VALIDATION -->
+        <label>
+            Name:
+            <input matInput type="text" ng-model="user.name" name="uName" required />
+        </label>
+
+        <span ng-hide="cartForm.uName.$pristine">
+            <div ng-messages="cartForm.uName.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your name.</div>
+            </div>
+        </span>
+
+        <!-- EMAIL FORM & VALIDATION -->
+        <label>E-mail:
+            <input type="email" ng-model="user.email" name="uEmail" required />
+        </label>
+
+        <span ng-hide="cartForm.uEmail.$pristine">
+            <div ng-messages="cartForm.uEmail.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your email.</div>
+            </div>
+        </span>
+
+        <!-- ADDRESS FORM & VALIDATION -->
+        <label>Address:
+            <input type="address" ng-model="user.address" name="uAddress" required />
+        </label>
+
+        <span ng-hide="cartForm.uAddress.$pristine">
+            <div ng-messages="cartForm.uAddress.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your address.</div>
+            </div>
+        </span>
+
+        <!-- ZIPCODE FORM & VALIDATION -->
+        <label>Zipcode:
+            <input type="zipcode" ng-model="zipcode.email" name="uZipcode" required/>
+        </label>
+
+        <span ng-hide="cartForm.uZipcode.$pristine">
+            <div ng-messages="cartForm.uZipcode.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your zipcode.</div>
+            </div>
+        </span>
+
+        <!-- CITY FORM & VALIDATION -->
+        <label>City:
+            <input type="city" ng-model="city.email" name="uCity" required />
+        </label>
+
+        <span ng-hide="cartForm.uCity.$pristine">
+            <div ng-messages="cartForm.uCity.$error" style="color:red" role="alert">
+                <div ng-message="required">Please enter your city.</div>
+            </div>
+        </span>
+
+
+        <!-- STATE FORM & VALIDATION -->
+        <label>State:
+            <input type="status" ng-model="state.email" name="uState" required />
+        </label>
+
+
+        <!-- GENDER FORM & VALIDATION -->
+        Gender:
+        <label> Male:
+            <input type="radio" ng-model="user.gender" value="male" />
+        </label>
+
+        <label> Female:
+            <input type="radio" ng-model="user.gender" value="female" />
+        </label>
+
+        <br/>
+
+
+        <!-- AGREE FORM & VALIDATION -->
+        <label> I agree:
+            <input type="checkbox" ng-model="user.agree" name="userAgree" required />
+        </label>
+
+        <input ng-show="user.agree" type="text" ng-model="user.agreeSign" required />
+
+
+        <!-- RESET AND SUBMIT BUTTONS -->
+        <input type="button" ng-click="reset(form)" value="Reset" />
+        <input type="submit" ng-click="update(user)" value="Submit" />
+
+    </form>
+
+</div>
