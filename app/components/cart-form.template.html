@@ -61,11 +61,14 @@
             </div>
         </span>
 
+        <!-- STATE OPTIONS -->
 
-        <!-- STATE FORM & VALIDATION -->
-        <label>State:
-            <input type="status" ng-model="state.email" name="uState" required />
-        </label>
+        <md-input-container>
+            <label>State:</label>
+            <md-select ng-model="user" placeholder="Select a state">
+                <md-option ng-value="user" ng-repeat="user in state">{{ user.state }}
+            </md-select>
+        </md-input-container>
 
 
         <!-- GENDER FORM & VALIDATION -->
