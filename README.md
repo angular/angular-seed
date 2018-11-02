@@ -190,7 +190,7 @@ the [Java Development Kit (JDK)][jdk] to be installed on your local machine. Che
 If JDK is not already installed, you can download it [here][jdk-download].
 
 
-## Updating AngularJS
+## Updating AngularJS and other dependencies
 
 Since the AngularJS framework library code and tools are acquired through package managers (e.g.
 npm) you can use these tools to easily update the dependencies. Simply run the preconfigured script:
@@ -201,6 +201,9 @@ npm run update-deps
 
 This will call `npm update` and `npm run copy-libs`, which in turn will find and install the latest
 versions that match the version ranges specified in the `package.json` file.
+
+If you want to update a dependency to a version newer than what the specificed range would permit,
+you can change the version range in `package.json` and then run `npm run update-deps` as usual.
 
 
 ## Loading AngularJS Asynchronously
