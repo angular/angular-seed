@@ -1,14 +1,31 @@
-'use strict';
+// Define the `phonecatApp` module
+var phonecatApp = angular.module('phonecatApp', []);
 
-// Declare app level module which depends on views, and core components
-angular.module('myApp', [
-  'ngRoute',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.version'
-]).
-config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-  $locationProvider.hashPrefix('!');
+// Define the `PhoneListController` controller on the `phonecatApp` module
+phonecatApp.controller('PhoneListController', function PhoneListController($scope) {
+  $scope.phones = [
+    {
+      name: 'Counter',
+      snippet: 'click to count!'
+    }
+  ];
+});
 
-  $routeProvider.otherwise({redirectTo: '/view1'});
-}]);
+
+// var phonecatApp = angular.module("phonecatApp", []);
+
+
+// phonecatApp.controller("PhoneListController", function PhoneListController($scope) {
+
+//   $scope.counter = 0;
+//   $scope.decrement = function() {
+//       $scope.counter--;
+//   };
+//   $scope.phones = [
+//         {
+//           name: 'Counter',
+//           snippet: 'click to count!'
+//         }
+//       ];
+      
+// })

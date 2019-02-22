@@ -23,3 +23,30 @@
   content: "|";
   padding-right: 0.3em;
 }
+
+body{
+  margin: 50;
+  background-color: rgb(250, 250, 200);
+}
+
+.counter {
+  background-color: rgb(88, 73, 103);
+  color: white;
+  height: 50px;
+  width: 50px;
+  font-size: 2em;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.positive {
+  background-color: rgb(70, 60, 80);
+}
+
+.positive {
+  background-color: green;
+}
+
+
+
+
