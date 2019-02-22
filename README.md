@@ -26,6 +26,8 @@
 * the template is compiled on the browser
 * any changes that are made to the view are instantly reflected in the model and then any changes that are made in the model are generated to the view
 *  the controller is separated from the view and is unaware of this
+
+
 ![angular templates](./assets/template.png)
 
 ### Pros Angular 1
