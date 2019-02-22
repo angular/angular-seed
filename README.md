@@ -18,6 +18,7 @@
 
 ### Using the Service
 * you will need to add it as a dependancy for the component that depends on the service 
+* follow the tutorial instructions from [angularjs v1.3](https://code.angularjs.org/1.3.0/docs/tutorial/) to install on your local computer
 
 ### Data Binding
 * sync data between the model and the view
