@@ -7,9 +7,15 @@
   "license": "MIT",
   "dependencies": {
     "angular": "^1.7.5",
+    "angular-animate": "^1.7.8",
     "angular-loader": "^1.7.5",
+    "angular-resource": "^1.7.8",
     "angular-route": "^1.7.5",
-    "html5-boilerplate": "0.0.1"
+    "html5-boilerplate": "0.0.1",
+    "less": "^3.9.0",
+    "node-sass": "^4.11.0",
+    "todomvc-app-css": "^2.2.0",
+    "todomvc-common": "^1.0.5"
   },
   "devDependencies": {
     "angular-mocks": "^1.7.5",

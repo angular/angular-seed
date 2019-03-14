@@ -1,22 +1,22 @@
 //jshint strict: false
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
 
-    basePath: './app',
+    basePath: './',
 
     files: [
-      'lib/angular/angular.js',
-      'lib/angular-route/angular-route.js',
-      '../node_modules/angular-mocks/angular-mocks.js',
-      'core/**/*.js',
-      'view*/**/*.js'
+      // 'node_modules/angular/angular.js',
+      // 'node_modules/angular-route/angular-route.js',
+      // 'node_modules/angular-resource/angular-resource.js',
+      // 'node_modules/angular-mocks/angular-mocks.js',
+      'app/**/*.js'
     ],
 
     autoWatch: true,
 
     frameworks: ['jasmine'],
 
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox'],
 
     plugins: [
       'karma-chrome-launcher',

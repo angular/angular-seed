@@ -1,0 +1,34 @@
+$translateX : 50px;
+$bg_color :#e48918d9;
+
+body {
+    background: $bg_color !important;
+}
+
+.todoapp h1 {
+    color: rgba(39, 2, 2, 0.15) !important;
+}
+
+
+.item.ng-enter,
+.item.ng-leave,
+.record.ng-anchor {
+    transition: 0.5s ease;
+}
+
+.item.ng-enter {
+    transform: translateX($translateX);
+}
+
+.item.ng-enter.ng-enter-active,
+.item.ng-leave {
+    transform: translateX(0);
+}
+
+.item.ng-leave.ng-leave-active {
+    transform: translateX($translateX);
+}
+
+.info {
+    color: #000000;
+}

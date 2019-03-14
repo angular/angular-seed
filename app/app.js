@@ -1,14 +1,26 @@
 'use strict';
 
-// Declare app level module which depends on views, and core components
-angular.module('myApp', [
-  'ngRoute',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.version'
-]).
-config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-  $locationProvider.hashPrefix('!');
+angular.module('todomvc', ['ngRoute', 'ngResource', 'ngAnimate'])
 
-  $routeProvider.otherwise({redirectTo: '/view1'});
-}]);
+	.config(['$routeProvider', function ($routeProvider) {
+		$routeProvider.when('/', {
+				controller: 'TodoCtrl',
+				templateUrl: 'todomvc-index.html',
+				css: 'app.css',
+				resolve: {
+					store: function (todoStorage) {
+						return todoStorage.then(function (module) {
+							module.get();
+							return module;
+						});
+					}
+				}
+			})
+			.otherwise({
+				redirectTo: '/'
+			});
+	}])
+
+	.controller('TodoCtrl', [function () {
+
+	}]);

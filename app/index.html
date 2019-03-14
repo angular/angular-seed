@@ -1,43 +1,74 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<!doctype html>
+<html lang="en" data-framework="angularjs">
+
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>My AngularJS App</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="lib/html5-boilerplate/dist/css/normalize.css">
-  <link rel="stylesheet" href="lib/html5-boilerplate/dist/css/main.css">
-  <link rel="stylesheet" href="app.css">
-  <script src="lib/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+	<meta charset="utf-8">
+	<title>AngularJS • MVC</title>
+	<link rel="stylesheet" href="lib/todomvc-common/base.css">
+	<link rel="stylesheet" href="lib/todomvc-app-css/index.css">
+	<link rel="stylesheet" href="app.css">
+	<style>[ng-cloak] { display: none; }</style>
 </head>
-<body>
-  <ul class="menu">
-    <li><a href="#!/view1">view1</a></li>
-    <li><a href="#!/view2">view2</a></li>
-  </ul>
 
-  <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-  <![endif]-->
+<body ng-app="todomvc">
+	<ng-view></ng-view>
 
-  <div ng-view></div>
-
-  <div>AngularJS seed app: v<span app-version></span></div>
-
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
-  -->
-  <script src="lib/angular/angular.js"></script>
-  <script src="lib/angular-route/angular-route.js"></script>
-  <script src="app.js"></script>
-  <script src="view1/view1.js"></script>
-  <script src="view2/view2.js"></script>
-  <script src="core/version/version.js"></script>
-  <script src="core/version/version-directive.js"></script>
-  <script src="core/version/interpolate-filter.js"></script>
+	<script type="text/ng-template" id="todomvc-index.html">
+		<section class="todoapp">
+			<header class="header">
+				<h1>Todo</h1>
+				<form class="todo-form" ng-submit="addTodo()">
+					<input class="new-todo" placeholder="What needs to be done?" ng-model="newTodo" ng-disabled="saving" autofocus>
+				</form>
+			</header>
+			<section class="main" ng-show="todos.length" ng-cloak>
+				<input id="toggle-all" class="toggle-all" type="checkbox" ng-model="allChecked" ng-click="markAll(allChecked)">
+				<label for="toggle-all">Mark all as complete</label>
+				<ul class="todo-list">
+					<li class="item" ng-repeat="todo in todos | filter:statusFilter track by $index" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
+						<div class="view">
+							<input class="toggle" type="checkbox" ng-model="todo.completed" ng-change="toggleCompleted(todo)">
+							<label ng-dblclick="editTodo(todo)">{{todo.title}}</label>
+							<button class="destroy" ng-click="removeTodo(todo)"></button>
+						</div>
+						<form ng-submit="saveEdits(todo, 'submit')">
+							<input class="edit" ng-trim="false" ng-model="todo.title" todo-escape="revertEdits(todo)" ng-blur="saveEdits(todo, 'blur')" todo-focus="todo == editedTodo">
+						</form>
+					</li>
+				</ul>
+			</section>
+			<footer class="footer" ng-show="todos.length" ng-cloak>
+				<span class="todo-count"><strong>{{remainingCount}}</strong>
+					<ng-pluralize count="remainingCount" when="{ one: 'item left', other: 'items left' }"></ng-pluralize>
+				</span>
+				<ul class="filters">
+					<li>
+						<a ng-class="{selected: status == ''} " href="#/">All</a>
+					</li>
+					<li>
+						<a ng-class="{selected: status == 'active'}" href="#/active">Active</a>
+					</li>
+					<li>
+						<a ng-class="{selected: status == 'completed'}" href="#/completed">Completed</a>
+					</li>
+				</ul>
+				<button class="clear-completed" ng-click="clearCompletedTodos()" ng-show="completedCount">Clear completed</button>
+			</footer>
+		</section>
+		<footer class="info">
+			<p>Double-click to edit a todo</p>
+		</footer>
+	</script>
+	<script src="lib/todomvc-common/base.js"></script>
+	<script src="lib/angular/angular.js"></script>
+	<script src="lib/angular-route/angular-route.js"></script>
+	<script src="lib/angular-resource/angular-resource.js"></script>
+	<script src="lib/angular-animate/angular-animate.js"></script>
+	<script src="app.js"></script>
+	<script src="controllers/todoCtrl.js"></script>
+	<script src="services/todoStorage.js"></script>
+	<script src="directives/todoFocus.js"></script>
+	<script src="directives/todoEscape.js"></script>
 </body>
+
 </html>

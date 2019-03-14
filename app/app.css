@@ -1,25 +1,23 @@
-/* app css stylesheet */
+body {
+  background: #e48918d9 !important; }
 
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
-}
+.todoapp h1 {
+  color: rgba(39, 2, 2, 0.15) !important; }
 
-.menu:before {
-  content: "[";
-}
+.item.ng-enter,
+.item.ng-leave,
+.record.ng-anchor {
+  transition: 0.5s ease; }
 
-.menu:after {
-  content: "]";
-}
+.item.ng-enter {
+  transform: translateX(50px); }
 
-.menu > li {
-  display: inline;
-}
+.item.ng-enter.ng-enter-active,
+.item.ng-leave {
+  transform: translateX(0); }
 
-.menu > li + li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
+.item.ng-leave.ng-leave-active {
+  transform: translateX(50px); }
+
+.info {
+  color: #000000; }
