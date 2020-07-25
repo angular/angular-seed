@@ -1,25 +1,22 @@
-/* app css stylesheet */
-
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+img {
+    padding: 1rem;
+    max-height: 15rem;
 }
 
-.menu:before {
-  content: "[";
+.flex-item {
+    background-color: #fff;
 }
 
-.menu:after {
-  content: "]";
-}
+.flex-container {
+    display: flex; 
+    overflow: auto;
+    white-space: nowrap;
+  }
 
-.menu > li {
-  display: inline;
-}
+  body {
+    background-color:#011229;
+  }
 
-.menu > li + li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
+  h2, p {
+    color: #ebf0f7;
+  }

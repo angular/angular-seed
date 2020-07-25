@@ -1,1 +1,21 @@
-<p>This is the partial for view 1.</p>
+
+<h2>Now Playing</h2>
+    <ul class="flex-container">
+        <li ng-repeat="x in main.nowPlaying" class="flex-item" >   
+            <img src="{{ main.getImage(x) }}" alt="" />
+        </li>
+    </ul>
+
+    <h2>Latest</h2>
+            <ul class="flex-container">
+                <li ng-repeat="x in main.latest" class="flex-item" >   
+                    <img src="{{ main.getImage(x) }}" alt="" />
+                </li>
+            </ul>
+
+        <h2>Upcoming</h2>
+            <ul class="flex-container">
+                <li ng-repeat="x in main.upcoming" class="flex-item" >   
+                    <img src="{{ main.getImage(x) }}" alt="" />
+                </li>
+            </ul>
