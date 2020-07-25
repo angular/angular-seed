@@ -4,3 +4,7 @@ const imageURL = 'https://image.tmdb.org/t/p/w500';
 getLink = function (category) {
   return `https://api.themoviedb.org/3/movie/${category}?api_key=${tmdbKey}`;
 };
+
+// getImage = function (movie) {
+//     return imageURL + movie.poster_path;
+// };
